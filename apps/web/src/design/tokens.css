@@ -38,10 +38,14 @@
   color-scheme: dark;
 }
 
-/* Second palette: blue up, orange down. For colour-blind users and markets where red means up. */
+/*
+ * Second palette: blue up, orange down. For colour-blind users and markets where red means up.
+ * --warn moves to yellow so stale data never looks like a falling price.
+ */
 :root[data-palette='blue-orange'] {
   --up: #5b8cff;
   --down: #ff8a3d;
+  --warn: #e8d44d;
 }
 
 :root[data-density='dense'] {

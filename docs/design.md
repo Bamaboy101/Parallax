@@ -20,7 +20,8 @@ hard-code a colour.
 
 Tailwind's default palette and all shadow utilities are removed, so only token colours compile.
 
-Second palette, set with `<html data-palette="blue-orange">`: `--up: #5B8CFF`, `--down: #FF8A3D`.
+Second palette, set with `<html data-palette="blue-orange">`: `--up: #5B8CFF`, `--down: #FF8A3D`,
+and `--warn: #E8D44D` (yellow, so stale data never looks like a falling price).
 
 ## Type
 
