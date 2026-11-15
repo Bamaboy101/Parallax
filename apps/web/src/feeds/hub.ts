@@ -1,4 +1,5 @@
 import type { HubMessage, HubRequest, SourceState, SourceStatus } from './protocol';
+import { routeOrder } from './router';
 import {
   FeedAuthError,
   type AdapterContext,
@@ -28,6 +29,11 @@ export interface HubEnv {
 export const BACKOFF_BASE_MS = 500;
 export const BACKOFF_MAX_MS = 30_000;
 export const STATUS_TICK_MS = 1000;
+/** Consecutive failed attempts before a source's subscriptions move to the next feed. */
+export const FAILOVER_AFTER_ATTEMPTS = 3;
+/** How long a failed-over source rests before it is tried again; doubles per repeat. */
+export const DOWN_COOLDOWN_MS = 60_000;
+export const DOWN_COOLDOWN_MAX_MS = 30 * 60_000;
 
 /** Exponential backoff with equal jitter: half the ceiling fixed, half random. */
 export function backoffDelay(attempt: number, random: number): number {
@@ -52,12 +58,19 @@ interface Source {
   /** A connect() call is in flight. */
   running: boolean;
   retryTimer: number | undefined;
+  /** Pending end of a `down` period. */
+  downTimer: number | undefined;
+  /** Length of the next `down` period. */
+  cooldownMs: number;
   status: SourceStatus;
 }
 
 interface Subscription {
   symbol: SymbolRef;
   channel: Channel;
+  /** Feeds that can serve this subscription, in router order. */
+  candidates: Source[];
+  /** The feed currently serving it. Events from any other feed are dropped. */
   source: Source | null;
   count: number;
 }
@@ -97,6 +110,8 @@ export class FeedHub {
         used: false,
         running: false,
         retryTimer: undefined,
+        downTimer: undefined,
+        cooldownMs: DOWN_COOLDOWN_MS,
         status: {
           source: adapter.id,
           state: 'idle',
@@ -143,6 +158,7 @@ export class FeedHub {
     this.env.clearInterval(this.tickTimer);
     for (const source of this.sources) {
       if (source.retryTimer !== undefined) this.env.clearTimeout(source.retryTimer);
+      if (source.downTimer !== undefined) this.env.clearTimeout(source.downTimer);
       source.generation += 1;
       source.adapter.dispose();
     }
@@ -155,8 +171,9 @@ export class FeedHub {
       existing.count += 1;
       return;
     }
-    const source = this.route(symbol);
-    this.subscriptions.set(key, { symbol, channel, source, count: 1 });
+    const candidates = this.candidatesFor(symbol);
+    const source = candidates.find((candidate) => this.usable(candidate)) ?? candidates[0] ?? null;
+    this.subscriptions.set(key, { symbol, channel, candidates, source, count: 1 });
     if (!source) {
       this.env.log('warn', `no feed supports ${symbol.id}`);
       return;
@@ -178,15 +195,79 @@ export class FeedHub {
     if (!this.hasSubscriptions(source)) this.stop(source);
   }
 
-  /** First source that supports the symbol and can run; else the first that supports it at all. */
-  private route(symbol: SymbolRef): Source | null {
-    const candidates = this.sources.filter((source) => source.adapter.supports(symbol));
-    return candidates.find((source) => this.canRun(source)) ?? candidates[0] ?? null;
+  /** Registered feeds for a symbol in router order, then any other feed that supports it. */
+  private candidatesFor(symbol: SymbolRef): Source[] {
+    const supporting = this.sources.filter((source) => source.adapter.supports(symbol));
+    const order = routeOrder(symbol);
+    const ranked = order.flatMap((id) => supporting.filter((source) => source.id === id));
+    return [...ranked, ...supporting.filter((source) => !order.includes(source.id))];
   }
 
   private canRun(source: Source): boolean {
     if (source.status.state === 'auth-failed') return false;
     return !source.needsKey || this.keys[source.id] !== undefined;
+  }
+
+  private usable(source: Source): boolean {
+    return this.canRun(source) && source.status.state !== 'down';
+  }
+
+  /** Move every subscription to its best usable feed; stop feeds left without subscriptions. */
+  private reassign(): void {
+    const vacated = new Set<Source>();
+    for (const subscription of this.subscriptions.values()) {
+      const next = subscription.candidates.find((candidate) => this.usable(candidate));
+      const previous = subscription.source;
+      if (!next || next === previous) continue;
+      subscription.source = next;
+      if (previous) {
+        previous.adapter.unsubscribe(subscription.symbol, subscription.channel);
+        vacated.add(previous);
+      }
+      this.env.log(
+        'info',
+        `${subscription.symbol.id} ${subscription.channel}: ${previous?.id ?? 'none'} → ${next.id}`,
+      );
+      next.adapter.subscribe(subscription.symbol, subscription.channel);
+      this.ensureRunning(next);
+    }
+    for (const source of vacated) {
+      if (!this.hasSubscriptions(source)) this.stop(source);
+    }
+  }
+
+  /** True when every subscription on the source has another usable feed to move to. */
+  private canFailOver(source: Source): boolean {
+    let any = false;
+    for (const subscription of this.subscriptions.values()) {
+      if (subscription.source !== source) continue;
+      any = true;
+      const alternative = subscription.candidates.some(
+        (candidate) => candidate !== source && this.usable(candidate),
+      );
+      if (!alternative) return false;
+    }
+    return any;
+  }
+
+  /** Rest a failing source, move its subscriptions away, and bring it back after a cooldown. */
+  private markDown(source: Source): void {
+    if (source.retryTimer !== undefined) this.env.clearTimeout(source.retryTimer);
+    source.retryTimer = undefined;
+    const cooldown = source.cooldownMs;
+    source.cooldownMs = Math.min(cooldown * 2, DOWN_COOLDOWN_MAX_MS);
+    source.status.retryAt = this.env.now() + cooldown;
+    this.setState(source, 'down');
+    this.env.log('warn', `${source.id} is down; failing over for ${String(cooldown / 1000)} s`);
+    source.downTimer = this.env.setTimeout(() => {
+      source.downTimer = undefined;
+      source.status.retryAt = null;
+      source.status.attempt = 0;
+      this.setState(source, 'idle');
+      this.reassign();
+      this.ensureRunning(source);
+    }, cooldown);
+    this.reassign();
   }
 
   private hasSubscriptions(source: Source): boolean {
@@ -198,7 +279,8 @@ export class FeedHub {
 
   private ensureRunning(source: Source): void {
     if (this.disposed || source.running || source.retryTimer !== undefined) return;
-    if (!this.hasSubscriptions(source) || source.status.state === 'auth-failed') return;
+    if (!this.hasSubscriptions(source)) return;
+    if (source.status.state === 'auth-failed' || source.status.state === 'down') return;
     if (source.needsKey && this.keys[source.id] === undefined) {
       this.setState(source, 'no-key');
       return;
@@ -232,6 +314,7 @@ export class FeedHub {
     if (error instanceof FeedAuthError) {
       this.env.log('warn', `${source.id} rejected the key`);
       this.setState(source, 'auth-failed');
+      this.reassign();
       return;
     }
     this.env.log(
@@ -253,6 +336,9 @@ export class FeedHub {
       source.status.retryAt = null;
       this.ensureRunning(source);
     }, delay);
+    if (source.status.attempt >= FAILOVER_AFTER_ATTEMPTS && this.canFailOver(source)) {
+      this.markDown(source);
+    }
   }
 
   /** Dispose the current instance and build a fresh one with every subscription replayed. */
@@ -272,11 +358,13 @@ export class FeedHub {
   private stop(source: Source): void {
     if (source.retryTimer !== undefined) this.env.clearTimeout(source.retryTimer);
     source.retryTimer = undefined;
-    source.status.retryAt = null;
-    source.status.attempt = 0;
     source.status.stale = false;
     this.replaceAdapter(source);
-    if (source.status.state !== 'auth-failed') this.setState(source, 'idle');
+    // A down or rejected source keeps its state so the badge can say why.
+    if (source.status.state === 'down' || source.status.state === 'auth-failed') return;
+    source.status.retryAt = null;
+    source.status.attempt = 0;
+    this.setState(source, 'idle');
   }
 
   private setKeys(keys: Record<string, string>): void {
@@ -293,6 +381,7 @@ export class FeedHub {
       this.setState(source, 'idle');
       this.ensureRunning(source);
     }
+    this.reassign();
   }
 
   private fetchHistory(
@@ -302,11 +391,8 @@ export class FeedHub {
     from: number,
     to: number,
   ): void {
-    const source = this.sources.find(
-      (candidate) =>
-        candidate.adapter.fetchHistory !== undefined &&
-        candidate.adapter.supports(symbol) &&
-        this.canRun(candidate),
+    const source = this.candidatesFor(symbol).find(
+      (candidate) => candidate.adapter.fetchHistory !== undefined && this.usable(candidate),
     );
     const fetchHistory = source?.adapter.fetchHistory?.bind(source.adapter);
     if (!fetchHistory) {
@@ -355,9 +441,12 @@ export class FeedHub {
       status.stale = false;
       status.attempt = 0;
       status.retryAt = null;
+      source.cooldownMs = DOWN_COOLDOWN_MS;
       this.markStatusDirty();
     }
-    this.queue(event);
+    // Only the feed serving a subscription reaches the store, so two feeds never mix.
+    const subscription = this.subscriptions.get(`${event.symbol}|${event.channel}`);
+    if (subscription?.source === source) this.queue(event);
   }
 
   /** Trades and book updates are all kept; quotes and bars keep only the latest per frame. */

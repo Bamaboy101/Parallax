@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BACKOFF_MAX_MS, FeedHub, STATUS_TICK_MS, backoffDelay, type HubEnv } from './hub';
+import {
+  BACKOFF_MAX_MS,
+  DOWN_COOLDOWN_MS,
+  FAILOVER_AFTER_ATTEMPTS,
+  FeedHub,
+  STATUS_TICK_MS,
+  backoffDelay,
+  type HubEnv,
+} from './hub';
 import type { HubMessage, SourceStatus } from './protocol';
 import {
   FeedAuthError,
@@ -178,6 +186,7 @@ describe('FeedHub batching', () => {
     const feed = fakeFeed('coinbase', ['crypto']);
     const hub = startHub([feed.registration]);
     hub.handle({ type: 'subscribe', symbol: BTC, channel: 'trade' });
+    hub.handle({ type: 'subscribe', symbol: BTC, channel: 'quote' });
     const adapter = feed.latest();
 
     const quote = (bid: number): FeedEvent => ({
@@ -377,5 +386,63 @@ describe('FeedHub history', () => {
       requestId: 8,
       message: 'No history source for AAPL',
     });
+  });
+});
+
+describe('FeedHub failover', () => {
+  /** Fail the current connection `times` times, waiting out each backoff in between. */
+  async function failRepeatedly(feed: ReturnType<typeof fakeFeed>, times: number) {
+    for (let attempt = 0; attempt < times; attempt += 1) {
+      feed.latest().fail();
+      await advance(0);
+      if (attempt < times - 1) await advance(backoffDelay(attempt, 0.5));
+    }
+  }
+
+  it('moves subscriptions to the next feed after repeated failures, and back after a cooldown', async () => {
+    const coinbase = fakeFeed('coinbase', ['crypto']);
+    const kraken = fakeFeed('kraken', ['crypto']);
+    const hub = startHub([kraken.registration, coinbase.registration]);
+    hub.handle({ type: 'subscribe', symbol: BTC, channel: 'trade' });
+    // Router order wins over registration order.
+    expect(coinbase.latest().subscriptions).toEqual(new Set(['BTC-USD|trade']));
+    expect(kraken.latest().connects).toBe(0);
+
+    await failRepeatedly(coinbase, FAILOVER_AFTER_ATTEMPTS);
+    await advance(FRAME_MS);
+    expect(lastStatus('coinbase')).toMatchObject({ state: 'down' });
+    expect(kraken.latest().subscriptions).toEqual(new Set(['BTC-USD|trade']));
+    expect(kraken.latest().connects).toBe(1);
+
+    await advance(DOWN_COOLDOWN_MS);
+    expect(coinbase.latest().subscriptions).toEqual(new Set(['BTC-USD|trade']));
+    expect(coinbase.latest().connects).toBe(1);
+    expect(kraken.instances.at(-2)?.disposed).toBe(true);
+  });
+
+  it('forwards events only from the feed serving the subscription', async () => {
+    const coinbase = fakeFeed('coinbase', ['crypto']);
+    const kraken = fakeFeed('kraken', ['crypto']);
+    const hub = startHub([coinbase.registration, kraken.registration]);
+    hub.handle({ type: 'subscribe', symbol: BTC, channel: 'trade' });
+    const failing = coinbase.latest();
+    await failRepeatedly(coinbase, FAILOVER_AFTER_ATTEMPTS);
+
+    kraken.latest().trade('BTC-USD', 200, Date.now());
+    failing.trade('BTC-USD', 100, Date.now());
+    await advance(FRAME_MS);
+    const prices = eventBatches()
+      .flat()
+      .map((event) => (event.channel === 'trade' ? event.price : null));
+    expect(prices).toEqual([200]);
+  });
+
+  it('keeps retrying when no other feed can serve the symbol', async () => {
+    const coinbase = fakeFeed('coinbase', ['crypto']);
+    const hub = startHub([coinbase.registration]);
+    hub.handle({ type: 'subscribe', symbol: BTC, channel: 'trade' });
+    await failRepeatedly(coinbase, FAILOVER_AFTER_ATTEMPTS + 1);
+    await advance(FRAME_MS);
+    expect(lastStatus('coinbase')?.state).toBe('reconnecting');
   });
 });

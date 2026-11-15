@@ -118,8 +118,11 @@ flowing while the tab is hidden. Every trade and book update is kept, in order. 
 the latest per symbol per frame, and bars only the latest per symbol, interval and bar open time.
 
 **Status and age.** Each `SourceStatus` has `state` (`idle`, `connecting`, `live`,
-`reconnecting`, `no-key`, `auth-failed`), `lastEventAt`, `latencyMs` (receivedAt − ts of the last
-trade, quote or book event: exchange-to-browser delay), `stale`, `attempt` and `retryAt`.
+`reconnecting`, `no-key`, `auth-failed`, `down`), `lastEventAt`, `latencyMs` (receivedAt − ts of
+the last trade, quote or book event: exchange-to-browser delay), `stale`, `attempt` and `retryAt`.
+Some streams carry no exchange time (Binance best bid/ask and book); their events use
+`ts = receivedAt`, so latency comes from trades. The delay is measured against the local clock,
+so a clock running behind the exchange reads as 0 ms.
 
 **Staleness.** A live source turns stale when it has sent nothing for longer than its
 `staleAfterMs`. A source can limit this to its active hours with `isActive(now)`, so a closed
@@ -179,21 +182,38 @@ interface BarEvent extends BaseEvent, Bar {
   channel: 'bar';
   interval: BarInterval;
 }
-
-type FeedEvent = TradeEvent | QuoteEvent | BookEvent | BarEvent;
 ```
+
+The `bar` channel always streams **1-minute** bars (`interval: '1m'`), because `subscribe` takes no
+interval. Longer intervals are built from them, and from `fetchHistory`, in the chart (T9). A
+bar event's `ts` is the bar's open time.
 
 ## History
 
 `fetchHistory(symbol, interval, from, to)` is called by the hub only. The hub writes the bars to
 the store. Widgets ask the store for history and never call `fetchHistory`.
 
-## Routing
+## Routing and failover
 
-`feeds/router.ts` maps each symbol to an ordered list of adapters. If the first one is down or has
-no key, the next takes over and the widget's truth badge shows the new source.
+`feeds/router.ts` gives each symbol an ordered list of feeds. The hub keeps the registered feeds
+that support the symbol, in that order, and serves each subscription from the first usable one
+(not `down`, not `auth-failed`, has its key).
 
-- USD crypto pairs (`BTC-USD`) go to Coinbase first. Binance serves USDT pairs only, and those
-  are labelled USDT. A USDT price is never shown under a USD label.
-- US stocks go to Alpaca, then Finnhub.
-- FX pairs go to Kraken.
+| Symbol                 | Order            |
+| ---------------------- | ---------------- |
+| Crypto against USD     | Coinbase, Kraken |
+| Crypto against USDT    | Binance, Kraken  |
+| FX (Kraken's 12 pairs) | Kraken           |
+| US stocks (T13)        | Alpaca, Finnhub  |
+
+USD pairs never route to Binance: Binance quotes USDT, and a USDT price is never shown under a USD
+label. A USDT pair keeps its USDT label on every feed.
+
+**Failover.** After 3 consecutive failed attempts, if every subscription on a feed has another
+usable feed, the hub marks the feed `down` and moves its subscriptions to the next feed in their
+order. The feed rests for 60 s, doubling on each repeat up to 30 min and resetting once it is live
+again; then subscriptions move back and it is tried again. A key rejection moves subscriptions at
+once. A feed with no alternative keeps retrying with backoff instead.
+
+Only the feed currently serving a subscription reaches the store, so two feeds' prices never mix
+in one series. The truth badge names that feed.

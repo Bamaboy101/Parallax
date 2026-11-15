@@ -27,8 +27,9 @@ export type SourceState =
   /** The source needs a key and none is stored. */
   | 'no-key'
   /** The provider rejected the stored key. */
-  | 'auth-failed';
-
+  | 'auth-failed'
+  /** Failed repeatedly; its subscriptions moved to a fallback feed until `retryAt`. */
+  | 'down';
 export interface SourceStatus {
   source: string;
   state: SourceState;
