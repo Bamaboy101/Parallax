@@ -2,6 +2,7 @@ import type { IDockviewPanelProps } from 'dockview-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Cell } from '../../design/Cell';
 import { Sparkline } from '../../design/Sparkline';
+import '../../design/market.css';
 import { usePriceLine } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instruments, type Instrument } from '../../store/symbols';
@@ -10,8 +11,6 @@ import { DEFAULT_SYMBOLS } from './meta';
 interface WatchlistParams {
   symbols?: string[];
 }
-
-const COLUMNS = 'grid-cols-[minmax(64px,1fr)_40px_80px_56px]';
 
 const toneOf = (change: number | undefined) =>
   change === undefined || change === 0 ? 'neutral' : change > 0 ? 'up' : 'down';
@@ -32,15 +31,19 @@ function Row({
 
   return (
     <li
-      className={`grid h-(--row-h) ${COLUMNS} items-center gap-2 border-b border-line/60 px-(--pad) last:border-b-0`}
+      className="market-row watchlist-columns"
       title={item.note ? `${item.name} · ${item.note}` : item.name}
     >
-      <span className="min-w-0 truncate font-medium text-text">{item.label}</span>
-      <Sparkline
-        values={line.live && line.price !== undefined ? [...line.closes, line.price] : line.closes}
-        tone={tone}
-        width={40}
-      />
+      <span className="market-symbol">{item.label}</span>
+      <span className="watchlist-sparkline">
+        <Sparkline
+          values={
+            line.live && line.price !== undefined ? [...line.closes, line.price] : line.closes
+          }
+          tone={tone}
+          width={40}
+        />
+      </span>
       <span
         className={line.live ? 'text-right' : 'text-right opacity-60'}
         title={line.live ? undefined : 'Last hourly close; no live trade yet'}
@@ -62,12 +65,10 @@ export default function Watchlist({ api, params }: IDockviewPanelProps<Watchlist
   useReportSources(api.id, Object.values(sources));
 
   return (
-    <div className="h-full overflow-auto bg-panel">
-      <div
-        className={`grid h-(--row-h) ${COLUMNS} items-center gap-2 border-b border-line px-(--pad) text-label text-muted`}
-      >
+    <div className="market-panel watchlist-panel">
+      <div className="market-columns watchlist-columns">
         <span>Symbol</span>
-        <span>24h</span>
+        <span className="watchlist-sparkline">24h</span>
         <span className="text-right">Last</span>
         <span className="text-right">Chg 24h</span>
       </div>

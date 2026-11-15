@@ -48,11 +48,13 @@ export function PanelBadges({ group }: IDockviewHeaderActionsProps) {
   const others = feeds.length - 1;
   return (
     <div
-      className="flex h-full items-center gap-1 pr-2"
+      className="panel-badges flex h-full items-center gap-1 pr-2"
       title={feeds.map((feed) => feed.source).join(', ')}
     >
       <Badge freshness={worst.freshness} source={worst.source} />
-      {others > 0 && <span className="font-mono text-label text-muted">+{others}</span>}
+      {others > 0 && (
+        <span className="panel-badges-count font-mono text-label text-muted">+{others}</span>
+      )}
     </div>
   );
 }

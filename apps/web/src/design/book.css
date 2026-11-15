@@ -1,0 +1,113 @@
+/* Compact market ladder: density sets row size; short panels give space back to levels.
+   Keep this row height in sync with the presentation-only row count in book/index.tsx. */
+.book-panel {
+  container: order-book / size;
+  --book-row-h: max(16px, calc(var(--row-h) - 8px));
+}
+
+.book-heading {
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
+}
+
+.book-depth {
+  display: flex;
+  flex: 0 0 72px;
+  flex-direction: column;
+  min-height: 0;
+  padding: 4px var(--pad) 0;
+}
+
+.book-depth-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  height: 20px;
+  flex-shrink: 0;
+  font-size: var(--size-label);
+}
+
+.book-depth svg {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  overflow: visible;
+}
+
+.book-depth-guide {
+  fill: none;
+  stroke: var(--line);
+  stroke-dasharray: 2 4;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.book-depth-line {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.book-ladder {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) var(--book-row-h) minmax(0, 1fr);
+}
+
+.book-asks,
+.book-bids {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.book-asks {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.book-row {
+  height: var(--book-row-h);
+  flex-shrink: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
+}
+
+.book-row > span {
+  min-width: 0;
+}
+
+.book-spread {
+  background: color-mix(in srgb, var(--bg) 50%, var(--panel));
+  white-space: nowrap;
+}
+
+@container order-book (max-height: 360px) {
+  .book-depth {
+    flex-basis: 40px;
+  }
+
+  .book-depth-legend {
+    height: 16px;
+  }
+}
+
+@container order-book (max-height: 220px) {
+  .book-depth {
+    flex-basis: 24px;
+  }
+
+  .book-depth-legend {
+    display: none;
+  }
+}
+
+@container order-book (max-width: 320px) {
+  .book-row,
+  .book-heading {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+
+  .book-row > .font-mono {
+    font-size: var(--size-label);
+  }
+}
