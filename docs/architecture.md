@@ -193,6 +193,35 @@ bar event's `ts` is the bar's open time.
 `fetchHistory(symbol, interval, from, to)` is called by the hub only. The hub writes the bars to
 the store. Widgets ask the store for history and never call `fetchHistory`.
 
+## Tick store and Rewind
+
+`store/feedClient.ts` starts the hub worker on first use and passes its batches to
+`store/ticks.ts`, a Zustand store updated once per batch (so React renders at most once per
+frame). Widgets use the hooks in `store/hooks.ts`:
+
+| Hook                       | Returns                                                 |
+| -------------------------- | ------------------------------------------------------- |
+| `useTick(symbol, channel)` | The latest trade, quote, bar or book view at the cursor |
+| `useTrades(symbol, limit)` | Recent trades at the cursor, newest first               |
+| `useSourceStatus(source)`  | A feed's `SourceStatus`, for truth badges               |
+| `useCursor()`              | The Rewind cursor (`null` = live) and its setter        |
+
+Each hook holds a hub subscription while its component is mounted and re-renders only when its
+own value changes. Books are rebuilt in the store from snapshots and deltas (at most 1000 levels
+per side) and published as a top-50 `BookView`.
+
+Every channel keeps 60 minutes of history per symbol, by local arrival time, in a ring buffer:
+
+| Channel | Kept                          | Cap per symbol |
+| ------- | ----------------------------- | -------------- |
+| trade   | every trade                   | 100,000        |
+| quote   | newest per 250 ms             | 15,000         |
+| bar     | one entry per 1-minute bar    | 120            |
+| book    | newest top-50 view per second | 3,700          |
+
+The global cursor (`setCursor`) moves every hook to the same moment: each reads the newest value
+at or before it. Live data keeps flowing into history while rewound.
+
 ## Routing and failover
 
 `feeds/router.ts` gives each symbol an ordered list of feeds. The hub keeps the registered feeds
