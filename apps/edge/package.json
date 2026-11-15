@@ -1,0 +1,14 @@
+{
+  "name": "@open-terminal/edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261115.1",
+    "typescript": "~6.0.3",
+    "wrangler": "^4.162.0"
+  }
+}

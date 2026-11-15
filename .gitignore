@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.wrangler/
+*.tsbuildinfo
+.DS_Store
+
+# Secrets: never commit keys
+.env
+.env.*
+.dev.vars
