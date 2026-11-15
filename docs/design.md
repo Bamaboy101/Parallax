@@ -13,15 +13,17 @@ use the same semantic tokens in either mode.
 | `--line`  | `#383838` | `#D6D6D6` | Silver hairlines                                            |
 | `--text`  | `#E8E8E8` | `#181818` | Primary text                                                |
 | `--muted` | `#969696` | `#626262` | Secondary text                                              |
-| `--live`  | `#6EF0C2` | `#007A58` | Mint: live status, focus, active tabs, drag highlight, logo |
+| `--live`  | `#6EF0C2` | `#007878` | Mint: live status, focus, active tabs, drag highlight, logo |
 | `--up`    | `#39B54A` | `#237A12` | Rising price, saturated leaf green rather than mint         |
 | `--down`  | `#FF6464` | `#B42332` | Falling price                                               |
 | `--warn`  | `#F4BB4F` | `#8A5A00` | Delayed or stale data                                       |
 
-Light mint is deeper than the initial `#0E9F75` proposal: `#007A58` provides **5.35:1** contrast
-on white; the proposal provided only 3.37:1. All light semantic text colours above exceed 4.5:1
-on white. Price green is darker, more saturated and more yellow than the interface mint in both
-modes. Mint is never a price-direction colour; price changes also retain their numeric sign.
+Light mint is a deep teal-mint, `#007878`: **5.31:1** contrast on white (the initial `#0E9F75`
+proposal gave only 3.37:1). It sits at OKLCH hue 195° against the light up green's 141°, a
+colour difference (ΔE OK) of 12.7 that stays 12.0 under simulated deuteranopia. The earlier
+`#007A58` measured only 7.4 against up green at the same lightness. Lightness cannot separate them
+further because both must keep 4.5:1 on white. Mint is never a price-direction colour; price
+changes also retain their numeric sign.
 
 Tailwind's default palette and all shadow utilities are removed. Subtle metal gradients appear
 only on the top bar and logo; panels remain flat.
