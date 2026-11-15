@@ -1,7 +1,7 @@
 /* dockview theme built from the design tokens. Applied through the `cockpit` theme in DockArea. */
 
 .dockview-theme-cockpit {
-  color-scheme: dark;
+  color-scheme: inherit;
 
   /* Surfaces and text */
   --dv-group-view-background-color: var(--panel);
@@ -81,7 +81,7 @@
 }
 
 .dockview-theme-cockpit .dv-tab.dv-active-tab {
-  border-bottom: 1px solid var(--muted);
+  border-bottom: 1px solid var(--live);
 }
 
 .dockview-theme-cockpit .dv-default-tab-action {

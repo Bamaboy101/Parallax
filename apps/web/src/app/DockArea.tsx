@@ -14,7 +14,6 @@ const SAVE_DELAY_MS = 250;
 const cockpitTheme: DockviewTheme = {
   name: 'cockpit',
   className: 'dockview-theme-cockpit',
-  colorScheme: 'dark',
   gap: 4,
 };
 
