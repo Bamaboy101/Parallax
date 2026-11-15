@@ -45,7 +45,7 @@ interface AdapterContext {
   /** The user's key for a provider, or undefined if none is stored. */
   getKey(provider: string): string | undefined;
   /** Hub logger. Never pass a key or a keyed URL to it. */
-  log: Logger;
+  log: Logger; // (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void
 }
 
 type AdapterFactory = (ctx: AdapterContext) => FeedAdapter;
@@ -56,22 +56,80 @@ type AdapterFactory = (ctx: AdapterContext) => FeedAdapter;
 ```ts
 type Channel = 'trade' | 'quote' | 'book' | 'bar';
 
+interface SymbolRef {
+  id: string; // 'BTC-USD', 'ETH-USDT', 'AAPL', 'EUR-USD'; the key in events and the store
+  kind: 'crypto' | 'equity' | 'fx';
+  base: string; // 'BTC'
+  quote: string; // 'USD', 'USDT': prices are always in this currency
+}
+
 interface FeedAdapter {
   id: string; // 'binance', 'alpaca', ...
   needsKey: boolean;
   supports(symbol: SymbolRef): boolean;
+  /** May be called before connect(); the adapter applies it once its connection is open. */
   subscribe(symbol: SymbolRef, channel: Channel): void;
-  unsubscribe(symbol: SymbolRef, channel: string): void;
-  /** Open the provider connection. The hub owns reconnect and backoff. */
+  unsubscribe(symbol: SymbolRef, channel: Channel): void;
+  /** Run one connection: resolves when it closes, rejects when it fails. */
   connect(): Promise<void>;
-  /** Close sockets, clear timers, drop subscriptions. */
+  /** Close sockets and clear timers. connect() must settle soon after. */
   dispose(): void;
   /** Optional REST history. Only the hub calls this; it writes the result to the store. */
   fetchHistory?(symbol: SymbolRef, interval: BarInterval, from: number, to: number): Promise<Bar[]>;
 }
 ```
 
-`SymbolRef` and `Logger` are defined in `feeds/types.ts` (T5).
+### Connection lifecycle
+
+An adapter instance runs **one** connection. The hub owns reconnect and backoff:
+
+1. On the first subscription routed to a source, the hub calls `subscribe` and then `connect()`.
+2. When `connect()` settles, for any reason, the hub disposes that instance, waits for the backoff
+   delay, builds a fresh instance from the factory, replays every subscription and calls
+   `connect()` again. Adapters therefore never re-subscribe or reconnect themselves.
+3. Backoff is exponential with equal jitter: the ceiling starts at 500 ms, doubles per failed
+   attempt and caps at 30 s; the wait is between half and all of the ceiling. The first event
+   after a connect resets it.
+4. Rejecting with `FeedAuthError` means the provider refused the key. The hub stops retrying and
+   shows `auth-failed` until the user stores a different key.
+5. A source that needs a key and has none shows `no-key` and is never connected.
+6. When the last subscription on a source goes, the hub disposes it and the source returns to
+   `idle`.
+
+Callbacks from a disposed instance are ignored, so a late message can never overwrite fresh data.
+
+## Hub protocol
+
+The app talks to the worker only through these messages (`feeds/protocol.ts`).
+
+| Direction | Message         | Meaning                                                           |
+| --------- | --------------- | ----------------------------------------------------------------- |
+| app → hub | `subscribe`     | Reference-counted: N subscribers share one upstream subscription  |
+| app → hub | `unsubscribe`   | Releases one reference                                            |
+| app → hub | `keys`          | Full replacement of the user's keys; changed keys restart sources |
+| app → hub | `history`       | Request bars for a symbol, interval and time range                |
+| hub → app | `events`        | One batch per frame                                               |
+| hub → app | `status`        | Every source's `SourceStatus`, on change and once a second        |
+| hub → app | `history`       | The bars for a request                                            |
+| hub → app | `history-error` | The request could not be served                                   |
+
+**Batching.** Events are posted once per display frame, with a 50 ms fallback so batches keep
+flowing while the tab is hidden. Every trade and book update is kept, in order. Quotes keep only
+the latest per symbol per frame, and bars only the latest per symbol, interval and bar open time.
+
+**Status and age.** Each `SourceStatus` has `state` (`idle`, `connecting`, `live`,
+`reconnecting`, `no-key`, `auth-failed`), `lastEventAt`, `latencyMs` (receivedAt − ts of the last
+trade, quote or book event: exchange-to-browser delay), `stale`, `attempt` and `retryAt`.
+
+**Staleness.** A live source turns stale when it has sent nothing for longer than its
+`staleAfterMs`. A source can limit this to its active hours with `isActive(now)`, so a closed
+market never reads as stale. Thresholds are set per adapter registration:
+
+| Source                | Stale after                                        |
+| --------------------- | -------------------------------------------------- |
+| Crypto feeds          | 5 s                                                |
+| US stock feeds        | 30 s, during market hours only                     |
+| REST data (edge, T15) | 2 × its refresh interval, tracked by the app layer |
 
 ## Normalised events
 
