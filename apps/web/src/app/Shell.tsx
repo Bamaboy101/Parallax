@@ -5,16 +5,21 @@ import { DockArea } from './DockArea';
 export function Shell() {
   return (
     <div className="grid h-dvh grid-rows-[auto_1fr_auto] bg-bg">
-      <header className="flex h-9 items-center gap-4 border-b border-line px-3">
-        <h1 className="text-label font-medium tracking-wider text-text uppercase">Open Terminal</h1>
-        <div className="ml-auto flex items-center gap-4">
+      <header className="shell-topbar">
+        <div aria-hidden="true" className="shell-mark">
+          <span />
+        </div>
+        <h1 className="text-ui font-medium tracking-tight text-text">Open Terminal</h1>
+        <div className="ml-auto flex min-w-0 items-center gap-4">
           <Clock />
         </div>
       </header>
-      <main className="min-h-0 p-1">
+      <main className="min-h-0 min-w-0 p-2">
         <DockArea />
       </main>
-      <footer aria-label="Ticker rail" className="h-8 border-t border-line" />
+      <footer aria-label="Ticker rail" className="shell-rail">
+        <span className="text-label text-muted">Drag tabs to arrange your desk</span>
+      </footer>
     </div>
   );
 }

@@ -114,3 +114,44 @@ body {
   outline: 1px solid var(--live);
   outline-offset: 1px;
 }
+
+/* Shell chrome follows the same density controls as the panel headers. */
+.shell-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: calc(var(--row-h) + 12px);
+  padding-inline: var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.shell-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+
+.shell-mark span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+
+.shell-rail {
+  display: flex;
+  align-items: center;
+  min-height: var(--row-h);
+  padding-inline: var(--pad);
+  border-top: 1px solid var(--line);
+}
+
+.truth-badge {
+  height: calc(var(--row-h) - 4px);
+  max-height: 20px;
+}

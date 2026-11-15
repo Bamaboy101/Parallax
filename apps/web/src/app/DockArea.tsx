@@ -20,8 +20,10 @@ const cockpitTheme: DockviewTheme = {
 
 function PlaceholderPanel({ api }: IDockviewPanelProps) {
   return (
-    <div className="flex h-full items-center justify-center bg-panel text-label text-muted">
-      {api.title} · empty
+    <div className="dock-placeholder">
+      <span aria-hidden="true" className="dock-placeholder-mark" />
+      <span className="text-ui font-medium text-muted">{api.title}</span>
+      <span className="text-label text-muted">Empty panel</span>
     </div>
   );
 }

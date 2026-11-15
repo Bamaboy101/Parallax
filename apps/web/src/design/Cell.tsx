@@ -31,7 +31,7 @@ export function Cell({
   return (
     <span
       data-tone={tone}
-      className={`font-mono text-num tabular-nums whitespace-nowrap ${empty ? 'text-muted' : toneClass[tone]} ${className}`}
+      className={`inline-block text-right font-mono text-num leading-none tabular-nums whitespace-nowrap ${empty ? 'text-muted' : toneClass[tone]} ${className}`}
     >
       {formatNumber(value, decimals, signed)}
       {!empty && suffix}
