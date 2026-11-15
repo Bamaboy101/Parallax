@@ -63,7 +63,7 @@ const Row = memo(function Row({
       <Cell
         className="relative text-muted"
         value={trade.size}
-        decimals={trade.size < 0.01 ? 6 : 4}
+        decimals={trade.size < 0.01 ? 8 : 4}
       />
     </li>
   );

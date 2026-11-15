@@ -7,6 +7,15 @@ export type Channel = 'trade' | 'quote' | 'book' | 'bar';
 
 export type BarInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
 
+export const INTERVAL_MS: Readonly<Record<BarInterval, number>> = {
+  '1m': 60_000,
+  '5m': 300_000,
+  '15m': 900_000,
+  '1h': 3_600_000,
+  '4h': 14_400_000,
+  '1d': 86_400_000,
+};
+
 export type AssetKind = 'crypto' | 'equity' | 'fx';
 
 /** One instrument as the app names it. `id` is the key used in events and the store. */

@@ -1,6 +1,14 @@
-import type { AdapterContext, Bar, BarInterval, Channel, FeedAdapter, SymbolRef } from '../types';
+import {
+  INTERVAL_MS,
+  type AdapterContext,
+  type Bar,
+  type BarInterval,
+  type Channel,
+  type FeedAdapter,
+  type SymbolRef,
+} from '../types';
 import { field, levels, list, num, parseFrame, str, time, type Json } from './parse';
-import { INTERVAL_MS, aggregate, getJson, throttle, tidy } from './rest';
+import { aggregate, getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 const URL = 'wss://ws-feed.exchange.coinbase.com';

@@ -1,14 +1,15 @@
-import type {
-  AdapterContext,
-  Bar,
-  BarInterval,
-  Channel,
-  FeedAdapter,
-  Level,
-  SymbolRef,
+import {
+  INTERVAL_MS,
+  type AdapterContext,
+  type Bar,
+  type BarInterval,
+  type Channel,
+  type FeedAdapter,
+  type Level,
+  type SymbolRef,
 } from '../types';
 import { field, isObject, list, num, obj, parseFrame, str, time, type Json } from './parse';
-import { INTERVAL_MS, getJson, throttle, tidy } from './rest';
+import { getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 const URL = 'wss://ws.kraken.com/v2';

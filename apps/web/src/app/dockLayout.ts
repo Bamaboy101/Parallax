@@ -2,7 +2,7 @@ import type { DockviewApi, SerializedDockview } from 'dockview-react';
 
 /** Default layout until the preset workspaces arrive in T17. */
 export function buildDefaultLayout(api: DockviewApi): void {
-  api.addPanel({ id: 'chart', component: 'placeholder', title: 'Chart' });
+  api.addPanel({ id: 'chart', component: 'chart', title: 'Chart' });
   api.addPanel({
     id: 'watchlist',
     component: 'watchlist',

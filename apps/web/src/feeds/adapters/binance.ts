@@ -1,6 +1,14 @@
-import type { AdapterContext, Bar, BarInterval, Channel, FeedAdapter, SymbolRef } from '../types';
+import {
+  INTERVAL_MS,
+  type AdapterContext,
+  type Bar,
+  type BarInterval,
+  type Channel,
+  type FeedAdapter,
+  type SymbolRef,
+} from '../types';
 import { field, levels, list, num, obj, parseFrame, str } from './parse';
-import { INTERVAL_MS, getJson, throttle, tidy } from './rest';
+import { getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 /** Market-data-only endpoint; serves the same public streams as stream.binance.com. */

@@ -9,7 +9,12 @@ function mountDock(): DockviewApi {
   let api: DockviewApi | undefined;
   render(
     <DockviewReact
-      components={{ placeholder: () => null, watchlist: () => null, tape: () => null }}
+      components={{
+        placeholder: () => null,
+        watchlist: () => null,
+        tape: () => null,
+        chart: () => null,
+      }}
       onReady={(event) => {
         api = event.api;
       }}

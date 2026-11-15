@@ -82,6 +82,17 @@ export function useTrades(symbol: SymbolRef, limit: number): TickOf['trade'][] {
   );
 }
 
+/** The top of one symbol's book at the Rewind cursor or live, refreshed ten times a second. */
+export function useBook(symbol: SymbolRef): TickOf['book'] | undefined {
+  useFeedSubscription(symbol, 'book');
+  const { id } = symbol;
+  const bookStore = useMemo(
+    () => throttledValue((state) => valueAt(state, 'book', id), LIST_REFRESH_MS),
+    [id],
+  );
+  return useSyncExternalStore(bookStore.subscribe, bookStore.get);
+}
+
 /** One feed's connection status, for truth badges. */
 export function useSourceStatus(source: string | undefined): SourceStatus | undefined {
   return useTickStore((state) => (source === undefined ? undefined : state.status[source]));
