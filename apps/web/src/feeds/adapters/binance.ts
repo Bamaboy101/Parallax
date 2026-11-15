@@ -1,9 +1,15 @@
-import type { AdapterContext, Channel, FeedAdapter, SymbolRef } from '../types';
-import { field, levels, list, obj, parseFrame, str } from './parse';
+import type { AdapterContext, Bar, BarInterval, Channel, FeedAdapter, SymbolRef } from '../types';
+import { field, levels, list, num, obj, parseFrame, str } from './parse';
+import { INTERVAL_MS, getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 /** Market-data-only endpoint; serves the same public streams as stream.binance.com. */
 const URL = 'wss://data-stream.binance.vision/stream';
+const KLINES = 'https://data-api.binance.vision/api/v3/klines';
+const KLINE_LIMIT = 1000;
+const MAX_PAGES = 3;
+/** Binance's REST weight limit is generous; a small gap keeps bursts polite. */
+const restQueue = throttle(100);
 /** Binance allows 5 control messages per second per connection; stay well under it. */
 const CONTROL_GAP_MS = 250;
 /** Keep each SUBSCRIBE frame small. */
@@ -41,6 +47,38 @@ export class BinanceAdapter extends SocketAdapter implements FeedAdapter {
 
   constructor(ctx: AdapterContext, createSocket: SocketFactory = browserSocket) {
     super(ctx, createSocket);
+  }
+
+  /** Klines from the public market-data REST host, up to 3,000 bars per request. */
+  async fetchHistory(
+    symbol: SymbolRef,
+    interval: BarInterval,
+    from: number,
+    to: number,
+  ): Promise<Bar[]> {
+    const pair = `${symbol.base}${symbol.quote}`.toUpperCase();
+    const bars: Bar[] = [];
+    let start = Math.max(from, to - MAX_PAGES * KLINE_LIMIT * INTERVAL_MS[interval]);
+    for (let page = 0; page < MAX_PAGES && start <= to; page += 1) {
+      const url = `${KLINES}?symbol=${pair}&interval=${interval}&startTime=${String(start)}&endTime=${String(to)}&limit=${String(KLINE_LIMIT)}`;
+      const rows = await restQueue(() => getJson(url));
+      if (!Array.isArray(rows)) throw new Error('klines response is not a list');
+      for (const row of rows) {
+        if (!Array.isArray(row)) continue;
+        bars.push({
+          ts: num(row[0]),
+          open: num(row[1]),
+          high: num(row[2]),
+          low: num(row[3]),
+          close: num(row[4]),
+          volume: num(row[5]),
+        });
+      }
+      const last = bars.at(-1);
+      if (rows.length < KLINE_LIMIT || !last) break;
+      start = last.ts + INTERVAL_MS[interval];
+    }
+    return tidy(bars, from, to);
   }
 
   supports(symbol: SymbolRef): boolean {

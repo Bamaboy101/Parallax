@@ -73,4 +73,16 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - `Badge`: the truth badge. `LIVE 140ms`, `DELAYED 15m`, `EOD` or `OFFLINE`, plus the source. Mint
   when live, amber when stale or delayed, grey when offline; alternative palettes use yellow/ochre warnings.
 - `Cell`: a number in mono with tabular figures, optional sign, suffix and up/down tone. Missing
-  values render as an em dash.
+  values render as an em dash. With `pulse`, a change washes the cell in `--up` or `--down` at
+  28% and fades over `--motion-pulse` (Web Animations API, so no React render; none under reduced
+  motion).
+- `Sparkline`: a small polyline of recent values in the up, down or muted tone.
+
+## Widgets
+
+- Truth badges sit in the dockview group header, right side, for the active panel. A panel fed by
+  several feeds shows its worst feed (offline, then stale, then slowest) and a `+N` count; the
+  tooltip lists all of them. The delay is exchange-to-browser, corrected for local clock skew.
+- Lists (the trades tape) re-render at most 10 times a second; single cells update every frame.
+- A price from history rather than a live tick (an illiquid symbol before its first trade) is
+  shown at 60% opacity with a tooltip saying so.

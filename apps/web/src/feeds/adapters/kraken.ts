@@ -1,8 +1,29 @@
-import type { AdapterContext, Channel, FeedAdapter, Level, SymbolRef } from '../types';
-import { field, isObject, list, parseFrame, str, time, type Json } from './parse';
+import type {
+  AdapterContext,
+  Bar,
+  BarInterval,
+  Channel,
+  FeedAdapter,
+  Level,
+  SymbolRef,
+} from '../types';
+import { field, isObject, list, num, obj, parseFrame, str, time, type Json } from './parse';
+import { INTERVAL_MS, getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 const URL = 'wss://ws.kraken.com/v2';
+const OHLC = 'https://api.kraken.com/0/public/OHLC';
+/** Kraken's public REST counter allows about one call per second. */
+const restQueue = throttle(1000);
+/** Kraken returns at most the 720 most recent bars per interval. */
+const OHLC_MINUTES: Record<BarInterval, number> = {
+  '1m': 1,
+  '5m': 5,
+  '15m': 15,
+  '1h': 60,
+  '4h': 240,
+  '1d': 1440,
+};
 const CONTROL_GAP_MS = 150;
 /** Kraken closes a connection after about a minute without traffic. */
 const PING_MS = 30_000;
@@ -54,6 +75,38 @@ export class KrakenAdapter extends SocketAdapter implements FeedAdapter {
 
   constructor(ctx: AdapterContext, createSocket: SocketFactory = browserSocket) {
     super(ctx, createSocket);
+  }
+
+  /** OHLC from the public REST API: at most the 720 most recent bars of the interval. */
+  async fetchHistory(
+    symbol: SymbolRef,
+    interval: BarInterval,
+    from: number,
+    to: number,
+  ): Promise<Bar[]> {
+    const since = Math.floor((from - INTERVAL_MS[interval]) / 1000);
+    const url = `${OHLC}?pair=${encodeURIComponent(pairOf(symbol))}&interval=${String(OHLC_MINUTES[interval])}&since=${String(since)}`;
+    const body = await restQueue(() => getJson(url));
+    if (!isObject(body)) throw new Error('OHLC response is not an object');
+    const errors = list(body, 'error');
+    if (errors.length > 0) throw new Error(errors.map(String).join(', '));
+    const result = obj(body, 'result');
+    const key = Object.keys(result).find((name) => name !== 'last');
+    const rows = key === undefined ? [] : list(result, key);
+    const bars: Bar[] = [];
+    for (const row of rows) {
+      if (!Array.isArray(row)) continue;
+      // [time (s), open, high, low, close, vwap, volume, count]
+      bars.push({
+        ts: num(row[0]) * 1000,
+        open: num(row[1]),
+        high: num(row[2]),
+        low: num(row[3]),
+        close: num(row[4]),
+        volume: num(row[6]),
+      });
+    }
+    return tidy(bars, from, to);
   }
 
   supports(symbol: SymbolRef): boolean {

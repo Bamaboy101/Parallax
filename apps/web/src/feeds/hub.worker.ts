@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { registrations } from './adapters';
+import { measureClockOffset } from './clock';
 import { FeedHub } from './hub';
 import type { HubRequest } from './protocol';
 
@@ -7,6 +8,21 @@ declare const self: DedicatedWorkerGlobalScope;
 
 /** Longest a batch may wait when the page is hidden and frames stop. */
 const FRAME_FALLBACK_MS = 50;
+const CLOCK_SYNC_MS = 10 * 60_000;
+
+let clockOffset = 0;
+function syncClock(): void {
+  measureClockOffset().then(
+    (offset) => {
+      clockOffset = offset;
+    },
+    (error: unknown) => {
+      console.warn(`[feed] clock sync failed: ${error instanceof Error ? error.message : ''}`);
+    },
+  );
+}
+syncClock();
+self.setInterval(syncClock, CLOCK_SYNC_MS);
 
 const hub = new FeedHub(registrations, {
   now: () => Date.now(),
@@ -36,6 +52,7 @@ const hub = new FeedHub(registrations, {
   log: (level, message) => {
     console[level](`[feed] ${message}`);
   },
+  clockOffset: () => clockOffset,
 });
 
 self.addEventListener('message', (event: MessageEvent<HubRequest>) => {

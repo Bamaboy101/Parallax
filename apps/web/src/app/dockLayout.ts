@@ -5,10 +5,10 @@ export function buildDefaultLayout(api: DockviewApi): void {
   api.addPanel({ id: 'chart', component: 'placeholder', title: 'Chart' });
   api.addPanel({
     id: 'watchlist',
-    component: 'placeholder',
+    component: 'watchlist',
     title: 'Watchlist',
     position: { referencePanel: 'chart', direction: 'left' },
-    initialWidth: 280,
+    initialWidth: 380,
   });
   api.addPanel({
     id: 'book',
@@ -19,7 +19,7 @@ export function buildDefaultLayout(api: DockviewApi): void {
   });
   api.addPanel({
     id: 'tape',
-    component: 'placeholder',
+    component: 'tape',
     title: 'Trades',
     position: { referencePanel: 'book', direction: 'below' },
   });

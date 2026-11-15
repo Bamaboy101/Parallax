@@ -28,7 +28,7 @@ const RETENTION: { [C in Channel]: { capacity: number; bucketMs: number } } = {
   book: { capacity: 3_700, bucketMs: 1000 },
 };
 
-interface TickState {
+export interface TickState {
   /** Newest value per channel and symbol id. */
   latest: PerChannel<TickOf>;
   /** Bumped per channel and symbol on every change, for widgets that read history. */

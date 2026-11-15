@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Clock } from './Clock';
+import TickerRail from '../widgets/ticker-rail';
 import { DockArea } from './DockArea';
 
 /** Top bar, dock area, ticker rail. */
@@ -66,7 +67,7 @@ export function Shell() {
         <DockArea />
       </main>
       <footer aria-label="Ticker rail" className="shell-rail">
-        <span className="text-label text-muted">Drag tabs to arrange your desk</span>
+        <TickerRail />
       </footer>
     </div>
   );

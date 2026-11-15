@@ -8,6 +8,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { restoreLayout } from './dockLayout';
+import { PanelBadges } from './PanelBadges';
+import { DOCK_COMPONENTS } from './widgets';
 
 const SAVE_DELAY_MS = 250;
 
@@ -27,7 +29,8 @@ function PlaceholderPanel({ api }: IDockviewPanelProps) {
   );
 }
 
-const components = { placeholder: PlaceholderPanel };
+/** Widgets, plus placeholders for panels whose widget is still to come (chart T9, book T10). */
+const components = { ...DOCK_COMPONENTS, placeholder: PlaceholderPanel };
 
 export function DockArea() {
   const [api, setApi] = useState<DockviewApi | null>(null);
@@ -64,6 +67,7 @@ export function DockArea() {
       className="h-full"
       theme={cockpitTheme}
       components={components}
+      rightHeaderActionsComponent={PanelBadges}
       onReady={onReady}
     />
   );

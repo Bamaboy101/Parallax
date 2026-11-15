@@ -24,6 +24,8 @@ export interface HubEnv {
   nextFrame(callback: () => void): void;
   post(message: HubMessage): void;
   log: Logger;
+  /** Exchange clock minus local clock, in ms, so latency survives a skewed local clock. */
+  clockOffset(): number;
 }
 
 export const BACKOFF_BASE_MS = 500;
@@ -435,7 +437,9 @@ export class FeedHub {
   private receive(source: Source, event: FeedEvent): void {
     const status = source.status;
     status.lastEventAt = event.receivedAt;
-    if (event.channel !== 'bar') status.latencyMs = Math.max(0, event.receivedAt - event.ts);
+    if (event.channel !== 'bar') {
+      status.latencyMs = Math.max(0, event.receivedAt + this.env.clockOffset() - event.ts);
+    }
     if (status.state !== 'live' || status.stale) {
       status.state = 'live';
       status.stale = false;

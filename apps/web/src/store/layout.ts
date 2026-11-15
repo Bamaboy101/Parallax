@@ -24,7 +24,8 @@ export const useLayoutStore = create<LayoutState>()(
     }),
     {
       name: LAYOUT_STORAGE_KEY,
-      version: 1,
+      // v2: panels became real widgets. Older saved layouts are dropped for the default.
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ dock: state.dock }),
     },

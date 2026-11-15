@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HubMessage, HubRequest } from '../feeds/protocol';
 import type { FeedEvent, QuoteEvent, SymbolRef, TradeEvent } from '../feeds/types';
 import { connectFeed, disconnectFeed, type FeedPort } from './feedClient';
-import { useCursor, useTick, useTrades } from './hooks';
+import { LIST_REFRESH_MS, useCursor, useTick, useTrades } from './hooks';
 import { REWIND_MS, ingest, recentValues, resetTicks, setCursor, useTickStore } from './ticks';
 
 const BTC: SymbolRef = { id: 'BTC-USD', kind: 'crypto', base: 'BTC', quote: 'USD' };
@@ -129,13 +129,17 @@ describe('Rewind', () => {
     expect(useTickStore.getState().cursor).toBeNull();
   });
 
-  it('lists recent trades at the cursor, newest first', () => {
+  it('lists recent trades at the cursor, newest first, at most ten times a second', () => {
     function Tape() {
       const trades = useTrades(BTC, 2);
       return <span data-testid="tape">{trades.map((t) => t.price).join(',')}</span>;
     }
     const view = render(<Tape />);
     deliver([1, 2, 3, 4].map((n) => trade('BTC-USD', n, T0 - 1000 * (5 - n))));
+    expect(view.getByTestId('tape').textContent).toBe('');
+    act(() => {
+      vi.advanceTimersByTime(LIST_REFRESH_MS);
+    });
     expect(view.getByTestId('tape').textContent).toBe('4,3');
     act(() => {
       setCursor(T0 - 2500);

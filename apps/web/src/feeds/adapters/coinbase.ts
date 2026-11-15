@@ -1,8 +1,24 @@
-import type { AdapterContext, Bar, Channel, FeedAdapter, SymbolRef } from '../types';
-import { field, levels, list, parseFrame, str, time, type Json } from './parse';
+import type { AdapterContext, Bar, BarInterval, Channel, FeedAdapter, SymbolRef } from '../types';
+import { field, levels, list, num, parseFrame, str, time, type Json } from './parse';
+import { INTERVAL_MS, aggregate, getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
 
 const URL = 'wss://ws-feed.exchange.coinbase.com';
+const REST = 'https://api.exchange.coinbase.com';
+/** Coinbase serves at most 300 candles per request. */
+const CANDLE_LIMIT = 300;
+const MAX_PAGES = 5;
+/** Public REST allows about 10 requests per second per IP. */
+const restQueue = throttle(150);
+/** Supported granularities; 4h is built from 1h candles. */
+const GRANULARITY: Record<BarInterval, BarInterval> = {
+  '1m': '1m',
+  '5m': '5m',
+  '15m': '15m',
+  '1h': '1h',
+  '4h': '1h',
+  '1d': '1d',
+};
 /** Coinbase allows about 8 requests per second per IP; batch changes into one frame per gap. */
 const CONTROL_GAP_MS = 150;
 const MINUTE_MS = 60_000;
@@ -38,6 +54,40 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
 
   constructor(ctx: AdapterContext, createSocket: SocketFactory = browserSocket) {
     super(ctx, createSocket);
+  }
+
+  /** Candles from the public REST API, newest pages first, up to 1,500 per request. */
+  async fetchHistory(
+    symbol: SymbolRef,
+    interval: BarInterval,
+    from: number,
+    to: number,
+  ): Promise<Bar[]> {
+    const step = INTERVAL_MS[GRANULARITY[interval]];
+    const pageMs = CANDLE_LIMIT * step;
+    const bars: Bar[] = [];
+    let end = to;
+    for (let page = 0; page < MAX_PAGES && end > from; page += 1) {
+      const start = Math.max(from, end - pageMs);
+      const url = `${REST}/products/${productId(symbol)}/candles?granularity=${String(step / 1000)}&start=${new Date(start).toISOString()}&end=${new Date(end).toISOString()}`;
+      const rows = await restQueue(() => getJson(url));
+      if (!Array.isArray(rows)) throw new Error('candles response is not a list');
+      for (const row of rows) {
+        if (!Array.isArray(row)) continue;
+        // [time (s), low, high, open, close, volume]
+        bars.push({
+          ts: num(row[0]) * 1000,
+          low: num(row[1]),
+          high: num(row[2]),
+          open: num(row[3]),
+          close: num(row[4]),
+          volume: num(row[5]),
+        });
+      }
+      end = start - step;
+    }
+    const ordered = tidy(bars, from, to);
+    return interval === '4h' ? aggregate(ordered, INTERVAL_MS['4h']) : ordered;
   }
 
   supports(symbol: SymbolRef): boolean {

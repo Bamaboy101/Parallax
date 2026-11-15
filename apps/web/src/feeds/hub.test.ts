@@ -108,6 +108,7 @@ function startHub(registrations: AdapterRegistration[]) {
     },
     post: (message) => messages.push(message),
     log: () => undefined,
+    clockOffset: () => 0,
   };
   hub = new FeedHub(registrations, env);
   return hub;
