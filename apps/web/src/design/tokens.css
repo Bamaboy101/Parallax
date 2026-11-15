@@ -1,0 +1,112 @@
+/*
+ * Design tokens: the one file that drives every theme.
+ * Plan names (--bg, --panel, ...) are the source of truth; the @theme block maps them to
+ * Tailwind utilities (bg-panel, text-muted, border-line, ...).
+ */
+
+:root {
+  /* Colour: near-black blue base, colour reserved for meaning. */
+  --bg: #07090f;
+  --panel: #0e121b;
+  --line: #1c2331;
+  --text: #e6eaf2;
+  --muted: #7b8699;
+  --live: #3de0ff;
+  --up: #3ddc97;
+  --down: #ff5c7a;
+  --warn: #ffb547;
+
+  /* Type */
+  --font-ui: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  /* Shape: 4 px grid, 8 px panel radius, no shadows. */
+  --grid: 4px;
+  --panel-radius: 8px;
+
+  /* Density: Comfortable (default). */
+  --row-h: 28px;
+  --pad: 12px;
+  --size-ui: 13px;
+  --size-num: 13px;
+  --size-label: 11px;
+
+  /* Motion: always under 200 ms. */
+  --motion-pulse: 150ms;
+  --motion-fast: 120ms;
+
+  color-scheme: dark;
+}
+
+/* Second palette: blue up, orange down. For colour-blind users and markets where red means up. */
+:root[data-palette='blue-orange'] {
+  --up: #5b8cff;
+  --down: #ff8a3d;
+}
+
+:root[data-density='dense'] {
+  --row-h: 20px;
+  --pad: 8px;
+  --size-ui: 12px;
+  --size-num: 12px;
+  --size-label: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-pulse: 0ms;
+    --motion-fast: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+@theme inline {
+  /* Only token colours exist; Tailwind's default palette and shadows are removed. */
+  --color-*: initial;
+  --shadow-*: initial;
+  --drop-shadow-*: initial;
+  --inset-shadow-*: initial;
+
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-live: var(--live);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-warn: var(--warn);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-num);
+
+  --spacing: var(--grid);
+  --radius-panel: var(--panel-radius);
+
+  --text-ui: var(--size-ui);
+  --text-num: var(--size-num);
+  --text-label: var(--size-label);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--size-ui);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 1px;
+}
