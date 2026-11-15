@@ -12,7 +12,7 @@ export function buildDefaultLayout(api: DockviewApi): void {
   });
   api.addPanel({
     id: 'book',
-    component: 'placeholder',
+    component: 'book',
     title: 'Order book',
     position: { referencePanel: 'chart', direction: 'right' },
     initialWidth: 300,

@@ -100,22 +100,3 @@
     opacity: 1;
   }
 }
-
-.dock-placeholder {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: var(--pad);
-  background: var(--panel);
-}
-
-.dock-placeholder-mark {
-  width: 24px;
-  height: 24px;
-  margin-bottom: 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}

@@ -3,7 +3,6 @@ import {
   type DockviewApi,
   type DockviewReadyEvent,
   type DockviewTheme,
-  type IDockviewPanelProps,
 } from 'dockview-react';
 import { useEffect, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
@@ -18,19 +17,6 @@ const cockpitTheme: DockviewTheme = {
   className: 'dockview-theme-cockpit',
   gap: 4,
 };
-
-function PlaceholderPanel({ api }: IDockviewPanelProps) {
-  return (
-    <div className="dock-placeholder">
-      <span aria-hidden="true" className="dock-placeholder-mark" />
-      <span className="text-ui font-medium text-muted">{api.title}</span>
-      <span className="text-label text-muted">Empty panel</span>
-    </div>
-  );
-}
-
-/** Widgets, plus placeholders for panels whose widget is still to come (chart T9, book T10). */
-const components = { ...DOCK_COMPONENTS, placeholder: PlaceholderPanel };
 
 export function DockArea() {
   const [api, setApi] = useState<DockviewApi | null>(null);
@@ -66,7 +52,7 @@ export function DockArea() {
     <DockviewReact
       className="h-full"
       theme={cockpitTheme}
-      components={components}
+      components={DOCK_COMPONENTS}
       rightHeaderActionsComponent={PanelBadges}
       onReady={onReady}
     />
