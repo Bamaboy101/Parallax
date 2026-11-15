@@ -246,3 +246,25 @@ once. A feed with no alternative keeps retrying with backoff instead.
 
 Only the feed currently serving a subscription reaches the store, so two feeds' prices never mix
 in one series. The truth badge names that feed.
+
+## Widgets and the command bar
+
+A widget is a folder `apps/web/src/widgets/<id>/` with `meta.ts` (`meta: WidgetMeta`) and
+`index.tsx` (default export: the dockview panel component). `app/widgets.ts` finds both by file
+pattern, so adding a widget touches no shared file. `meta.input` tells the command bar what the
+widget accepts and where it lives in panel params: `symbol` (`params.symbol`, plus
+`params.interval` for charts), `symbols` (a list it adds to), `query` (free text) or `none`.
+
+The command bar (`command/`) opens on `/` or Ctrl/Cmd+K. `parser.ts` turns text into ranked
+suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.ts`);
+`app/commands.ts` carries the chosen command out on the dock.
+
+| Typed           | Does                                                                   |
+| --------------- | ---------------------------------------------------------------------- |
+| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)  |
+| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel          |
+| `watch sol`     | Adds SOL/USD to the open watchlist                                     |
+| `news tesla`    | Opens news filtered to "tesla", once a widget registers `news` (T15)   |
+| `layout <name>` | Replaces the panels with a preset (`default` now; four presets in T17) |
+
+Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.

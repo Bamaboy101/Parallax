@@ -6,6 +6,7 @@ import {
 } from 'dockview-react';
 import { useEffect, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
+import { setDockApi } from './dockApi';
 import { restoreLayout } from './dockLayout';
 import { PanelBadges } from './PanelBadges';
 import { DOCK_COMPONENTS } from './widgets';
@@ -23,6 +24,7 @@ export function DockArea() {
 
   const onReady = (event: DockviewReadyEvent) => {
     restoreLayout(event.api, useLayoutStore.getState().dock);
+    setDockApi(event.api);
     setApi(event.api);
   };
 

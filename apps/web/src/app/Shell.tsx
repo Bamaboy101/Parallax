@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Clock } from './Clock';
+import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
 import TickerRail from '../widgets/ticker-rail';
+import { Clock } from './Clock';
 import { DockArea } from './DockArea';
 
 /** Top bar, dock area, ticker rail. */
@@ -30,6 +31,9 @@ export function Shell() {
           <span />
         </div>
         <h1 className="text-ui font-medium tracking-tight text-text">Open Terminal</h1>
+        <div className="ml-4 min-w-0 flex-1 sm:max-w-80">
+          <CommandTrigger />
+        </div>
         <div className="ml-auto flex min-w-0 items-center gap-4">
           <Clock />
           <button
@@ -69,6 +73,7 @@ export function Shell() {
       <footer aria-label="Ticker rail" className="shell-rail">
         <TickerRail />
       </footer>
+      <CommandPalette />
     </div>
   );
 }

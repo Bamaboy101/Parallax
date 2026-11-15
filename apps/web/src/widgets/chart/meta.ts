@@ -4,8 +4,9 @@ export const meta: WidgetMeta = {
   id: 'chart',
   title: 'Chart',
   defaultSize: { width: 640, height: 420 },
-  aliases: ['chart', 'candles', 'c'],
+  aliases: ['chart', 'candles'],
   dock: true,
+  input: 'symbol',
 };
 
 export const DEFAULT_SYMBOL = 'BTC-USD';

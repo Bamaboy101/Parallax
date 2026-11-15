@@ -1,14 +1,6 @@
 import type { WidgetMeta } from '../types';
 
-export const meta: WidgetMeta = {
-  id: 'watchlist',
-  title: 'Watchlist',
-  defaultSize: { width: 320, height: 420 },
-  aliases: ['watchlist', 'watch', 'wl'],
-  dock: true,
-};
-
-/** Shown until the user edits the list (T11). */
+/** Shown until the user edits the list. */
 export const DEFAULT_SYMBOLS = [
   'BTC-USD',
   'ETH-USD',
@@ -20,3 +12,13 @@ export const DEFAULT_SYMBOLS = [
   'GBP-USD',
   'USD-JPY',
 ];
+
+export const meta: WidgetMeta = {
+  id: 'watchlist',
+  title: 'Watchlist',
+  defaultSize: { width: 320, height: 420 },
+  aliases: ['watchlist', 'watch', 'wl'],
+  dock: true,
+  input: 'symbols',
+  defaultParams: { symbols: DEFAULT_SYMBOLS },
+};

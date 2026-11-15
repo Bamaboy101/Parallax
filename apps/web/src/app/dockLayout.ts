@@ -25,6 +25,19 @@ export function buildDefaultLayout(api: DockviewApi): void {
   });
 }
 
+/** Layouts the command bar can switch to. The four workspace presets join in T17. */
+export const LAYOUT_PRESETS: Readonly<Record<string, (api: DockviewApi) => void>> = {
+  default: buildDefaultLayout,
+};
+
+export function applyPreset(api: DockviewApi, name: string): boolean {
+  const build = LAYOUT_PRESETS[name];
+  if (!build) return false;
+  api.clear();
+  build(api);
+  return true;
+}
+
 /**
  * Restore a saved layout, falling back to the default when there is none or it no longer loads
  * (for example, it names a component that was removed).

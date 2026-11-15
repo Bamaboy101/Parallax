@@ -6,6 +6,7 @@ export const meta: WidgetMeta = {
   defaultSize: { width: 0, height: 32 },
   aliases: ['rail', 'ticker'],
   dock: false,
+  input: 'none',
 };
 
 /** Headline instruments. ETF index proxies (SPY, QQQ, DIA, IWM) join with the equity feeds. */

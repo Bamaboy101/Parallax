@@ -6,6 +6,7 @@ export const meta: WidgetMeta = {
   defaultSize: { width: 300, height: 420 },
   aliases: ['book', 'orderbook', 'depth', 'ob'],
   dock: true,
+  input: 'symbol',
 };
 
 export const DEFAULT_SYMBOL = 'BTC-USD';
