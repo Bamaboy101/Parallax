@@ -1,0 +1,77 @@
+/* dockview theme built from the design tokens. Applied through the `cockpit` theme in DockArea. */
+
+.dockview-theme-cockpit {
+  color-scheme: dark;
+
+  /* Surfaces and text */
+  --dv-group-view-background-color: var(--panel);
+  --dv-tabs-and-actions-container-background-color: var(--panel);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--panel);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--panel);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--panel);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--panel);
+  --dv-activegroup-visiblepanel-tab-color: var(--text);
+  --dv-activegroup-hiddenpanel-tab-color: var(--muted);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--muted);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--muted);
+  --dv-tab-divider-color: var(--line);
+  --dv-separator-border: transparent;
+  --dv-paneview-header-border-color: var(--line);
+  --dv-paneview-active-outline-color: var(--live);
+  --dv-tabs-container-scrollbar-color: var(--line);
+  --dv-icon-hover-background-color: var(--line);
+
+  /* Drag and drop */
+  --dv-drag-over-background-color: color-mix(in oklab, var(--live) 12%, transparent);
+  --dv-drag-over-border-color: var(--live);
+  --dv-drag-over-border: none;
+  --dv-edge-dock-indicator-color: var(--live);
+  --dv-edge-drop-strip-size: 8px;
+  --dv-overlay-z-index: 999;
+
+  /* Sizes */
+  --dv-tabs-and-actions-container-height: var(--row-h);
+  --dv-tabs-and-actions-container-font-size: var(--size-label);
+  --dv-tab-font-size: inherit;
+  --dv-tab-margin: 0;
+  --dv-tab-close-icon-size: inherit;
+  --dv-spacing-padding: 0px;
+  --dv-border-radius: var(--panel-radius);
+  --dv-tab-border-radius: 0px;
+  --dv-sash-border-radius: 0px;
+  --dv-dropdown-border-radius: var(--panel-radius);
+
+  /* Sashes: invisible until active */
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: var(--live);
+  --dv-active-sash-transition-duration: var(--motion-fast);
+  --dv-active-sash-transition-delay: 0s;
+  --dv-transition-duration: var(--motion-fast);
+
+  /* Floating groups: no shadows, hairline border */
+  --dv-floating-box-shadow: none;
+  --dv-floating-border: 1px solid var(--line);
+  --dv-floating-group-border: none;
+  --dv-floating-group-dragging-opacity: 0.5;
+  --dv-floating-titlebar-height: 22px;
+  --dv-floating-titlebar-background-color: var(--panel);
+  --dv-floating-titlebar-border-bottom: var(--dv-floating-border);
+
+  background-color: var(--bg);
+}
+
+.dockview-theme-cockpit .dv-groupview {
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  overflow: hidden;
+}
+
+.dockview-theme-cockpit .dv-tabs-and-actions-container {
+  border-bottom: 1px solid var(--line);
+}
+
+.dockview-theme-cockpit .dv-tab {
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}

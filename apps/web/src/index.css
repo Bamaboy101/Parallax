@@ -1,2 +1,4 @@
 @import 'tailwindcss';
+@import 'dockview-react/dist/styles/dockview.css';
 @import './design/tokens.css';
+@import './design/dockview.css';
