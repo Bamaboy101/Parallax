@@ -1,9 +1,9 @@
 import { badgeLabel, badgeTone, type BadgeTone, type Freshness } from './format';
 
 const toneClass: Record<BadgeTone, string> = {
-  live: 'border-live/40 text-live',
-  warn: 'border-warn/40 text-warn',
-  offline: 'border-line text-muted',
+  live: 'border-live/20 bg-live/5 text-live',
+  warn: 'border-warn/20 bg-warn/5 text-warn',
+  offline: 'border-line bg-bg text-muted',
 };
 
 interface BadgeProps {
@@ -20,11 +20,12 @@ export function Badge({ freshness, source }: BadgeProps) {
     <span
       data-tone={tone}
       title={`${label} · ${source}`}
-      className={`inline-flex h-5 shrink-0 items-center gap-1.5 rounded-full border px-2 font-mono text-label leading-none whitespace-nowrap ${toneClass[tone]}`}
+      className={`truth-badge inline-flex shrink-0 items-center gap-1 rounded-full border px-1 font-mono text-label leading-none tabular-nums whitespace-nowrap ${toneClass[tone]}`}
     >
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      <span aria-hidden className="size-1 shrink-0 rounded-full bg-current" />
       <span>{label}</span>
-      <span className="text-muted uppercase">{source}</span>
+      <span aria-hidden className="h-2 w-px bg-current opacity-20" />
+      <span className="font-sans text-muted">{source}</span>
     </span>
   );
 }

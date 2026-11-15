@@ -14,14 +14,15 @@ const SAVE_DELAY_MS = 250;
 const cockpitTheme: DockviewTheme = {
   name: 'cockpit',
   className: 'dockview-theme-cockpit',
-  colorScheme: 'dark',
   gap: 4,
 };
 
 function PlaceholderPanel({ api }: IDockviewPanelProps) {
   return (
-    <div className="flex h-full items-center justify-center bg-panel text-label text-muted">
-      {api.title} · empty
+    <div className="dock-placeholder">
+      <span aria-hidden="true" className="dock-placeholder-mark" />
+      <span className="text-ui font-medium text-muted">{api.title}</span>
+      <span className="text-label text-muted">Empty panel</span>
     </div>
   );
 }

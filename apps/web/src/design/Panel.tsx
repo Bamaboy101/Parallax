@@ -16,10 +16,8 @@ export function Panel({ title, badge, actions, children }: PanelProps) {
       aria-label={title}
       className="flex h-full min-h-0 flex-col overflow-hidden rounded-panel border border-line bg-panel"
     >
-      <header className="flex h-(--row-h) shrink-0 items-center gap-2 border-b border-line px-(--pad)">
-        <h2 className="truncate text-label font-medium tracking-wider text-muted uppercase">
-          {title}
-        </h2>
+      <header className="flex h-(--row-h) shrink-0 items-center gap-2 border-b border-line bg-bg/20 px-(--pad)">
+        <h2 className="min-w-0 truncate text-ui font-medium text-text">{title}</h2>
         <div className="ml-auto flex items-center gap-2">
           {badge}
           {actions}

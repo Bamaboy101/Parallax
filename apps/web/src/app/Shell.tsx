@@ -1,20 +1,73 @@
+import { useState } from 'react';
 import { Clock } from './Clock';
 import { DockArea } from './DockArea';
 
 /** Top bar, dock area, ticker rail. */
 export function Shell() {
+  const [theme, setTheme] = useState(() =>
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+  );
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    const root = document.documentElement;
+    root.dataset.theme = next;
+    root.style.colorScheme = next;
+    root.style.removeProperty('background-color');
+    setTheme(next);
+    try {
+      localStorage.setItem('open-terminal:theme', next);
+    } catch {
+      // The switch still works for this visit when storage is unavailable.
+    }
+  };
+
   return (
     <div className="grid h-dvh grid-rows-[auto_1fr_auto] bg-bg">
-      <header className="flex h-9 items-center gap-4 border-b border-line px-3">
-        <h1 className="text-label font-medium tracking-wider text-text uppercase">Open Terminal</h1>
-        <div className="ml-auto flex items-center gap-4">
+      <header className="shell-topbar">
+        <div aria-hidden="true" className="shell-mark">
+          <span />
+        </div>
+        <h1 className="text-ui font-medium tracking-tight text-text">Open Terminal</h1>
+        <div className="ml-auto flex min-w-0 items-center gap-4">
           <Clock />
+          <button
+            type="button"
+            className="theme-switch"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            onClick={toggleTheme}
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+                </>
+              ) : (
+                <path d="M20.5 14.5A9 9 0 0 1 9.5 3.5a9 9 0 1 0 11 11Z" />
+              )}
+            </svg>
+          </button>
         </div>
       </header>
-      <main className="min-h-0 p-1">
+      <main className="min-h-0 min-w-0 p-2">
         <DockArea />
       </main>
-      <footer aria-label="Ticker rail" className="h-8 border-t border-line" />
+      <footer aria-label="Ticker rail" className="shell-rail">
+        <span className="text-label text-muted">Drag tabs to arrange your desk</span>
+      </footer>
     </div>
   );
 }

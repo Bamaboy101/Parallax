@@ -1,18 +1,22 @@
 /* dockview theme built from the design tokens. Applied through the `cockpit` theme in DockArea. */
 
 .dockview-theme-cockpit {
-  color-scheme: dark;
+  color-scheme: inherit;
 
   /* Surfaces and text */
   --dv-group-view-background-color: var(--panel);
-  --dv-tabs-and-actions-container-background-color: var(--panel);
+  --dv-tabs-and-actions-container-background-color: color-mix(
+    in oklab,
+    var(--bg) 20%,
+    var(--panel)
+  );
   --dv-activegroup-visiblepanel-tab-background-color: var(--panel);
   --dv-activegroup-hiddenpanel-tab-background-color: var(--panel);
   --dv-inactivegroup-visiblepanel-tab-background-color: var(--panel);
   --dv-inactivegroup-hiddenpanel-tab-background-color: var(--panel);
   --dv-activegroup-visiblepanel-tab-color: var(--text);
   --dv-activegroup-hiddenpanel-tab-color: var(--muted);
-  --dv-inactivegroup-visiblepanel-tab-color: var(--muted);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--text);
   --dv-inactivegroup-hiddenpanel-tab-color: var(--muted);
   --dv-tab-divider-color: var(--line);
   --dv-separator-border: transparent;
@@ -53,7 +57,7 @@
   --dv-floating-border: 1px solid var(--line);
   --dv-floating-group-border: none;
   --dv-floating-group-dragging-opacity: 0.5;
-  --dv-floating-titlebar-height: 22px;
+  --dv-floating-titlebar-height: var(--row-h);
   --dv-floating-titlebar-background-color: var(--panel);
   --dv-floating-titlebar-border-bottom: var(--dv-floating-border);
 
@@ -71,7 +75,47 @@
 }
 
 .dockview-theme-cockpit .dv-tab {
+  font-family: var(--font-ui);
   font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.dockview-theme-cockpit .dv-tab.dv-active-tab {
+  border-bottom: 1px solid var(--live);
+}
+
+.dockview-theme-cockpit .dv-default-tab-action {
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+}
+
+.dockview-theme-cockpit .dv-tab:hover .dv-default-tab-action,
+.dockview-theme-cockpit .dv-tab:focus-within .dv-default-tab-action,
+.dockview-theme-cockpit .dv-default-tab-action:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .dockview-theme-cockpit .dv-default-tab-action {
+    opacity: 1;
+  }
+}
+
+.dock-placeholder {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--pad);
+  background: var(--panel);
+}
+
+.dock-placeholder-mark {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
 }

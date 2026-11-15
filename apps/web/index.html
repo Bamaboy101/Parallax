@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Terminal</title>
+    <script>
+      (() => {
+        let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        try {
+          const saved = localStorage.getItem('open-terminal:theme');
+          if (saved === 'dark' || saved === 'light') theme = saved;
+        } catch {
+          // Storage may be blocked; the system preference still applies.
+        }
+        const root = document.documentElement;
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+        root.style.backgroundColor = theme === 'dark' ? '#0d0d0d' : '#f0f0f0';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
