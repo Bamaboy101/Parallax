@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MARKETS, sessionState, sessionsOnClock, utcOffset, type Market } from './markets';
+import { MARKETS, sessionState, sessionsOnClock, utcOffset, type Market } from './sessions';
 
 function market(id: string): Market {
   const found = MARKETS.find((candidate) => candidate.id === id);
@@ -11,6 +11,10 @@ const tokyo = market('tokyo');
 const london = market('london');
 const newYork = market('new-york');
 const crypto = market('crypto');
+const hongKong = market('hong-kong');
+const frankfurt = market('frankfurt');
+const sydney = market('sydney');
+const mumbai = market('mumbai');
 
 describe('sessionState', () => {
   it('reads each exchange in its own time zone, daylight saving included', () => {
@@ -34,6 +38,16 @@ describe('sessionState', () => {
       open: false,
       minutesToChange: 30,
     });
+  });
+
+  it('closes Hong Kong for lunch and keeps each new exchange in its own zone', () => {
+    // Tuesday 17 Nov 2026, 04:30 UTC: 12:30 in Hong Kong (lunch, reopens 13:00), 10:00 in Mumbai,
+    // 15:30 in Sydney (AEDT, UTC+11), 05:30 in Frankfurt.
+    const now = Date.parse('2026-11-17T04:30:00Z');
+    expect(sessionState(hongKong, now)).toEqual({ open: false, minutesToChange: 30 });
+    expect(sessionState(mumbai, now)).toEqual({ open: true, minutesToChange: 330 });
+    expect(sessionState(sydney, now)).toEqual({ open: true, minutesToChange: 30 });
+    expect(sessionState(frankfurt, now)).toEqual({ open: false, minutesToChange: 210 });
   });
 
   it('counts over the weekend to Monday’s open', () => {

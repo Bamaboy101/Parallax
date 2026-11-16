@@ -1,0 +1,49 @@
+{
+  "id": "europe",
+  "title": "Europe",
+  "description": "EUR, GBP and CHF live first, then European indices through US-listed proxies, the ECB and BoE odds and the session clock.",
+  "panels": [
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": {
+        "symbols": ["EUR-USD", "GBP-USD", "USD-CHF", "EUR-GBP", "EUR-CHF"],
+        "link": 1
+      }
+    },
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "EUR-USD", "interval": "1h", "link": 1 },
+      "position": { "referencePanel": "watchlist", "direction": "right" }
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "euro" },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 380
+    },
+    {
+      "id": "predictions",
+      "component": "predictions",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "below" },
+      "height": 300
+    },
+    {
+      "id": "europe",
+      "component": "europe",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "below" },
+      "height": 560
+    }
+  ]
+}

@@ -13,7 +13,15 @@ export interface Market {
 
 const at = (hours: number, minutes = 0) => hours * 60 + minutes;
 
+/** Ordered as the trading day moves west: Sydney opens first, New York closes last. */
 export const MARKETS: readonly Market[] = [
+  // ASX: normal trading 10:00–16:00 (the closing auction runs a few minutes past 16:00).
+  {
+    id: 'sydney',
+    name: 'Sydney',
+    timeZone: 'Australia/Sydney',
+    sessions: [[at(10), at(16)]],
+  },
   // Tokyo Stock Exchange: morning and afternoon sessions, close at 15:30 since November 2024.
   {
     id: 'tokyo',
@@ -24,6 +32,25 @@ export const MARKETS: readonly Market[] = [
       [at(12, 30), at(15, 30)],
     ],
   },
+  // HKEX: morning and afternoon sessions with a lunch break.
+  {
+    id: 'hong-kong',
+    name: 'Hong Kong',
+    timeZone: 'Asia/Hong_Kong',
+    sessions: [
+      [at(9, 30), at(12)],
+      [at(13), at(16)],
+    ],
+  },
+  // NSE and BSE: normal market 09:15–15:30 IST.
+  { id: 'mumbai', name: 'Mumbai', timeZone: 'Asia/Kolkata', sessions: [[at(9, 15), at(15, 30)]] },
+  // Xetra, where the DAX is calculated: 09:00–17:30 CET/CEST.
+  {
+    id: 'frankfurt',
+    name: 'Frankfurt',
+    timeZone: 'Europe/Berlin',
+    sessions: [[at(9), at(17, 30)]],
+  },
   { id: 'london', name: 'London', timeZone: 'Europe/London', sessions: [[at(8), at(16, 30)]] },
   {
     id: 'new-york',
@@ -33,6 +60,10 @@ export const MARKETS: readonly Market[] = [
   },
   { id: 'crypto', name: 'Crypto', sessions: [] },
 ];
+
+export function market(id: string): Market | undefined {
+  return MARKETS.find((candidate) => candidate.id === id);
+}
 
 const DAY = 24 * 60;
 const formatters = new Map<string, Intl.DateTimeFormat>();
@@ -103,4 +134,12 @@ export function sessionsOnClock(
     const start = (((open + shift) % DAY) + DAY) % DAY;
     return [start, start + (close - open)] as const;
   });
+}
+
+/** 75 → '1h 15m'; 1500 → '1d 1h'. */
+export function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours >= 24) return `${String(Math.floor(hours / 24))}d ${String(hours % 24)}h`;
+  return hours > 0 ? `${String(hours)}h ${String(rest)}m` : `${String(rest)}m`;
 }

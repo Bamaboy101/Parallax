@@ -133,6 +133,49 @@ tools. Its WebSocket requires an API key even for public channels, its REST answ
 several seconds, and it answers 403 to requests from our origin. It stays out until Kalshi gives
 written permission.
 
+## Taiwan Stock Exchange open data: TAIEX (`store/taiex.ts`)
+
+- The only free source of a non-US index level we found whose terms allow display in a public
+  app (survey of 17 Nov 2026, below). Dataset "Weighted Stock Price Index Historical Data"
+  (data.gov.tw dataset 11755), Securities and Futures Bureau, Financial Supervisory Commission,
+  under the Open Government Data License, version 1.0: a "royalty-free copyright license to
+  reproduce, distribute, publicly transmit… for any purpose", on condition of the attribution in
+  its Exhibit, which the Asia-Pacific board prints word for word with a link to
+  https://data.gov.tw/license. TWSE's own website terms exempt data it has authorised the open-data
+  platform to publish.
+- `https://www.twse.com.tw/indicesReport/MI_5MINS_HIST?response=open_data` (keyless CSV, current
+  month; `&date=YYYYMM01` for another month) answers with `Access-Control-Allow-Origin: *`, so the
+  browser reads it directly, hourly. Dates are in the ROC calendar (year 115 = 2026). On a month's
+  first trading day the previous close comes from last month's file. Badge: `EOD · twse`.
+
+## Index levels: what a licence would unlock (M9)
+
+Survey of 17 Nov 2026, each provider's own terms. No other free source allows public display of
+the remaining 19 indices, so the Europe and Asia-Pacific boards show US-listed ETF proxies
+("proxy, US hours only") with "official index level needs a licence":
+
+| Index                       | Proxy         | Who licenses the level                  | Route to official levels                                                                                                                                                                                                                                                                                                   |
+| --------------------------- | ------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nikkei 225                  | EWJ           | Nikkei Inc.                             | **Nikkei's "Closing Price Display" application** (indexes.nikkei.co.jp, display usage): "You may use the data with our permission and approval"; fee not published. FRED's `NIKKEI225` series also needs Nikkei's permission to redistribute.                                                                              |
+| CAC 40, AEX                 | EWQ, EWN      | Euronext                                | **Euronext market data agreement (EMDDA)**: public display needs "prior written approval from Euronext for each Website"; delayed index redistribution is a paid licence (€423.10 for all indices in the 1 Apr 2026 fee schedule). Ask whether after-midnight (end-of-day) display for a free, open-source site is waived. |
+| TOPIX                       | EWJ           | JPX                                     | Index licence for display to third parties.                                                                                                                                                                                                                                                                                |
+| DAX, Euro Stoxx 50, SMI     | EWG, FEZ, EWL | STOXX / Deutsche Börse; SIX             | Data licence; site data is view-only.                                                                                                                                                                                                                                                                                      |
+| FTSE 100, FTSE MIB, STI     | EWU, EWI, EWS | FTSE Russell (LSEG)                     | Data licence; website data is personal use only.                                                                                                                                                                                                                                                                           |
+| IBEX 35                     | EWP           | BME (SIX)                               | Data licence.                                                                                                                                                                                                                                                                                                              |
+| Hang Seng                   | EWH           | Hang Seng Indexes (via HKEX)            | Licence agreement with HSIL.                                                                                                                                                                                                                                                                                               |
+| Shanghai Composite, CSI 300 | FXI, MCHI     | China Securities Index / SSE (via HKEX) | Licence.                                                                                                                                                                                                                                                                                                                   |
+| KOSPI                       | EWY           | Korea Exchange                          | KRX Open API bars providing data to third parties; licence needed.                                                                                                                                                                                                                                                         |
+| Sensex, Nifty 50            | INDA          | BSE / NSE Indices                       | Licence (terms pages unreadable without JavaScript; not confirmed).                                                                                                                                                                                                                                                        |
+| ASX 200                     | EWA           | S&P Dow Jones Indices / ASX             | Licence.                                                                                                                                                                                                                                                                                                                   |
+| NZX 50                      | ENZL          | NZX / S&P DJI                           | Paid distribution licence (end of day via S&P).                                                                                                                                                                                                                                                                            |
+
+Free sources checked and ruled out by their own terms: Stooq (no redistribution), EODHD (no public
+display, even free or non-profit), Financial Modeling Prep (no display on websites), Twelve Data
+free (internal non-display, US only), Finnhub free (personal use, US only), Alpha Vantage (index
+data is premium; personal use), Tiingo and Nasdaq Data Link (internal use), Massive/Polygon (no
+coverage), data.go.kr and BoK ECOS for KOSPI (no third parties). When a licence arrives, its index
+gets an official row like TAIEX's (`official` in `widgets/regionBoards.ts`) and keeps its proxy.
+
 ## US market hours
 
 Equity feeds turn stale after 30 s without a message, counted only during the regular session

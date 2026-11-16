@@ -207,7 +207,8 @@
   fill: none;
   stroke: var(--muted);
   stroke-linecap: round;
-  stroke-width: 6;
+  /* Eight rings 7 units apart: arcs stay narrower than the gap. */
+  stroke-width: 4.5;
   opacity: 0.45;
 }
 

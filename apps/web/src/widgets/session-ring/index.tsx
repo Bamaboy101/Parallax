@@ -1,12 +1,19 @@
 import '../../design/panels.css';
 import { useCursor } from '../../store/hooks';
 import { useNow } from '../useNow';
-import { MARKETS, localTime, sessionState, sessionsOnClock } from './markets';
+import {
+  formatDuration,
+  localTime,
+  MARKETS,
+  sessionState,
+  sessionsOnClock,
+} from '../../store/sessions';
 
 const TICK_MS = 30_000;
 const DAY = 24 * 60;
 const CENTER = 100;
-const RADII = [84, 70, 56, 42];
+/** One ring per market, outermost first; the core circle is r = 31. */
+const RADII = [86, 79, 72, 65, 58, 51, 44, 37];
 
 /** Minute of the day → [x, y] on a circle, midnight at the top, clockwise. */
 function coords(minute: number, radius: number): [number, number] {
@@ -30,13 +37,6 @@ function arc(start: number, end: number, radius: number): string {
   }
   const large = end - start > DAY / 2 ? '1' : '0';
   return `M ${point(start, radius)} A ${r} ${r} 0 ${large} 1 ${point(end, radius)}`;
-}
-
-function duration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  if (hours >= 24) return `${String(Math.floor(hours / 24))}d ${String(hours % 24)}h`;
-  return hours > 0 ? `${String(hours)}h ${String(rest)}m` : `${String(rest)}m`;
 }
 
 const clock = (minute: number) =>
@@ -147,7 +147,7 @@ export default function SessionRing() {
             <span className="session-next">
               {state.minutesToChange === undefined
                 ? 'always on'
-                : `${state.open ? 'closes' : 'opens'} in ${duration(state.minutesToChange)}`}
+                : `${state.open ? 'closes' : 'opens'} in ${formatDuration(state.minutesToChange)}`}
             </span>
             <span className="session-local" title={market.timeZone ?? 'Continuous trading'}>
               {local ?? '24/7'}

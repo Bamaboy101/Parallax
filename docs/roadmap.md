@@ -28,6 +28,11 @@ be checked against the provider's own docs before building.
   EWI, EWL, EWN, VGK; EWJ, EWH, FXI, MCHI, EWY, EWT, INDA, EWS; EWA, ENZL) labelled "proxy, US
   hours only"; Sydney, Frankfurt, Hong Kong and Mumbai on the Session ring; Europe and
   Asia-Pacific workspaces.
+  Built 17 Nov: the survey found one compliant free source, TWSE open data for TAIEX (official
+  close); the other 19 show their ETF proxy with "official index level needs a licence". Each
+  board and workspace leads with the region's live Kraken pairs (EUR/USD, GBP/USD, USD/CHF;
+  USD/JPY, AUD/USD), and says so while the region trades and New York is closed. The licences that
+  would unlock official levels are listed in data-sources.md.
 - **M2 Options:** chain, implied-volatility smile, put/call ratio for US stocks and ETFs. Source:
   Alpaca indicative options feed (confirm on the free plan). User's Alpaca key.
 - **M3 Rates desk:** full Treasury yield curve with history, SOFR, Fed funds path. Source: US

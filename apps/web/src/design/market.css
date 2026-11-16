@@ -345,6 +345,47 @@
   text-align: right;
 }
 
+/* Regional boards (M9): index | source | last | change. */
+.region-columns {
+  grid-template-columns: minmax(96px, 1.3fr) minmax(96px, 1.1fr) minmax(64px, 0.9fr) 64px;
+}
+
+.region-market,
+.region-source {
+  display: grid;
+  min-width: 0;
+}
+
+.region-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 4px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.region-note {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-row.region-columns {
+  min-height: calc(var(--row-h) + 12px);
+}
+
+.region-open {
+  margin: 0;
+  padding: 8px var(--pad);
+  border-block: 1px solid var(--line);
+  color: var(--text);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
 @container (max-width: 360px) {
   .markets-columns {
     grid-template-columns: minmax(64px, 1.2fr) minmax(52px, 0.9fr) minmax(56px, 1fr) minmax(
