@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCursor } from '../store/hooks';
-import { REWIND_MS } from '../store/ticks';
+import { HISTORY_SINCE, REWIND_MS } from '../store/ticks';
 
-/** The terminal keeps what it has seen since the page opened, up to an hour. */
-const OPENED_AT = Date.now();
 const STEP_MS = 5_000;
 
 const clock = new Intl.DateTimeFormat(undefined, {
@@ -39,7 +37,7 @@ function useSecond(): number {
 export function RewindScrubber() {
   const [cursor, setCursor] = useCursor();
   const now = useSecond();
-  const start = Math.max(OPENED_AT, now - REWIND_MS);
+  const start = Math.max(HISTORY_SINCE, now - REWIND_MS);
   const value = cursor ?? now;
   const live = cursor === null;
   const label = live ? 'Live' : `−${ago(now - value)} · ${clock.format(value)}`;

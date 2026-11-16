@@ -8,6 +8,7 @@ import { DockArea } from './DockArea';
 import { RewindScrubber } from './RewindScrubber';
 import { useMarketWeather } from './weather';
 import { widgetMeta } from './widgets';
+import { WorkspaceMenu } from './WorkspaceMenu';
 
 function openSettings(): void {
   const settings = widgetMeta('settings');
@@ -45,6 +46,7 @@ export function Shell() {
         <div className="ml-4 min-w-0 flex-1 sm:max-w-80">
           <CommandTrigger />
         </div>
+        <WorkspaceMenu />
         <div className="ml-auto flex min-w-0 items-center gap-4">
           <RewindScrubber />
           <ConnectionStatus />

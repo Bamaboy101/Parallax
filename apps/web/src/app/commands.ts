@@ -4,7 +4,7 @@ import type { Instrument } from '../store/symbols';
 import type { WidgetMeta } from '../widgets/types';
 import { dockApi } from './dockApi';
 import { applyPreset } from './dockLayout';
-import { widgetMeta } from './widgets';
+import { panelTitle, widgetMeta } from './widgets';
 
 type Params = Record<string, unknown>;
 
@@ -24,12 +24,12 @@ function addToList(panel: IDockviewPanel, meta: WidgetMeta, symbol: Instrument):
 }
 
 /** Open a widget as a new tab beside the active panel. */
-function openWidget(api: DockviewApi, widget: WidgetMeta, params: Params, title: string): void {
+function openWidget(api: DockviewApi, widget: WidgetMeta, params: Params): void {
   const active = api.activePanel;
   api.addPanel({
     id: `${widget.id}-${crypto.randomUUID().slice(0, 8)}`,
     component: widget.id,
-    title,
+    title: panelTitle(widget, params),
     params: { ...widget.defaultParams, ...params },
     ...(active ? { position: { referencePanel: active.id, direction: 'within' as const } } : {}),
   });
@@ -50,7 +50,7 @@ export function runCommand(command: Command): boolean {
       if (widget.input === 'none') {
         const existing = api.panels.find((panel) => panel.api.component === widget.id);
         if (existing) existing.api.setActive();
-        else openWidget(api, widget, {}, widget.title);
+        else openWidget(api, widget, {});
         return true;
       }
       if (widget.input === 'symbols') {
@@ -62,7 +62,7 @@ export function runCommand(command: Command): boolean {
         }
         const base = symbolList(widget.defaultParams?.symbols);
         const symbols = symbol && !base.includes(symbol.id) ? [...base, symbol.id] : base;
-        openWidget(api, widget, { symbols }, widget.title);
+        openWidget(api, widget, { symbols });
         return true;
       }
       const params: Params = {
@@ -70,8 +70,7 @@ export function runCommand(command: Command): boolean {
         ...(interval ? { interval } : {}),
         ...(query ? { query } : {}),
       };
-      const label = symbol?.label ?? query;
-      openWidget(api, widget, params, label ? `${widget.title} · ${label}` : widget.title);
+      openWidget(api, widget, params);
       return true;
     }
 
@@ -79,8 +78,9 @@ export function runCommand(command: Command): boolean {
       const active = api.activePanel;
       const meta = active ? widgetMeta(active.api.component) : undefined;
       if (active && meta?.input === 'symbol') {
-        active.api.updateParameters({ ...paramsOf(active), symbol: command.symbol.id });
-        active.api.setTitle(`${meta.title} · ${command.symbol.label}`);
+        const params = { ...paramsOf(active), symbol: command.symbol.id };
+        active.api.updateParameters(params);
+        active.api.setTitle(panelTitle(meta, params));
         return true;
       }
       if (active && meta?.input === 'symbols') {
@@ -90,12 +90,7 @@ export function runCommand(command: Command): boolean {
       // Nothing symbol-shaped is focused: open a chart for it.
       const chart = widgetMeta('chart');
       if (!chart) return false;
-      openWidget(
-        api,
-        chart,
-        { symbol: command.symbol.id },
-        `${chart.title} · ${command.symbol.label}`,
-      );
+      openWidget(api, chart, { symbol: command.symbol.id });
       return true;
     }
   }

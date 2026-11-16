@@ -338,15 +338,34 @@ The command bar (`command/`) opens on `/` or Ctrl/Cmd+K. `parser.ts` turns text 
 suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.ts`);
 `app/commands.ts` carries the chosen command out on the dock.
 
-| Typed           | Does                                                                   |
-| --------------- | ---------------------------------------------------------------------- |
-| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)  |
-| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel          |
-| `watch sol`     | Adds SOL/USD to the open watchlist                                     |
-| `news tesla`    | Opens news filtered to "tesla", once a widget registers `news` (T15)   |
-| `layout <name>` | Replaces the panels with a preset (`default` now; four presets in T17) |
+| Typed           | Does                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart) |
+| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel         |
+| `watch sol`     | Adds SOL/USD to the open watchlist                                    |
+| `news tesla`    | Opens News searching for "tesla"                                      |
+| `settings`      | Opens (or focuses) a widget that takes no input                       |
+| `layout crypto` | Replaces the panels with a workspace preset                           |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
+
+## Workspaces
+
+- **Presets** are JSON files in `apps/web/src/workspaces/` (`overview`, `crypto`, `equities`,
+  `macro`): each lists panels with their widget, params (symbol, interval, query, list, link
+  group), and position relative to an earlier panel. `buildWorkspace` lays one out; titles come
+  from `panelTitle`. Adding a preset is one JSON file (plus its place in `ORDER`). Overview is
+  the first-visit layout and the fallback when a saved layout no longer loads.
+- **Switcher**: the top-bar Workspace menu, or `layout <name>` in the command bar.
+- **Files**: Download writes `{ app, kind: 'workspace', v: 1, dock, at? }` (`dock` is
+  dockview's own layout JSON). Open accepts that or a bare dockview layout; a file that does not
+  load leaves the current layout untouched.
+- **Share links**: the same object, deflate-raw compressed and base64url-encoded, in the URL
+  hash (`#w=…`), so it never reaches a server (about 0.7 KB for the Crypto desk). Opening one
+  replaces the layout, then removes the hash so a reload shows the user's own layout. The link
+  carries the sender's Rewind moment, but Rewind can only replay what the recipient's browser
+  has seen since it opened (nothing is stored on a server). So a moment from before the page
+  opened is reported and the panels stay live; it applies when it is within the page's history.
 
 ## Edge Worker
 

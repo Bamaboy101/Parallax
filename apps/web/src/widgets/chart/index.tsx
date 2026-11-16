@@ -3,6 +3,7 @@ import {
   CandlestickSeries,
   ColorType,
   HistogramSeries,
+  TickMarkType,
   createChart,
   type IChartApi,
   type ISeriesApi,
@@ -57,7 +58,16 @@ const timeOfDay = new Intl.DateTimeFormat(undefined, {
   hourCycle: 'h23',
 });
 const dayOfYear = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+const year = new Intl.DateTimeFormat(undefined, { year: 'numeric' });
 const full = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
+/** Axis labels by tick kind: the year at a year boundary, the date at a day, else the time. */
+function tickLabel(time: Time, kind: TickMarkType): string {
+  const at = fromTime(time);
+  if (kind === TickMarkType.Year) return year.format(at);
+  if (kind === TickMarkType.Month || kind === TickMarkType.DayOfMonth) return dayOfYear.format(at);
+  return timeOfDay.format(at);
+}
 
 interface Handles {
   chart: IChartApi;
@@ -137,7 +147,6 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
 
   const container = useRef<HTMLDivElement>(null);
   const handles = useRef<Handles | null>(null);
-  const daily = interval === '1d';
 
   // Create the chart once; follow theme and palette switches.
   useEffect(() => {
@@ -146,7 +155,7 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
     const chart = createChart(element, {
       autoSize: true,
       localization: { timeFormatter: (time: Time) => full.format(fromTime(time)) },
-      timeScale: { rightOffset: 4, secondsVisible: false },
+      timeScale: { rightOffset: 4, secondsVisible: false, tickMarkFormatter: tickLabel },
     });
     const created: Handles = {
       chart,
@@ -173,14 +182,6 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
       chart.remove();
     };
   }, []);
-
-  useEffect(() => {
-    handles.current?.chart.applyOptions({
-      timeScale: {
-        tickMarkFormatter: (time: Time) => (daily ? dayOfYear : timeOfDay).format(fromTime(time)),
-      },
-    });
-  }, [daily]);
 
   useEffect(() => {
     const step = 10 ** -item.decimals;

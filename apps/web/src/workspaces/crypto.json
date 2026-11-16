@@ -1,0 +1,53 @@
+{
+  "id": "crypto",
+  "title": "Crypto",
+  "description": "Crypto desk: chart, depth and prints, plus the Constellation. Works without a key.",
+  "panels": [
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "BTC-USD", "interval": "15m", "link": 1 }
+    },
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": {
+        "symbols": [
+          "BTC-USD",
+          "ETH-USD",
+          "SOL-USD",
+          "XRP-USD",
+          "DOGE-USD",
+          "ADA-USD",
+          "AVAX-USD",
+          "LINK-USD",
+          "PAXG-USD",
+          "BTC-USDT",
+          "ETH-USDT"
+        ],
+        "link": 1
+      },
+      "position": { "referencePanel": "chart", "direction": "left" },
+      "width": 340
+    },
+    {
+      "id": "constellation",
+      "component": "constellation",
+      "params": { "link": 1 },
+      "position": { "referencePanel": "watchlist", "direction": "below" }
+    },
+    {
+      "id": "book",
+      "component": "book",
+      "params": { "symbol": "BTC-USD", "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 320
+    },
+    {
+      "id": "tape",
+      "component": "tape",
+      "params": { "symbol": "BTC-USD", "link": 1 },
+      "position": { "referencePanel": "book", "direction": "below" }
+    }
+  ]
+}

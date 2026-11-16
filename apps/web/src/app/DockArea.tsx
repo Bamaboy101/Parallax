@@ -11,6 +11,7 @@ import { restoreLayout } from './dockLayout';
 import { useLinkFollower } from './links';
 import { PanelBadges } from './PanelBadges';
 import { DOCK_COMPONENTS } from './widgets';
+import { openSharedWorkspace } from './workspace';
 
 const SAVE_DELAY_MS = 250;
 
@@ -28,6 +29,8 @@ export function DockArea() {
     restoreLayout(event.api, useLayoutStore.getState().dock);
     setDockApi(event.api);
     setApi(event.api);
+    // A share link replaces the restored layout once it has been decoded.
+    void openSharedWorkspace(event.api, window.location, window.history);
   };
 
   // Persist the layout: debounced while dragging, flushed when the page is hidden.

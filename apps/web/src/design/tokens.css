@@ -251,6 +251,98 @@ body {
     var(--bg);
 }
 
+/* Workspace menu in the top bar: presets, share link, layout file. */
+.workspace {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workspace-menu > summary {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  color: var(--text);
+  font-size: var(--size-label);
+  list-style: none;
+  cursor: pointer;
+}
+
+.workspace-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.workspace-menu[open] > summary,
+.workspace-menu > summary:hover {
+  border-color: var(--live);
+}
+
+.workspace-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 900;
+  display: grid;
+  gap: 4px;
+  width: 320px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+}
+
+.workspace-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-panel button {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--size-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-panel button:hover,
+.workspace-panel button:focus-visible {
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+  outline: none;
+}
+
+.workspace-name {
+  font-weight: 500;
+}
+
+.workspace-description {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.workspace-actions {
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.workspace-notice {
+  overflow: hidden;
+  max-width: 32ch;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Rewind scrubber in the top bar. */
 .rewind {
   display: flex;

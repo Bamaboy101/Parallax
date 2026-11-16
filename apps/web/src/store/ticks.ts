@@ -7,6 +7,9 @@ import { RingBuffer } from './ringBuffer';
 /** How far back Rewind can go. */
 export const REWIND_MS = 60 * 60_000;
 
+/** The store holds only what this page has seen: Rewind cannot reach before it opened. */
+export const HISTORY_SINCE = Date.now();
+
 /** What the store holds per channel: raw events, except the book, which is rebuilt. */
 export interface TickOf {
   trade: TradeEvent;

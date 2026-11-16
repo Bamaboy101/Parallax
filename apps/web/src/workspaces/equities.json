@@ -1,0 +1,54 @@
+{
+  "id": "equities",
+  "title": "Equities",
+  "description": "US stocks and index ETFs. Needs a free Alpaca or Finnhub key (Settings).",
+  "panels": [
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "SPY", "interval": "15m", "link": 1 }
+    },
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": {
+        "symbols": [
+          "SPY",
+          "QQQ",
+          "DIA",
+          "IWM",
+          "AAPL",
+          "MSFT",
+          "NVDA",
+          "AMZN",
+          "GOOGL",
+          "META",
+          "TSLA",
+          "JPM"
+        ],
+        "link": 1
+      },
+      "position": { "referencePanel": "chart", "direction": "left" },
+      "width": 340
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "stocks", "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 360
+    },
+    {
+      "id": "tape",
+      "component": "tape",
+      "params": { "symbol": "SPY", "link": 1 },
+      "position": { "referencePanel": "news", "direction": "below" }
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "below" }
+    }
+  ]
+}

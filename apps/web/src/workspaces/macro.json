@@ -1,0 +1,37 @@
+{
+  "id": "macro",
+  "title": "Macro",
+  "description": "Rates, inflation and jobs from FRED, with FX, gold and central-bank news.",
+  "panels": [
+    { "id": "macro", "component": "macro", "params": {} },
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": {
+        "symbols": ["EUR-USD", "GBP-USD", "USD-JPY", "USD-CHF", "AUD-USD", "PAXG-USD", "BTC-USD"],
+        "link": 1
+      },
+      "position": { "referencePanel": "macro", "direction": "left" },
+      "width": 320
+    },
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "EUR-USD", "interval": "1h", "link": 1 },
+      "position": { "referencePanel": "macro", "direction": "below" }
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "Fed" },
+      "position": { "referencePanel": "macro", "direction": "right" },
+      "width": 360
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "below" }
+    }
+  ]
+}

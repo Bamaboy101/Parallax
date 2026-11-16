@@ -87,13 +87,14 @@ describe('runCommand', () => {
     expect(api.activePanel?.api.component).toBe('settings');
   });
 
-  it('resets to the default layout', () => {
+  it('switches to a workspace preset, replacing the panels', () => {
     const api = mountDock();
     api.addPanel({ id: 'x', component: 'tape', title: 'Trades' });
-    expect(runCommand({ kind: 'layout', name: 'default' })).toBe(true);
+    expect(runCommand({ kind: 'layout', name: 'crypto' })).toBe(true);
     expect(api.panels.map((panel) => panel.id).sort()).toEqual([
       'book',
       'chart',
+      'constellation',
       'tape',
       'watchlist',
     ]);

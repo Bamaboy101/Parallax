@@ -1,5 +1,6 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import { createElement, type FunctionComponent } from 'react';
+import { instrument } from '../store/symbols';
 import type { WidgetMeta } from '../widgets/types';
 import { PanelBoundary } from './PanelBoundary';
 
@@ -40,6 +41,17 @@ function contained(widget: Widget): WidgetView {
 export const DOCK_COMPONENTS: Record<string, WidgetView> = Object.fromEntries(
   WIDGETS.filter((widget) => widget.meta.dock).map((widget) => [widget.meta.id, contained(widget)]),
 );
+
+/** A panel's tab title: the widget, plus the symbol or query it shows ('Chart · ETH/USD'). */
+export function panelTitle(meta: WidgetMeta, params: Readonly<Record<string, unknown>>): string {
+  const detail =
+    meta.input === 'symbol' && typeof params.symbol === 'string'
+      ? instrument(params.symbol)?.label
+      : meta.input === 'query' && typeof params.query === 'string' && params.query !== ''
+        ? params.query
+        : undefined;
+  return detail ? `${meta.title} · ${detail}` : meta.title;
+}
 
 export function widgetMeta(id: string): WidgetMeta | undefined {
   return WIDGETS.find((widget) => widget.meta.id === id)?.meta;

@@ -11,8 +11,8 @@ const EXAMPLES = [
   ['btc', 'Show BTC/USD in the active panel'],
   ['eth chart 1h', 'Open a 1-hour ETH/USD chart'],
   ['watch sol', 'Add SOL/USD to the watchlist'],
-  ['eur book', 'Open the EUR/USD order book'],
-  ['layout default', 'Reset the panels'],
+  ['news tesla', 'Search the headlines for Tesla'],
+  ['layout crypto', 'Switch to the Crypto workspace'],
 ] as const;
 
 function highlightMatch(label: string, query: string) {

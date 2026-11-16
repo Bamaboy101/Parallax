@@ -1,20 +1,18 @@
 import { render } from '@testing-library/react';
 import { DockviewReact, type DockviewApi, type SerializedDockview } from 'dockview-react';
 import { describe, expect, it } from 'vitest';
-import { restoreLayout } from './dockLayout';
+import { WORKSPACES } from '../workspaces';
+import { applyPreset, restoreLayout } from './dockLayout';
+import { DOCK_COMPONENTS } from './widgets';
 
-const DEFAULT_IDS = ['book', 'chart', 'tape', 'watchlist'];
+const stub = Object.fromEntries(Object.keys(DOCK_COMPONENTS).map((id) => [id, () => null]));
+const OVERVIEW_IDS = ['chart', 'news', 'sessions', 'watchlist'];
 
 function mountDock(): DockviewApi {
   let api: DockviewApi | undefined;
   render(
     <DockviewReact
-      components={{
-        watchlist: () => null,
-        tape: () => null,
-        chart: () => null,
-        book: () => null,
-      }}
+      components={stub}
       onReady={(event) => {
         api = event.api;
       }}
@@ -27,21 +25,21 @@ function mountDock(): DockviewApi {
 const panelIds = (api: DockviewApi) => api.panels.map((panel) => panel.id).sort();
 
 describe('restoreLayout', () => {
-  it('builds the four default panels when nothing is saved', () => {
+  it('opens the Overview workspace when nothing is saved', () => {
     const api = mountDock();
     expect(restoreLayout(api, null)).toBe('default');
-    expect(panelIds(api)).toEqual(DEFAULT_IDS);
+    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
   });
 
   it('restores a saved layout instead of the default', () => {
     const api = mountDock();
     restoreLayout(api, null);
-    api.getPanel('tape')?.api.close();
+    api.getPanel('sessions')?.api.close();
     const saved = api.toJSON();
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('saved');
-    expect(panelIds(api)).toEqual(['book', 'chart', 'watchlist']);
+    expect(panelIds(api)).toEqual(['chart', 'news', 'watchlist']);
   });
 
   it('falls back to the default when the saved layout names a removed component', () => {
@@ -52,7 +50,7 @@ describe('restoreLayout', () => {
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('default');
-    expect(panelIds(api)).toEqual(DEFAULT_IDS);
+    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
   });
 
   it('falls back to the default when the saved layout is malformed', () => {
@@ -60,6 +58,41 @@ describe('restoreLayout', () => {
     const corrupt = { grid: null, panels: {} } as unknown as SerializedDockview;
 
     expect(restoreLayout(api, corrupt)).toBe('default');
-    expect(panelIds(api)).toEqual(DEFAULT_IDS);
+    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
+  });
+});
+
+describe('workspace presets', () => {
+  it('ships Overview, Crypto, Equities and Macro, in that order', () => {
+    expect(WORKSPACES.map((workspace) => workspace.id)).toEqual([
+      'overview',
+      'crypto',
+      'equities',
+      'macro',
+    ]);
+  });
+
+  it.each(WORKSPACES.map((workspace) => [workspace.id, workspace] as const))(
+    'builds every panel of %s with its symbol in the title and its link group',
+    (_, workspace) => {
+      const api = mountDock();
+      expect(applyPreset(api, workspace.id)).toBe(true);
+      expect(panelIds(api)).toEqual(workspace.panels.map((panel) => panel.id).sort());
+      for (const panel of workspace.panels) {
+        const built = api.getPanel(panel.id);
+        expect(built?.params).toMatchObject(panel.params);
+        if (typeof panel.params.symbol === 'string') {
+          expect(built?.title).toContain(' · ');
+        }
+      }
+    },
+  );
+
+  it('titles panels from their params', () => {
+    const api = mountDock();
+    applyPreset(api, 'macro');
+    expect(api.getPanel('chart')?.title).toBe('Chart · EUR/USD');
+    expect(api.getPanel('news')?.title).toBe('News · Fed');
+    expect(api.getPanel('macro')?.title).toBe('Macro');
   });
 });

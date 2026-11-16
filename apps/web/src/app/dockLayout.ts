@@ -1,34 +1,37 @@
 import type { DockviewApi, SerializedDockview } from 'dockview-react';
+import { DEFAULT_WORKSPACE, WORKSPACES, type Workspace } from '../workspaces';
+import { panelTitle, widgetMeta } from './widgets';
 
-/** Default layout until the preset workspaces arrive in T17. */
-export function buildDefaultLayout(api: DockviewApi): void {
-  api.addPanel({ id: 'chart', component: 'chart', title: 'Chart' });
-  api.addPanel({
-    id: 'watchlist',
-    component: 'watchlist',
-    title: 'Watchlist',
-    position: { referencePanel: 'chart', direction: 'left' },
-    initialWidth: 380,
-  });
-  api.addPanel({
-    id: 'book',
-    component: 'book',
-    title: 'Order book',
-    position: { referencePanel: 'chart', direction: 'right' },
-    initialWidth: 300,
-  });
-  api.addPanel({
-    id: 'tape',
-    component: 'tape',
-    title: 'Trades',
-    position: { referencePanel: 'book', direction: 'below' },
-  });
+/** Lay out a preset workspace on an empty dock. Panels for unknown widgets are skipped. */
+export function buildWorkspace(api: DockviewApi, workspace: Workspace): void {
+  for (const panel of workspace.panels) {
+    const meta = widgetMeta(panel.component);
+    if (!meta) continue;
+    const reference = panel.position && api.getPanel(panel.position.referencePanel);
+    api.addPanel({
+      id: panel.id,
+      component: panel.component,
+      title: panelTitle(meta, panel.params),
+      params: { ...meta.defaultParams, ...panel.params },
+      ...(reference && panel.position
+        ? { position: { referencePanel: reference.id, direction: panel.position.direction } }
+        : {}),
+      ...(panel.width === undefined ? {} : { initialWidth: panel.width }),
+      ...(panel.height === undefined ? {} : { initialHeight: panel.height }),
+    });
+  }
 }
 
-/** Layouts the command bar can switch to. The four workspace presets join in T17. */
-export const LAYOUT_PRESETS: Readonly<Record<string, (api: DockviewApi) => void>> = {
-  default: buildDefaultLayout,
-};
+/** Layouts the command bar and the workspace menu can switch to, by id. */
+export const LAYOUT_PRESETS: Readonly<Record<string, (api: DockviewApi) => void>> =
+  Object.fromEntries(
+    WORKSPACES.map((workspace) => [
+      workspace.id,
+      (api: DockviewApi) => {
+        buildWorkspace(api, workspace);
+      },
+    ]),
+  );
 
 export function applyPreset(api: DockviewApi, name: string): boolean {
   const build = LAYOUT_PRESETS[name];
@@ -39,8 +42,8 @@ export function applyPreset(api: DockviewApi, name: string): boolean {
 }
 
 /**
- * Restore a saved layout, falling back to the default when there is none or it no longer loads
- * (for example, it names a component that was removed).
+ * Restore a saved layout, falling back to the default workspace when there is none or it no longer
+ * loads (for example, it names a component that was removed).
  */
 export function restoreLayout(
   api: DockviewApi,
@@ -55,6 +58,6 @@ export function restoreLayout(
     }
     api.clear();
   }
-  buildDefaultLayout(api);
+  applyPreset(api, DEFAULT_WORKSPACE);
   return 'default';
 }

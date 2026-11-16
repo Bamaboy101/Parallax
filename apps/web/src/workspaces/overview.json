@@ -1,0 +1,32 @@
+{
+  "id": "overview",
+  "title": "Overview",
+  "description": "A bit of everything: watchlist, chart, headlines and market hours.",
+  "panels": [
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "BTC-USD", "interval": "1h", "link": 1 }
+    },
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": { "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "left" },
+      "width": 360
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "", "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 360
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "below" }
+    }
+  ]
+}
