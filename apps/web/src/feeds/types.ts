@@ -89,7 +89,10 @@ export type Logger = (level: LogLevel, message: string) => void;
 export interface AdapterContext {
   /** Send one normalised event to the hub. */
   emit(event: FeedEvent): void;
-  /** The user's key for a provider, or undefined if none is stored. */
+  /**
+   * The user's key for a provider, or undefined if none is stored. Providers with two-part
+   * credentials get them joined by ':' (Alpaca: 'KEY_ID:SECRET').
+   */
   getKey(provider: string): string | undefined;
   log: Logger;
 }
@@ -112,6 +115,12 @@ export interface FeedAdapter {
   dispose(): void;
   /** Optional REST history. Only the hub calls this. */
   fetchHistory?(symbol: SymbolRef, interval: BarInterval, from: number, to: number): Promise<Bar[]>;
+  /**
+   * Optional key check for the Settings "test my key" button. Resolves when the provider accepts
+   * the key from `ctx.getKey`, rejects with FeedAuthError when it refuses it, and with any other
+   * error when the check could not run. Only the hub calls this, on a throwaway instance.
+   */
+  verifyKey?(): Promise<void>;
 }
 
 export type AdapterFactory = (ctx: AdapterContext) => FeedAdapter;

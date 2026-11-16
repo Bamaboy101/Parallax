@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
 import TickerRail from '../widgets/ticker-rail';
 import { Clock } from './Clock';
+import { runCommand } from './commands';
 import { DockArea } from './DockArea';
+import { widgetMeta } from './widgets';
+
+function openSettings(): void {
+  const settings = widgetMeta('settings');
+  if (settings) runCommand({ kind: 'open', widget: settings });
+}
 
 /** Top bar, dock area, ticker rail. */
 export function Shell() {
@@ -36,6 +43,29 @@ export function Shell() {
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-4">
           <Clock />
+          <button
+            type="button"
+            className="theme-switch"
+            aria-label="Settings and data keys"
+            title="Settings and data keys"
+            onClick={openSettings}
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="8" cy="15" r="4" />
+              <path d="m10.8 12.2 9.2-9.2m-3 3 2.5 2.5m-5-0.5 2 2" />
+            </svg>
+          </button>
           <button
             type="button"
             className="theme-switch"

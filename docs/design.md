@@ -29,7 +29,8 @@ Tailwind's default palette and all shadow utilities are removed. Subtle metal gr
 only on the top bar and logo; panels remain flat.
 
 The alternative palette is selected with `<html data-palette="blue-orange">` and composes with
-either theme:
+either theme. Settings › Display sets it, together with density; `store/prefs.ts` saves both under
+`open-terminal:prefs` and applies them before the first render:
 
 | Token    | Dark alternative | Light alternative |
 | -------- | ---------------- | ----------------- |

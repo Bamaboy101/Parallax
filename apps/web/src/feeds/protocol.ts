@@ -13,7 +13,9 @@ export type HubRequest =
       interval: BarInterval;
       from: number;
       to: number;
-    };
+    }
+  /** Check a key the user has typed, before it is saved. */
+  | { type: 'verify-key'; requestId: number; provider: string; key: string };
 
 export type SourceState =
   /** Registered, no subscriptions yet. */
@@ -45,9 +47,17 @@ export interface SourceStatus {
   retryAt: number | null;
 }
 
+/** Outcome of a 'verify-key' request. */
+export type VerifyOutcome =
+  | { result: 'accepted' }
+  | { result: 'rejected'; message: string }
+  /** The check could not run: no network, provider error, no test for this provider. */
+  | { result: 'failed'; message: string };
+
 /** Messages from the hub worker to the app. */
 export type HubMessage =
   | { type: 'events'; events: FeedEvent[] }
   | { type: 'status'; sources: SourceStatus[] }
   | { type: 'history'; requestId: number; bars: Bar[] }
-  | { type: 'history-error'; requestId: number; message: string };
+  | { type: 'history-error'; requestId: number; message: string }
+  | { type: 'verify-result'; requestId: number; outcome: VerifyOutcome };

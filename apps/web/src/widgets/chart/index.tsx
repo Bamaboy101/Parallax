@@ -65,7 +65,7 @@ interface Handles {
   volume: ISeriesApi<'Histogram'>;
 }
 
-function applyTheme({ chart, candles }: Handles): void {
+function applyTheme({ chart, candles, volume }: Handles): void {
   const colors = palette();
   chart.applyOptions({
     layout: {
@@ -93,6 +93,20 @@ function applyTheme({ chart, candles }: Handles): void {
     wickDownColor: colors.down,
     borderVisible: false,
   });
+  // Volume colours are baked into each point, so repaint the bars already drawn.
+  const rising = new Map(
+    candles.data().map((point) => [point.time, 'close' in point && point.close >= point.open]),
+  );
+  volume.setData(
+    volume.data().map((point) =>
+      'value' in point
+        ? {
+            ...point,
+            color: withAlpha(rising.get(point.time) ? colors.up : colors.down, 0.35),
+          }
+        : point,
+    ),
+  );
 }
 
 function volumePoint(bar: Bar) {

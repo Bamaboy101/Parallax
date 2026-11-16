@@ -42,7 +42,10 @@ the app.
 interface AdapterContext {
   /** Send one normalised event to the hub. */
   emit(event: FeedEvent): void;
-  /** The user's key for a provider, or undefined if none is stored. */
+  /**
+   * The user's key for a provider, or undefined if none is stored. Two-part credentials arrive
+   * joined by ':' (Alpaca: 'KEY_ID:SECRET'); the adapter splits them.
+   */
   getKey(provider: string): string | undefined;
   /** Hub logger. Never pass a key or a keyed URL to it. */
   log: Logger; // (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void
@@ -76,6 +79,12 @@ interface FeedAdapter {
   dispose(): void;
   /** Optional REST history. Only the hub calls this; it writes the result to the store. */
   fetchHistory?(symbol: SymbolRef, interval: BarInterval, from: number, to: number): Promise<Bar[]>;
+  /**
+   * Optional key check for Settings' "Test my key". Resolves when the provider accepts the key
+   * from ctx.getKey; rejects with FeedAuthError when it refuses it, with any other error when the
+   * check could not run. Only the hub calls this.
+   */
+  verifyKey?(): Promise<void>;
 }
 ```
 
@@ -107,11 +116,20 @@ The app talks to the worker only through these messages (`feeds/protocol.ts`).
 | app → hub | `subscribe`     | Reference-counted: N subscribers share one upstream subscription  |
 | app → hub | `unsubscribe`   | Releases one reference                                            |
 | app → hub | `keys`          | Full replacement of the user's keys; changed keys restart sources |
+| app → hub | `verify-key`    | Check a typed, unsaved key for one provider                       |
 | app → hub | `history`       | Request bars for a symbol, interval and time range                |
 | hub → app | `events`        | One batch per frame                                               |
 | hub → app | `status`        | Every source's `SourceStatus`, on change and once a second        |
 | hub → app | `history`       | The bars for a request                                            |
 | hub → app | `history-error` | The request could not be served                                   |
+| hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason |
+
+**Key vault.** `store/keys.ts` keeps keys by provider id in `localStorage`
+(`open-terminal:keys`), exactly as adapters receive them. Settings edits it; `store/feedClient.ts`
+gives a newly started hub the stored keys and forwards every change. For
+`verify-key` the hub builds a throwaway instance of that provider's adapter whose context returns
+only the typed key, runs `verifyKey()` with a 15 s limit and disposes it. The live source keeps
+its connection and stored key until the user saves.
 
 **Batching.** Events are posted once per display frame, with a 50 ms fallback so batches keep
 flowing while the tab is hidden. Every trade and book update is kept, in order. Quotes keep only

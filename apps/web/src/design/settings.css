@@ -1,0 +1,181 @@
+/* Settings panel: key vault and display preferences. Tokens only; no shadows. */
+.settings-panel {
+  height: 100%;
+  overflow: auto;
+  padding: var(--pad);
+  background: var(--panel);
+  color: var(--text);
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.settings-heading {
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settings-heading:not(:first-child) {
+  margin-top: 20px;
+}
+
+.settings-note {
+  margin: 0 0 8px;
+  font-size: var(--size-ui);
+  line-height: 1.45;
+}
+
+.settings-muted,
+.settings-state {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.settings-card {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: color-mix(in srgb, var(--bg) 25%, var(--panel));
+}
+
+.settings-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.settings-card-head h3 {
+  margin: 0;
+  font-size: var(--size-ui);
+  font-weight: 600;
+}
+
+.settings-card-head a {
+  color: var(--live);
+  font-size: var(--size-label);
+}
+
+.settings-fields {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.settings-field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.settings-field input {
+  height: var(--row-h);
+  min-width: 0;
+  padding-inline: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-num);
+  font-size: var(--size-num);
+}
+
+.settings-field input:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 0;
+  border-color: var(--live);
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.settings-button {
+  height: var(--row-h);
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: var(--size-label);
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+
+.settings-button:hover:not(:disabled) {
+  border-color: var(--live);
+}
+
+.settings-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.settings-button--primary:not(:disabled) {
+  border-color: color-mix(in srgb, var(--live) 50%, var(--line));
+  color: var(--live);
+}
+
+.settings-check {
+  min-height: 1lh;
+  margin: 8px 0 0;
+  font-size: var(--size-label);
+}
+
+.settings-check--ok {
+  color: var(--live);
+}
+
+.settings-check--bad {
+  color: var(--warn);
+}
+
+.settings-state {
+  margin: 4px 0 0;
+}
+
+.settings-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  font-size: var(--size-ui);
+}
+
+.settings-choice legend {
+  margin-bottom: 4px;
+  padding: 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.settings-choice label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-choice input,
+.settings-toggle input {
+  accent-color: var(--live);
+}

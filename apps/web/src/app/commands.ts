@@ -46,6 +46,13 @@ export function runCommand(command: Command): boolean {
 
     case 'open': {
       const { widget, symbol, interval, query } = command;
+      // Widgets that take no input are one per desk: focus the open one.
+      if (widget.input === 'none') {
+        const existing = api.panels.find((panel) => panel.api.component === widget.id);
+        if (existing) existing.api.setActive();
+        else openWidget(api, widget, {}, widget.title);
+        return true;
+      }
       if (widget.input === 'symbols') {
         const existing = api.panels.find((panel) => panel.api.component === widget.id);
         if (existing) {

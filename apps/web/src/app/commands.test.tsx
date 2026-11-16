@@ -77,6 +77,16 @@ describe('runCommand', () => {
     ]);
   });
 
+  it('focuses the open settings panel instead of opening another', () => {
+    const api = mountDock();
+    const settings = must(widgetMeta('settings'));
+    runCommand({ kind: 'open', widget: settings });
+    api.addPanel({ id: 'c', component: 'chart', title: 'Chart' });
+    runCommand({ kind: 'open', widget: settings });
+    expect(api.panels.map((panel) => panel.api.component).sort()).toEqual(['chart', 'settings']);
+    expect(api.activePanel?.api.component).toBe('settings');
+  });
+
   it('resets to the default layout', () => {
     const api = mountDock();
     api.addPanel({ id: 'x', component: 'tape', title: 'Trades' });

@@ -5,6 +5,7 @@ import {
   FAILOVER_AFTER_ATTEMPTS,
   FeedHub,
   STATUS_TICK_MS,
+  VERIFY_TIMEOUT_MS,
   backoffDelay,
   type HubEnv,
 } from './hub';
@@ -31,6 +32,7 @@ class FakeAdapter implements FeedAdapter {
   connects = 0;
   disposed = false;
   history: ((symbol: SymbolRef) => Promise<Bar[]>) | undefined;
+  verify: (() => Promise<void>) | undefined;
   private end: { resolve: () => void; reject: (error: unknown) => void } | undefined;
 
   constructor(
@@ -61,6 +63,9 @@ class FakeAdapter implements FeedAdapter {
   get fetchHistory() {
     const history = this.history;
     return history ? (symbol: SymbolRef) => history(symbol) : undefined;
+  }
+  get verifyKey() {
+    return this.verify;
   }
   fail(error: unknown = new Error('socket closed')) {
     this.end?.reject(error);
@@ -445,5 +450,75 @@ describe('FeedHub failover', () => {
     await failRepeatedly(coinbase, FAILOVER_AFTER_ATTEMPTS + 1);
     await advance(FRAME_MS);
     expect(lastStatus('coinbase')?.state).toBe('reconnecting');
+  });
+});
+
+describe('FeedHub key check', () => {
+  const verifyResults = () =>
+    messages.flatMap((message) => (message.type === 'verify-result' ? [message] : []));
+
+  /** A feed whose every new instance checks keys with `check`, seeing its own context. */
+  function checkingFeed(check: (ctx: AdapterContext) => Promise<void>) {
+    const feed = fakeFeed('alpaca', ['equity'], { needsKey: true });
+    const factory = feed.registration.factory;
+    feed.registration.factory = (ctx) => {
+      const adapter = factory(ctx) as FakeAdapter;
+      adapter.verify = () => check(ctx);
+      return adapter;
+    };
+    return feed;
+  }
+
+  it('checks the typed key on a throwaway adapter that sees only that key', async () => {
+    const seen: (string | undefined)[] = [];
+    const feed = checkingFeed((ctx) => {
+      seen.push(ctx.getKey('alpaca'), ctx.getKey('finnhub'));
+      return Promise.resolve();
+    });
+    const hub = startHub([feed.registration]);
+    hub.handle({ type: 'keys', keys: { alpaca: 'OLD:KEY', finnhub: 'other' } });
+    hub.handle({ type: 'verify-key', requestId: 3, provider: 'alpaca', key: 'NEW:KEY' });
+    await advance(0);
+
+    expect(seen).toEqual(['NEW:KEY', undefined]);
+    expect(verifyResults()).toEqual([
+      { type: 'verify-result', requestId: 3, outcome: { result: 'accepted' } },
+    ]);
+    expect(feed.latest().disposed).toBe(true);
+  });
+
+  it('tells a rejected key apart from a check that could not run', async () => {
+    let next: Error = new FeedAuthError('auth failed');
+    const hub = startHub([checkingFeed(() => Promise.reject(next)).registration]);
+    hub.handle({ type: 'verify-key', requestId: 1, provider: 'alpaca', key: 'bad' });
+    await advance(0);
+    next = new Error('network down');
+    hub.handle({ type: 'verify-key', requestId: 2, provider: 'alpaca', key: 'any' });
+    await advance(0);
+
+    expect(verifyResults().map((message) => message.outcome)).toEqual([
+      { result: 'rejected', message: 'auth failed' },
+      { result: 'failed', message: 'network down' },
+    ]);
+  });
+
+  it('fails a check that never answers, or a provider without one', async () => {
+    const hub = startHub([checkingFeed(() => new Promise<void>(() => undefined)).registration]);
+    hub.handle({ type: 'verify-key', requestId: 1, provider: 'alpaca', key: 'k' });
+    hub.handle({ type: 'verify-key', requestId: 2, provider: 'nobody', key: 'k' });
+    await advance(VERIFY_TIMEOUT_MS);
+
+    expect(verifyResults()).toEqual([
+      {
+        type: 'verify-result',
+        requestId: 2,
+        outcome: { result: 'failed', message: 'No key test for nobody' },
+      },
+      {
+        type: 'verify-result',
+        requestId: 1,
+        outcome: { result: 'failed', message: 'alpaca did not answer in time' },
+      },
+    ]);
   });
 });

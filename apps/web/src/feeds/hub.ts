@@ -1,4 +1,4 @@
-import type { HubMessage, HubRequest, SourceState, SourceStatus } from './protocol';
+import type { HubMessage, HubRequest, SourceState, SourceStatus, VerifyOutcome } from './protocol';
 import { routeOrder } from './router';
 import {
   FeedAuthError,
@@ -36,6 +36,8 @@ export const FAILOVER_AFTER_ATTEMPTS = 3;
 /** How long a failed-over source rests before it is tried again; doubles per repeat. */
 export const DOWN_COOLDOWN_MS = 60_000;
 export const DOWN_COOLDOWN_MAX_MS = 30 * 60_000;
+/** A key check that has not answered by then is reported as failed. */
+export const VERIFY_TIMEOUT_MS = 15_000;
 
 /** Exponential backoff with equal jitter: half the ceiling fixed, half random. */
 export function backoffDelay(attempt: number, random: number): number {
@@ -151,6 +153,9 @@ export class FeedHub {
           request.from,
           request.to,
         );
+        break;
+      case 'verify-key':
+        this.verifyKey(request.requestId, request.provider, request.key);
         break;
     }
   }
@@ -416,6 +421,48 @@ export class FeedHub {
           requestId,
           message: describeError(error),
         });
+      },
+    );
+  }
+
+  /**
+   * Check a typed key on a throwaway adapter that sees only that key. The running source keeps
+   * its own connection and its stored key until the user saves.
+   */
+  private verifyKey(requestId: number, provider: string, key: string): void {
+    let settled = false;
+    const settle = (outcome: VerifyOutcome) => {
+      if (settled) return;
+      settled = true;
+      this.env.clearTimeout(timer);
+      adapter?.dispose();
+      if (!this.disposed) this.env.post({ type: 'verify-result', requestId, outcome });
+    };
+    const registration = this.sources.find((source) => source.id === provider)?.registration;
+    const adapter = registration?.factory({
+      emit: () => undefined,
+      getKey: (name) => (name === provider ? key : undefined),
+      log: (level, message) => {
+        this.env.log(level, `${provider} key check: ${message}`);
+      },
+    });
+    const timer = this.env.setTimeout(() => {
+      settle({ result: 'failed', message: `${provider} did not answer in time` });
+    }, VERIFY_TIMEOUT_MS);
+    if (!adapter?.verifyKey) {
+      settle({ result: 'failed', message: `No key test for ${provider}` });
+      return;
+    }
+    adapter.verifyKey().then(
+      () => {
+        settle({ result: 'accepted' });
+      },
+      (error: unknown) => {
+        settle(
+          error instanceof FeedAuthError
+            ? { result: 'rejected', message: describeError(error) }
+            : { result: 'failed', message: describeError(error) },
+        );
       },
     );
   }
