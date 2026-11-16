@@ -41,7 +41,9 @@ function MoverList({
             >
               <span className="market-symbol">{mover.item.label}</span>
               {traded ? (
-                <span className="text-right font-mono">${formatCompact(mover.tradedUsd)}</span>
+                <span className="text-right font-mono text-num">
+                  ${formatCompact(mover.tradedUsd)}
+                </span>
               ) : (
                 <Cell value={mover.price} decimals={mover.item.decimals} />
               )}

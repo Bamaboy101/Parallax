@@ -45,26 +45,28 @@ export function Shell() {
   };
 
   return (
-    <div className="grid h-dvh grid-rows-[auto_1fr_auto] bg-bg">
+    <div className="shell grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto] bg-bg">
       <header className="shell-topbar">
-        <div aria-hidden="true" className="shell-mark">
-          <span />
+        <div className="shell-brand">
+          <div aria-hidden="true" className="shell-mark">
+            <span />
+          </div>
+          <div className="shell-identity">
+            <h1>Open Terminal</h1>
+            <div className="shell-micro">Market operations</div>
+          </div>
         </div>
-        <div className="shell-identity">
-          <h1>Open Terminal</h1>
-          <div className="shell-micro">Market operations</div>
-        </div>
-        <div className="ml-4 min-w-0 flex-1 sm:max-w-80">
+        <div className="shell-command">
           <CommandTrigger />
         </div>
         <WorkspaceMenu />
-        <div className="ml-auto flex min-w-0 items-center gap-4">
+        <div className="shell-tools">
           <RewindScrubber />
           <ConnectionStatus />
           <Clock />
           <button
             type="button"
-            className="theme-switch"
+            className="theme-switch shell-settings"
             aria-label="Settings and data keys"
             title="Settings and data keys"
             onClick={openSettings}
@@ -87,7 +89,7 @@ export function Shell() {
           </button>
           <button
             type="button"
-            className="theme-switch"
+            className="theme-switch shell-theme"
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             onClick={toggleTheme}
@@ -115,8 +117,13 @@ export function Shell() {
             </svg>
           </button>
         </div>
+        <p className="shell-scroll-hint">Swipe across panels · all panels remain available</p>
       </header>
-      <main className="weather-glow min-h-0 min-w-0 p-2">
+      <main
+        aria-label="Market panels"
+        tabIndex={0}
+        className="shell-dock weather-glow min-h-0 min-w-0 p-2"
+      >
         <DockArea />
       </main>
       <footer aria-label="Ticker rail" className="shell-rail">

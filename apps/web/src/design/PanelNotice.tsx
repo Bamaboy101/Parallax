@@ -13,6 +13,7 @@ export function PanelNotice({ notice, compact = false }: { notice: Notice; compa
       data-tone={notice.tone}
       role={notice.tone === 'info' ? 'status' : 'alert'}
     >
+      <span className="panel-notice-mark" aria-hidden="true" />
       <p className="panel-notice-title">{notice.title}</p>
       {notice.detail && <p className="panel-notice-detail">{notice.detail}</p>}
       {notice.action === 'settings' && (
