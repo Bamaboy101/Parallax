@@ -96,6 +96,43 @@ Needs the user's free key.
 - Recorded 16 Nov 2026 with a free key on `BINANCE:BTCUSDT`, which trades around the clock; stock
   trades use the same message format.
 
+## Polymarket, public market data (`store/predictions/`)
+
+Confirmed against Polymarket's docs on 17 Nov 2026 (docs.polymarket.com: API, Rate Limits,
+Prices and Order Books, Get prices history) and tested from a browser on our origin.
+
+- No key. Gamma (`gamma-api.polymarket.com/events`) and the CLOB's `/midpoints` and
+  `/prices-history` answer with `Access-Control-Allow-Origin: *`, so each visitor's browser reads
+  them directly; nothing is relayed or cached by the project.
+- Limits are per IP and generous (Gamma `/events` 500 requests per 10 s, CLOB `/midpoints` 500 per
+  10 s, `/prices-history` 1,000 per 10 s); a limited request is delayed rather than refused.
+- Gamma pages above 50 events are served gzip-only, and Gamma has no field selection: an event
+  carries every market's description. One refresh of the 16 tag queries is about 1 MB on the wire
+  and 9 MB of JSON, so a dedicated worker fetches and curates it and posts only the result
+  (`store/predictions/worker.ts`), every 10 minutes. Gamma's own cache is 5 minutes.
+- Odds: `POST /midpoints` for the shown outcomes every 15 s (not cached). Following Polymarket's
+  display rule, the last trade replaces the midpoint when the spread is over 10 cents. 24 h change
+  starts from Gamma's `oneDayPriceChange`; volume is Gamma's `volume24hr`.
+- History: `/prices-history?interval=1w&fidelity=60` (hourly points for a week, cached 90 s by
+  Polymarket).
+- Terms (polymarket.com Terms of Use, effective 11 Aug 2026): Polymarket bars "Capital Market
+  Clients" (brokers, funds, banks, financial technology companies and the like) and market data
+  distributors from accessing the data unless agreed in writing, and bars scraping the site. A
+  free, open-source tool whose visitors' browsers read the documented public API, with no relay,
+  falls outside those clauses on our reading (not legal advice). Polymarket also states its prices
+  are not advice; the panel labels them "market odds, not forecasts".
+- Recorded 17 Nov 2026: `store/predictions/fixtures/gamma-events.json`, 28 real events trimmed to
+  the fields M1 reads.
+
+## Kalshi: not used (pending written permission)
+
+Checked 17 Nov 2026. Kalshi's public REST market data needs no key, but its Developer Agreement
+(v1.1, §3) allows API use only "to facilitate a member's own trading" and bars sharing the data,
+and its Data Terms of Use bar publicly displaying or distributing Kalshi data and any use with AI
+tools. Its WebSocket requires an API key even for public channels, its REST answers can lag by
+several seconds, and it answers 403 to requests from our origin. It stays out until Kalshi gives
+written permission.
+
 ## US market hours
 
 Equity feeds turn stale after 30 s without a message, counted only during the regular session

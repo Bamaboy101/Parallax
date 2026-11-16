@@ -50,6 +50,11 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Linked panels.** Each panel has a colour link dot; panels in one group
   follow the same symbol, so one click retargets chart, book and news
   together.
+- **Event odds.** Market-moving events from Polymarket — central-bank
+  decisions, inflation and jobs prints, elections, conflicts, tariffs, oil
+  supply, shutdowns — grouped by theme and region, each beside the assets it
+  moves (Fed odds next to the 2-year yield, gold and the dollar). Labelled
+  for what they are: market odds, not forecasts.
 
 ## The honest part: what "free" and "no delay" allow
 
@@ -67,6 +72,7 @@ fees for consolidated real-time feeds, and no free API gets around that.
 | Perpetual futures                                      | Yes                              | Bybit, with OKX and Binance futures as fallbacks: funding, mark, open interest, liquidations | USDT-margined perps; some exchanges refuse US visitors                                             |
 | Rates and macro                                        | Daily, which is how they publish | FRED through the project's edge cache                                                        | Nothing to fix; daily by nature                                                                    |
 | News and filings                                       | Minutes                          | Publisher RSS and FRED/SEC through the edge cache; Finnhub company news on your key          | Not a paid newswire                                                                                |
+| Prediction markets                                     | Yes, polled every 15 s           | Polymarket public data, read by your browser. No key                                         | Market odds, not forecasts; Kalshi is not used without its written permission                      |
 
 Two limits, stated plainly:
 

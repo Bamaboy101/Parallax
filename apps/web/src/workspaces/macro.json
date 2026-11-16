@@ -21,29 +21,36 @@
       "position": { "referencePanel": "watchlist", "direction": "within" }
     },
     {
-      "id": "chart",
-      "component": "chart",
-      "params": { "symbol": "EUR-USD", "interval": "1h", "link": 1 },
-      "position": { "referencePanel": "macro", "direction": "below" }
-    },
-    {
       "id": "news",
       "component": "news",
       "params": { "query": "Fed" },
       "position": { "referencePanel": "macro", "direction": "right" },
-      "width": 360
+      "width": 420
+    },
+    {
+      "id": "predictions",
+      "component": "predictions",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" }
     },
     {
       "id": "sessions",
       "component": "session-ring",
       "params": {},
-      "position": { "referencePanel": "news", "direction": "below" }
+      "position": { "referencePanel": "news", "direction": "below" },
+      "height": 220
     },
     {
       "id": "calendar",
       "component": "calendar",
       "params": {},
       "position": { "referencePanel": "sessions", "direction": "within" }
+    },
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "EUR-USD", "interval": "1h", "link": 1 },
+      "position": { "referencePanel": "macro", "direction": "below" }
     }
   ]
 }

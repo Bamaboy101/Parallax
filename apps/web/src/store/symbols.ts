@@ -128,6 +128,10 @@ export const INSTRUMENTS: readonly Instrument[] = [
   equity('USO', 'United States Oil Fund', { cik: 1327068, note: 'oil proxy, US hours' }),
   equity('UNG', 'United States Natural Gas Fund', { note: 'natural gas proxy, US hours' }),
   equity('DBA', 'Invesco DB Agriculture Fund', { note: 'agriculture proxy, US hours' }),
+  // Currency: a fund tracking the dollar against six majors, as the dollar index (DXY) is not free.
+  equity('UUP', 'Invesco DB US Dollar Index Bullish Fund', {
+    note: 'dollar index proxy, US hours',
+  }),
   equity('AAPL', 'Apple', { cik: 320193 }),
   equity('MSFT', 'Microsoft', { cik: 789019 }),
   equity('NVDA', 'NVIDIA', { cik: 1045810 }),

@@ -335,6 +335,26 @@ every 15 minutes. Most active is dollars traded in the last hour the page has se
 trade history (USDT counted as USD; stocks are IEX prints only). Breadth counts symbols up, down
 and flat among those with a change.
 
+## Prediction markets (M1)
+
+`store/predictions/` reads Polymarket's public data (see data-sources.md). `classify.ts` is
+pure and tested against recorded events: it drops sports, entertainment, crypto-price and
+price-target bets and novelty markets, then files each event under one theme (central banks,
+inflation/jobs/growth, elections and leaders, conflict and sanctions, trade/tariffs/oil,
+shutdowns/debt/defaults) and one region, and links it to the assets it moves (the Fed to the US
+2-year yield, gold and the dollar proxy UUP; the BoJ to USD/JPY and EWJ; Middle East flashpoints to
+oil and gold). Only the Fed, ECB, BoE, BoJ, RBA and PBoC count as central banks; elections count
+only in major economies. Outcomes read most likely first, except "by…?" date ladders, which read
+in date order with passed rungs hidden.
+
+`worker.ts` runs the Gamma tag queries off the main thread every 10 minutes; `store.ts` holds the
+events in one Zustand store for every panel (and the co-pilot later), polls midpoints every 15 s
+while a panel is mounted, and reports `polymarket` freshness (`POLLED 15s`). A failed refresh keeps
+what is shown. The `predictions` widget ("Event odds", command `odds fed`) groups by theme and
+region, shows each event's leading outcome, 24 h change in points and 24 h volume, and opens a
+week of odds and every outcome on click. Odds are labelled "market odds, not forecasts"; they are
+not part of Rewind, and the panel says so while rewound.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

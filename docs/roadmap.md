@@ -10,7 +10,24 @@ be checked against the provider's own docs before building.
 ## New markets
 
 - **M1 Prediction markets:** live odds on Fed decisions, inflation prints, elections and world
-  events, with odds charts. Source: Polymarket and Kalshi public market data (confirm). No key.
+  events, with odds charts. Source: Polymarket public market data. No key. **Kalshi: pending
+  written permission.** Checked 17 Nov 2026: Kalshi's Developer Agreement (v1.1, §3) limits API
+  use to a member's own trading and bars sharing the data, its Data Terms of Use bar public
+  display and any use with AI tools, its WebSocket needs an API key even for public channels, and
+  its API refuses requests from our site's origin. It joins M1 only with Kalshi's written consent.
+  Scope set 17 Nov: only market-moving events (the six central banks Fed, ECB, BoE, BoJ, RBA and
+  PBoC; inflation, jobs, GDP and recession; elections and leadership in major economies; wars,
+  conflicts and sanctions; tariffs, trade and OPEC/oil supply; shutdowns, debt limits and
+  defaults), grouped by theme and region, each linked to the assets it moves, labelled "market
+  odds, not forecasts".
+- **M9 Europe, Asia and Australia** (added 17 Nov, right after M1): delayed or end-of-day levels
+  for DAX, FTSE 100, CAC 40, Euro Stoxx 50, IBEX 35, FTSE MIB, SMI, AEX, Nikkei 225, TOPIX, Hang
+  Seng, Shanghai Composite, CSI 300, KOSPI, TAIEX, Sensex, Nifty 50, STI, ASX 200 and NZX 50 from a
+  free source whose terms allow display in a free public app (reported before building; no
+  unofficial or scraped sources), always beside US-listed ETF proxies (EWG, EWU, EWQ, FEZ, EWP,
+  EWI, EWL, EWN, VGK; EWJ, EWH, FXI, MCHI, EWY, EWT, INDA, EWS; EWA, ENZL) labelled "proxy, US
+  hours only"; Sydney, Frankfurt, Hong Kong and Mumbai on the Session ring; Europe and
+  Asia-Pacific workspaces.
 - **M2 Options:** chain, implied-volatility smile, put/call ratio for US stocks and ETFs. Source:
   Alpaca indicative options feed (confirm on the free plan). User's Alpaca key.
 - **M3 Rates desk:** full Treasury yield curve with history, SOFR, Fed funds path. Source: US
