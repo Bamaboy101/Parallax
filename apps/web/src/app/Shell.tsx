@@ -5,6 +5,8 @@ import { Clock } from './Clock';
 import { runCommand } from './commands';
 import { ConnectionStatus } from './ConnectionStatus';
 import { DockArea } from './DockArea';
+import { RewindScrubber } from './RewindScrubber';
+import { useMarketWeather } from './weather';
 import { widgetMeta } from './widgets';
 
 function openSettings(): void {
@@ -14,6 +16,7 @@ function openSettings(): void {
 
 /** Top bar, dock area, ticker rail. */
 export function Shell() {
+  useMarketWeather();
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
   );
@@ -43,6 +46,7 @@ export function Shell() {
           <CommandTrigger />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-4">
+          <RewindScrubber />
           <ConnectionStatus />
           <Clock />
           <button
@@ -99,7 +103,7 @@ export function Shell() {
           </button>
         </div>
       </header>
-      <main className="min-h-0 min-w-0 p-2">
+      <main className="weather-glow min-h-0 min-w-0 p-2">
         <DockArea />
       </main>
       <footer aria-label="Ticker rail" className="shell-rail">

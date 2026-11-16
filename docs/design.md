@@ -25,6 +25,23 @@ colour difference (ΔE OK) of 12.7 that stays 12.0 under simulated deuteranopia.
 further because both must keep 4.5:1 on white. Mint is never a price-direction colour; price
 changes also retain their numeric sign.
 
+### Link groups
+
+Linked panels (T16) share a symbol by group. Four tokens mark the groups; they are interface
+colours only, never price or status, and every dot also shows its group number, so colour is
+never the only cue.
+
+| Token      | Name   | Dark      | Light     | Contrast on panel (dark / light) | Nearest reserved colour, ΔE OK |
+| ---------- | ------ | --------- | --------- | -------------------------------- | ------------------------------ |
+| `--link-1` | violet | `#E1A0FE` | `#791A9A` | 9.0 / 8.7                        | muted 19.3 / alt up 17.6       |
+| `--link-2` | sky    | `#1CC9FE` | `#165782` | 9.2 / 7.7                        | alt up 16.2 / mint 10.9        |
+| `--link-3` | rose   | `#EB64C2` | `#A15494` | 6.0 / 5.0                        | down 13.9 / down 14.5          |
+| `--link-4` | sand   | `#CBB5AA` | `#534714` | 9.1 / 9.2                        | muted 11.9 / muted 11.9        |
+
+Each value was searched in OKLCH within its hue family to keep the largest colour difference
+from mint, up, down and warn in both palettes and from the greys, with at least 4.5:1 on the
+panel. Sand is held to low chroma so it never reads as the amber stale warning.
+
 Tailwind's default palette and all shadow utilities are removed. Subtle metal gradients appear
 only on the top bar and logo; panels remain flat.
 
@@ -87,3 +104,13 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - Lists (the trades tape) re-render at most 10 times a second; single cells update every frame.
 - A price from history rather than a live tick (an illiquid symbol before its first trade) is
   shown at 60% opacity with a tooltip saying so.
+- Link dots sit before the truth badge: a numbered disc in `--link-1`…`--link-4`, or a dashed
+  ring when the panel is unlinked. A linked watchlist row shows its selection with a 2 px mint
+  bar.
+- Rewind turns the scrubber label and track amber (`--warn`), the colour already used for data
+  that is not live, with "Back to live" in mint.
+- Market weather tints a glow behind the panels from mint (calm) toward amber (stormy), at 5–14%
+  strength. It changes at most every 10 s and never animates. Using amber for "warm" is a V1
+  token reused, not a new meaning; V3 may refine the glow.
+- The Session ring draws open sessions in mint (interface state, not price) and closed ones in
+  muted grey.

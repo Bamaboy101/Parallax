@@ -260,3 +260,30 @@
     font-size: var(--size-label);
   }
 }
+
+/* A linked watchlist: rows select the symbol for their link group. */
+.market-row.is-linkable {
+  cursor: pointer;
+}
+
+.market-row[aria-current='true'] {
+  background: linear-gradient(
+    90deg,
+    var(--live) 2px,
+    color-mix(in srgb, var(--muted) 10%, transparent) 2px
+  );
+}
+
+.watchlist-select {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.watchlist-select:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 2px;
+}

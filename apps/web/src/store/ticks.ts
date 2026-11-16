@@ -192,6 +192,16 @@ export function recentValues<C extends Channel>(
   );
 }
 
+/** The last recorded value at or before each moment (oldest first); undefined before the first. */
+export function sampleAt<C extends Channel>(
+  channel: C,
+  symbol: string,
+  times: readonly number[],
+): (TickOf[C] | undefined)[] {
+  const buffer = (history[channel] as Map<string, RingBuffer<TickOf[C]>>).get(symbol);
+  return times.map((time) => buffer?.at(time));
+}
+
 /** Forget everything (tests, and a future "clear data" action). */
 export function resetTicks(): void {
   for (const buffers of Object.values(history)) buffers.clear();

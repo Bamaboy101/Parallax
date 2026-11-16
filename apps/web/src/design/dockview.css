@@ -61,7 +61,8 @@
   --dv-floating-titlebar-background-color: var(--panel);
   --dv-floating-titlebar-border-bottom: var(--dv-floating-border);
 
-  background-color: var(--bg);
+  /* Transparent so the market-weather glow behind the dock shows in the gaps (tokens.css). */
+  background-color: transparent;
 }
 
 .dockview-theme-cockpit .dv-groupview {
@@ -132,4 +133,48 @@
     padding: 0;
     justify-content: center;
   }
+}
+
+/* Link group dot: a numbered disc in the group colour, or a dashed ring when unlinked. */
+.link-dot {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px dashed var(--muted);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--panel);
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.link-dot:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 2px;
+}
+
+.link-dot[data-link='1'] {
+  border: 0;
+  background: var(--link-1);
+}
+
+.link-dot[data-link='2'] {
+  border: 0;
+  background: var(--link-2);
+}
+
+.link-dot[data-link='3'] {
+  border: 0;
+  background: var(--link-3);
+}
+
+.link-dot[data-link='4'] {
+  border: 0;
+  background: var(--link-4);
 }

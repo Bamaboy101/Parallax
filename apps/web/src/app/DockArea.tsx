@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { setDockApi } from './dockApi';
 import { restoreLayout } from './dockLayout';
+import { useLinkFollower } from './links';
 import { PanelBadges } from './PanelBadges';
 import { DOCK_COMPONENTS } from './widgets';
 
@@ -21,6 +22,7 @@ const cockpitTheme: DockviewTheme = {
 
 export function DockArea() {
   const [api, setApi] = useState<DockviewApi | null>(null);
+  useLinkFollower(api);
 
   const onReady = (event: DockviewReadyEvent) => {
     restoreLayout(event.api, useLayoutStore.getState().dock);

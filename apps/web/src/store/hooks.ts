@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { SourceStatus } from '../feeds/protocol';
-import type { Channel, SymbolRef } from '../feeds/types';
+import type { AssetKind, Channel, SymbolRef } from '../feeds/types';
 import { subscribeFeed } from './feedClient';
 import { useHistory } from './history';
 import {
@@ -19,6 +19,30 @@ function useFeedSubscription(symbol: SymbolRef, channel: Channel): void {
     () => subscribeFeed({ id, kind, base, quote }, channel),
     [id, kind, base, quote, channel],
   );
+}
+
+/** The channel that carries a symbol's price: the bid/ask quote for FX, trades otherwise. */
+export const priceChannel = (symbol: SymbolRef): 'quote' | 'trade' =>
+  symbol.kind === 'fx' ? 'quote' : 'trade';
+
+/** Keep the price channel of every listed symbol streaming while mounted. */
+export function usePriceSubscriptions(symbols: readonly SymbolRef[]): void {
+  const key = symbols
+    .map(({ id, kind, base, quote }) => [id, kind, base, quote].join('|'))
+    .join(',');
+  useEffect(() => {
+    const releases = key
+      .split(',')
+      .filter(Boolean)
+      .map((entry) => {
+        const [id = '', kind = 'crypto', base = '', quote = ''] = entry.split('|');
+        const symbol: SymbolRef = { id, kind: kind as AssetKind, base, quote };
+        return subscribeFeed(symbol, priceChannel(symbol));
+      });
+    return () => {
+      for (const release of releases) release();
+    };
+  }, [key]);
 }
 
 /**
@@ -114,7 +138,7 @@ export interface LastPrice {
  * FX (Kraken's FX pairs quote far more often than they trade).
  */
 export function useLastPrice(symbol: SymbolRef): LastPrice | undefined {
-  const tick = useTick(symbol, symbol.kind === 'fx' ? 'quote' : 'trade');
+  const tick = useTick(symbol, priceChannel(symbol));
   if (!tick) return undefined;
   const { source, receivedAt } = tick;
   if (tick.channel === 'quote') return { price: (tick.bid + tick.ask) / 2, source, receivedAt };

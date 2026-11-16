@@ -16,6 +16,12 @@
   --down: #ff6464;
   --warn: #f4bb4f;
 
+  /* Linked-panel groups: interface only, never price or status. Each dot also shows its number. */
+  --link-1: #e1a0fe;
+  --link-2: #1cc9fe;
+  --link-3: #eb64c2;
+  --link-4: #cbb5aa;
+
   /* Type */
   --font-ui: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-num: 'JetBrains Mono Variable', ui-monospace, monospace;
@@ -48,6 +54,10 @@
   --up: #237a12;
   --down: #b42332;
   --warn: #8a5a00;
+  --link-1: #791a9a;
+  --link-2: #165782;
+  --link-3: #a15494;
+  --link-4: #534714;
 
   color-scheme: light;
 }
@@ -106,6 +116,10 @@
   --color-up: var(--up);
   --color-down: var(--down);
   --color-warn: var(--warn);
+  --color-link-1: var(--link-1);
+  --color-link-2: var(--link-2);
+  --color-link-3: var(--link-3);
+  --color-link-4: var(--link-4);
   --color-transparent: transparent;
   --color-current: currentColor;
 
@@ -219,6 +233,61 @@ body {
   border-radius: 999px;
   color: var(--warn);
   text-overflow: ellipsis;
+}
+
+/*
+ * Market weather: a faint glow behind the panels, cool mint when markets are calm, warming
+ * toward amber as the watchlist's short-term volatility rises (--weather 0..1, app/weather.ts).
+ * It changes every 10 s at most and never animates.
+ */
+.weather-glow {
+  --weather-tint: color-mix(in oklab, var(--warn) calc(var(--weather, 0) * 100%), var(--live));
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in oklab, var(--weather-tint) calc(5% + var(--weather, 0) * 9%), transparent),
+      transparent 70%
+    ),
+    var(--bg);
+}
+
+/* Rewind scrubber in the top bar. */
+.rewind {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--size-label);
+}
+
+.rewind-track {
+  width: clamp(80px, 12vw, 180px);
+  accent-color: var(--live);
+}
+
+.rewind.is-rewound .rewind-track {
+  accent-color: var(--warn);
+}
+
+.rewind-label {
+  min-width: 4ch;
+  color: var(--muted);
+  font-family: var(--font-num);
+  white-space: nowrap;
+}
+
+.rewind.is-rewound .rewind-label {
+  color: var(--warn);
+}
+
+.rewind-live {
+  padding: 2px 8px;
+  border: 1px solid var(--live);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--live);
+  font-size: var(--size-label);
+  cursor: pointer;
 }
 
 .theme-switch {

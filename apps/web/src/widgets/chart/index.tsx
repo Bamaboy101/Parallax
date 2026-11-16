@@ -191,23 +191,28 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
 
   // Full redraw when history (re)loads, the symbol or the interval changes.
   const { history, tail } = candles;
+  /** Open time of the newest bar on the chart; the library rejects updates older than it. */
+  const newest = useRef(0);
   useEffect(() => {
     const current = handles.current;
     if (!current) return;
     const bars = [...history, ...tail.filter((bar) => bar.ts > (history.at(-1)?.ts ?? 0))];
     current.candles.setData(bars.map(candlePoint));
     current.volume.setData(bars.map(volumePoint));
+    newest.current = bars.at(-1)?.ts ?? 0;
     // `tail` is read once here; later live bars arrive through the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history]);
 
-  // Live last bar(s).
+  // Live last bar(s). Bars older than the chart's newest are already drawn from history.
   useEffect(() => {
     const current = handles.current;
     if (!current) return;
     for (const bar of tail) {
+      if (bar.ts < newest.current) continue;
       current.candles.update(candlePoint(bar));
       current.volume.update(volumePoint(bar));
+      newest.current = bar.ts;
     }
   }, [tail]);
 

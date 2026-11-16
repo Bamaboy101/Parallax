@@ -258,6 +258,42 @@ Every channel keeps 60 minutes of history per symbol, by local arrival time, in 
 The global cursor (`setCursor`) moves every hook to the same moment: each reads the newest value
 at or before it. Live data keeps flowing into history while rewound.
 
+**Rewind scrubber** (`app/RewindScrubber.tsx`, top bar): a range from the later of page open and
+an hour ago, to now, in 5-second steps. The right end, or "Back to live", returns to live. The
+chart, book, tape, watchlist, Constellation and market weather all follow the cursor.
+
+**Sampling** (`store/sampling.ts`): `sampleAt` reads the last value at or before evenly spaced
+moments by binary search in the ring buffers, so statistics never copy an hour of trades.
+`priceGrid` uses the trade price, or the bid/ask mid for FX.
+
+## Constellation and market weather
+
+- **Constellation** (`store/constellation.ts`, `widgets/constellation/`): prices every 5 s over
+  the last 15 minutes; each pair's correlation of 5-second log returns once 24 shared samples
+  exist (about two minutes). Bodies are sized by traded value over the window (FX has no volume,
+  so a fixed size) and coloured by their move. A force layout (`layout.ts`, deterministic)
+  springs every pair to a rest length that shrinks as correlation rises: +1 touching, −1 far
+  apart. It animates until settled; with reduced motion it settles at once and draws one frame.
+  Pairs with |correlation| ≥ 0.5 are joined by a line, dashed when negative. A visually hidden
+  list of buttons mirrors the canvas for keyboard and screen-reader users.
+- **Market weather** (`store/weather.ts`, `app/weather.ts`): every 10 s, each watchlist symbol's
+  last 5 minutes of 10-second return volatility over its hour's; the median ratio sets
+  `data-weather` (calm < 0.8, steady < 1.25, active < 2, stormy) and `--weather` 0..1 on <html>,
+  which tints the glow behind the panels. Nothing is set until there are 10 minutes of returns.
+
+## Linked panels
+
+Each panel with input (symbol, symbols or query) has a link dot in its header: click to cycle
+no group → 1 → 2 → 3 → 4. The group lives in the panel's params (`link`), so it is saved with
+the layout. Picking a symbol in a linked watchlist row or Constellation body calls
+`selectLinked(group, id)` (`store/links.ts`); `useLinkFollower` (`app/links.ts`) then points every
+panel in the group at it: symbol widgets show it, News searches for it (ticker for stocks, name
+otherwise), list widgets keep their lists. Joining a group that already has a symbol adopts it.
+Widgets never touch the dock; they only record the selection.
+
+**Error containment.** Every dock widget renders inside `PanelBoundary`: a widget that throws
+shows "‹Title› stopped working" with Try again, and the rest of the terminal keeps running.
+
 ## Routing and failover
 
 `feeds/router.ts` gives each symbol an ordered list of feeds. The hub keeps the registered feeds
