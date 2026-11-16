@@ -1,0 +1,3 @@
+[{"T":"success","msg":"connected"}]
+[{"T":"success","msg":"authenticated"}]
+[{"T":"subscription","trades":["AAPL","SPY"],"quotes":["AAPL","SPY"],"corrections":["AAPL","SPY"],"cancelErrors":["AAPL","SPY"]}]

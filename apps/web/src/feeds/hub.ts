@@ -124,6 +124,9 @@ export class FeedHub {
           stale: false,
           attempt: 0,
           retryAt: null,
+          symbols: 0,
+          symbolLimit: registration.symbolLimit ?? null,
+          waiting: [],
         },
       };
       ref.current = source;
@@ -179,10 +182,16 @@ export class FeedHub {
       return;
     }
     const candidates = this.candidatesFor(symbol);
-    const source = candidates.find((candidate) => this.usable(candidate)) ?? candidates[0] ?? null;
+    const open = candidates.filter((candidate) => this.usable(candidate));
+    // A usable feed with room serves it. If every usable feed is full it waits; with no usable
+    // feed at all it goes to the first, which reports why (no key, down).
+    const source =
+      open.find((candidate) => this.hasRoom(candidate, symbol)) ??
+      (open.length > 0 ? null : (candidates[0] ?? null));
     this.subscriptions.set(key, { symbol, channel, candidates, source, count: 1 });
+    this.markStatusDirty();
     if (!source) {
-      this.env.log('warn', `no feed supports ${symbol.id}`);
+      if (candidates.length === 0) this.env.log('warn', `no feed supports ${symbol.id}`);
       return;
     }
     source.adapter.subscribe(symbol, channel);
@@ -196,10 +205,13 @@ export class FeedHub {
     subscription.count -= 1;
     if (subscription.count > 0) return;
     this.subscriptions.delete(key);
+    this.markStatusDirty();
     const { source } = subscription;
     if (!source) return;
     source.adapter.unsubscribe(symbol, channel);
     if (!this.hasSubscriptions(source)) this.stop(source);
+    // A capped feed may have room again for a waiting symbol.
+    if (source.registration.symbolLimit !== undefined) this.reassign();
   }
 
   /** Registered feeds for a symbol in router order, then any other feed that supports it. */
@@ -208,6 +220,23 @@ export class FeedHub {
     const order = routeOrder(symbol);
     const ranked = order.flatMap((id) => supporting.filter((source) => source.id === id));
     return [...ranked, ...supporting.filter((source) => !order.includes(source.id))];
+  }
+
+  /** Symbols a source serves, across channels. */
+  private symbolsOn(source: Source): Set<string> {
+    const symbols = new Set<string>();
+    for (const subscription of this.subscriptions.values()) {
+      if (subscription.source === source) symbols.add(subscription.symbol.id);
+    }
+    return symbols;
+  }
+
+  /** Whether a source can take `symbol` without passing its symbol cap. */
+  private hasRoom(source: Source, symbol: SymbolRef): boolean {
+    const limit = source.registration.symbolLimit;
+    if (limit === undefined) return true;
+    const symbols = this.symbolsOn(source);
+    return symbols.has(symbol.id) || symbols.size < limit;
   }
 
   private canRun(source: Source): boolean {
@@ -223,7 +252,9 @@ export class FeedHub {
   private reassign(): void {
     const vacated = new Set<Source>();
     for (const subscription of this.subscriptions.values()) {
-      const next = subscription.candidates.find((candidate) => this.usable(candidate));
+      const next = subscription.candidates.find(
+        (candidate) => this.usable(candidate) && this.hasRoom(candidate, subscription.symbol),
+      );
       const previous = subscription.source;
       if (!next || next === previous) continue;
       subscription.source = next;
@@ -533,8 +564,20 @@ export class FeedHub {
     if (events.length > 0) this.env.post({ type: 'events', events });
     if (this.statusDirty) {
       this.statusDirty = false;
-      this.env.post({ type: 'status', sources: this.sources.map((s) => ({ ...s.status })) });
+      this.env.post({ type: 'status', sources: this.sources.map((s) => this.statusOf(s)) });
     }
+  }
+
+  /** A source's status with its symbol count and waiting list filled in. */
+  private statusOf(source: Source): SourceStatus {
+    const waiting = new Set<string>();
+    for (const subscription of this.subscriptions.values()) {
+      if (subscription.source !== null) continue;
+      if (subscription.candidates.includes(source) && this.usable(source)) {
+        waiting.add(subscription.symbol.id);
+      }
+    }
+    return { ...source.status, symbols: this.symbolsOn(source).size, waiting: [...waiting] };
   }
 
   private setState(source: Source, state: SourceState): void {

@@ -1,8 +1,9 @@
 import { Cell } from '../../design/Cell';
 import '../../design/market.css';
 import { usePriceLine } from '../../store/hooks';
+import { useKeyVault } from '../../store/keys';
 import { instruments, type Instrument } from '../../store/symbols';
-import { RAIL_SYMBOLS } from './meta';
+import { EQUITY_KEY_PROVIDERS, EQUITY_RAIL_SYMBOLS, RAIL_SYMBOLS } from './meta';
 
 function Item({ item }: { item: Instrument }) {
   const line = usePriceLine(item);
@@ -30,11 +31,15 @@ function Item({ item }: { item: Instrument }) {
   );
 }
 
-/** Bottom strip of headline instruments. */
+/** Bottom strip of headline instruments; US index proxies lead once a stock key is saved. */
 export default function TickerRail() {
+  const stocks = useKeyVault((state) =>
+    EQUITY_KEY_PROVIDERS.some((provider) => state.keys[provider] !== undefined),
+  );
+  const symbols = stocks ? [...EQUITY_RAIL_SYMBOLS, ...RAIL_SYMBOLS] : RAIL_SYMBOLS;
   return (
     <ul className="ticker-list" aria-label="Headline markets" tabIndex={0}>
-      {instruments(RAIL_SYMBOLS).map((item) => (
+      {instruments(symbols).map((item) => (
         <Item key={item.id} item={item} />
       ))}
     </ul>

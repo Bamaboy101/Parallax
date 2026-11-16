@@ -23,14 +23,19 @@ const OPEN = 1;
  */
 export abstract class SocketAdapter {
   private socket: SocketLike | null = null;
-  private disposed = false;
+  protected disposed = false;
+  /** Why the connection is being closed from our side; connect() rejects with it. */
+  private failure: Error | undefined;
+  /** The socket opened at least once: a failure before that is a refused handshake. */
+  protected opened = false;
   private keepAliveTimer: number | undefined;
 
   protected constructor(
     protected readonly ctx: AdapterContext,
-    private readonly createSocket: SocketFactory,
+    protected readonly createSocket: SocketFactory,
   ) {}
 
+  /** The stream URL; read once per connection, so it may depend on the key. */
   protected abstract readonly url: string;
   protected abstract onOpen(): void;
   protected abstract onMessage(text: string, receivedAt: number): void;
@@ -41,6 +46,7 @@ export abstract class SocketAdapter {
       const socket = this.createSocket(this.url);
       this.socket = socket;
       socket.onopen = () => {
+        this.opened = true;
         this.onOpen();
       };
       socket.onmessage = (event: MessageEvent) => {
@@ -58,7 +64,8 @@ export abstract class SocketAdapter {
       socket.onclose = (event: CloseEvent) => {
         this.socket = null;
         globalThis.clearInterval(this.keepAliveTimer);
-        if (this.disposed || event.code === 1000) resolve();
+        if (this.failure) reject(this.failure);
+        else if (this.disposed || event.code === 1000) resolve();
         else reject(new Error(`socket closed with code ${String(event.code)}`));
       };
     });
@@ -80,6 +87,12 @@ export abstract class SocketAdapter {
 
   /** Close from our side, e.g. on a server shutdown notice; the hub reconnects. */
   protected close(): void {
+    this.socket?.close();
+  }
+
+  /** End the connection with a reason, e.g. a FeedAuthError when the provider refuses the key. */
+  protected fail(error: Error): void {
+    this.failure = error;
     this.socket?.close();
   }
 

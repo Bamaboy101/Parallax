@@ -45,6 +45,12 @@ export interface SourceStatus {
   attempt: number;
   /** When the next reconnect attempt is due. */
   retryAt: number | null;
+  /** Distinct symbols this source is serving. */
+  symbols: number;
+  /** The provider's stream symbol cap, or null when it has none. */
+  symbolLimit: number | null;
+  /** Symbols that wanted this source but found it full and had no other usable feed. */
+  waiting: string[];
 }
 
 /** Outcome of a 'verify-key' request. */

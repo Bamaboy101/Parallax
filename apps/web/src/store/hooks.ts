@@ -123,32 +123,49 @@ export function useLastPrice(symbol: SymbolRef): LastPrice | undefined {
 
 const DAY_MS = 24 * 3_600_000;
 const DAY_REFRESH_MS = 15 * 60_000;
+/** Long enough to reach the previous session across a weekend or a holiday. */
+const SESSIONS_MS = 5 * DAY_MS;
+
+const newYorkDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' });
 
 export interface PriceLine {
   /** Live price, or the last hourly close until the first live tick arrives. */
   price: number | undefined;
-  /** False while `price` comes from history (an illiquid symbol that has not traded yet). */
+  /** False while `price` comes from history (an illiquid symbol, or a closed market). */
   live: boolean;
   /** The feed behind the live price. */
   source: string | undefined;
-  /** Percent change against the price 24 hours ago, when known. */
+  /**
+   * Percent change: against the price 24 hours ago for crypto and FX, against the previous
+   * session's last close for US stocks (whose markets close nights and weekends).
+   */
   changePct: number | undefined;
-  /** Hourly closes over the last 24 hours, oldest first, for sparklines. */
+  /** Hourly closes for sparklines: the last 24 hours, or the latest session for US stocks. */
   closes: number[];
 }
 
-/** Price, rolling 24-hour change and hourly closes; history refreshes every 15 minutes. */
+/** Price, change and hourly closes; history refreshes every 15 minutes. */
 export function usePriceLine(symbol: SymbolRef): PriceLine {
   const last = useLastPrice(symbol);
-  const history = useHistory(symbol, '1h', DAY_MS, DAY_REFRESH_MS);
+  const equity = symbol.kind === 'equity';
+  const history = useHistory(symbol, '1h', equity ? SESSIONS_MS : DAY_MS, DAY_REFRESH_MS);
   const bars = history?.bars ?? [];
   const price = last?.price ?? bars.at(-1)?.close;
-  const base = bars[0]?.open;
+  let base = bars[0]?.open;
+  let closes = bars.map((bar) => bar.close);
+  if (equity) {
+    // Split hourly bars by New York trading date: the latest date is the current session.
+    const latest = bars.at(-1);
+    const session = latest ? newYorkDate.format(latest.ts) : undefined;
+    const today = bars.filter((bar) => newYorkDate.format(bar.ts) === session);
+    base = [...bars].reverse().find((bar) => newYorkDate.format(bar.ts) !== session)?.close;
+    closes = today.map((bar) => bar.close);
+  }
   return {
     price,
     live: last !== undefined,
     source: last?.source,
     changePct: price !== undefined && base ? (price / base - 1) * 100 : undefined,
-    closes: bars.map((bar) => bar.close),
+    closes,
   };
 }

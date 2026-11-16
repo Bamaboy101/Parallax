@@ -184,6 +184,43 @@ body {
   max-height: 20px;
 }
 
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--size-label);
+  white-space: nowrap;
+}
+
+.connection-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-family: var(--font-num);
+}
+
+.connection-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.connection-dot.is-live {
+  background: var(--live);
+}
+
+.connection-cap {
+  overflow: hidden;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  border-radius: 999px;
+  color: var(--warn);
+  text-overflow: ellipsis;
+}
+
 .theme-switch {
   display: grid;
   place-items: center;

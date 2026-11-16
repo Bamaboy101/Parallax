@@ -3,6 +3,7 @@ import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
 import TickerRail from '../widgets/ticker-rail';
 import { Clock } from './Clock';
 import { runCommand } from './commands';
+import { ConnectionStatus } from './ConnectionStatus';
 import { DockArea } from './DockArea';
 import { widgetMeta } from './widgets';
 
@@ -42,6 +43,7 @@ export function Shell() {
           <CommandTrigger />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-4">
+          <ConnectionStatus />
           <Clock />
           <button
             type="button"

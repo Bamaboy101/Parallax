@@ -140,4 +140,9 @@ export interface StalePolicy {
 export interface AdapterRegistration {
   factory: AdapterFactory;
   stale: StalePolicy;
+  /**
+   * Most distinct symbols one connection may stream (Alpaca Basic: 30). The hub never routes
+   * more; extra symbols go to the next feed, or wait and are reported in the source status.
+   */
+  symbolLimit?: number;
 }

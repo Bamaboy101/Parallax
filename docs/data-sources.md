@@ -47,3 +47,54 @@ live recordings (`apps/web/src/feeds/adapters/fixtures/`), on 16 Nov 2026.
 - Pairs: crypto against USD and USDT, and these 12 spot FX pairs (confirmed from the public
   `AssetPairs` endpoint): AUD/JPY, AUD/USD, EUR/AUD, EUR/CAD, EUR/CHF, EUR/GBP, EUR/JPY, EUR/USD,
   GBP/USD, USD/CAD, USD/CHF, USD/JPY. These are exchange prices, not interbank rates.
+
+## Alpaca Market Data, Basic plan (`feeds/adapters/alpaca.ts`)
+
+Needs the user's free key: key ID and secret, stored joined as `KEY_ID:SECRET`.
+
+- Stream: `wss://stream.data.alpaca.markets/v2/iex`. The free plan streams the IEX exchange only:
+  prices track the full market closely on liquid names, volume is partial.
+- Handshake: `[{"T":"success","msg":"connected"}]`, then `{"action":"auth",...}` →
+  `authenticated`, then subscriptions. A bad key gets `{"T":"error","code":402}` (recorded); the
+  adapter rejects with FeedAuthError. `406 connection limit exceeded` (another app or tab on the
+  same key) is retried with backoff, not treated as a bad key.
+- Channels used: `trades` (tape and live 1-minute bars, built from prints so the last bar moves
+  with every trade) and `quotes`. Trade corrections and cancels are not applied. IEX has no order
+  book, so the Order book widget has nothing to show for US stocks.
+- Limits (Alpaca's plan table): **30 symbols** on the stream, one connection per endpoint, 200
+  history calls a minute, history since 2016. The hub never routes more than 30 symbols to
+  Alpaca: extra symbols go to Finnhub when its key is saved, otherwise they wait, and the top bar
+  and Settings name them.
+- History: `GET https://data.alpaca.markets/v2/stocks/{symbol}/bars` with `feed=iex`,
+  `adjustment=split`, key in the `APCA-API-KEY-ID` / `APCA-API-SECRET-KEY` headers (CORS allows
+  them), paged by `next_page_token`. An empty range returns `"bars": null` (recorded).
+- Key test: the always-on test stream `wss://stream.data.alpaca.markets/v2/test`; the key passes
+  once a `FAKEPACA` message arrives (about every 5 s, recorded). It is a separate endpoint, so it
+  does not take the live stream's one connection.
+- Recorded 16 Nov 2026 with a free key, markets closed: the IEX handshake and subscription
+  confirmation, the test stream's FAKEPACA quotes and trades, and one page of AAPL hourly bars.
+  Real AAPL prints are confirmed after the 18:30 Dubai open (T20).
+
+## Finnhub, free plan (`feeds/adapters/finnhub.ts`)
+
+Needs the user's free key.
+
+- Stream: `wss://ws.finnhub.io?token=…`; the token can only go in the URL, which is never logged.
+  Messages: `{"type":"trade","data":[{"s","p","v","t"}]}` (recorded), plus `{"type":"ping"}`.
+  Trades only; the adapter builds 1-minute bars from them.
+- Limits (Finnhub pricing page): 60 REST calls a minute, plus 30 a second on every plan;
+  **50 symbols** on the stream; one connection per key. Personal-use licence.
+- Stock candles are a paid feature: a free key gets `403 You don't have access to this resource`
+  (recorded). Finnhub therefore serves no history; Alpaca does.
+- A refused token fails the WebSocket handshake with no readable reason (close code 1006, the
+  same as a network failure). After a handshake that never opened, the adapter asks
+  `GET /api/v1/quote?symbol=AAPL`: 401 means the key is refused. The token rides in that URL too,
+  because Finnhub's CORS preflight does not allow its `X-Finnhub-Token` header from a browser.
+- Recorded 16 Nov 2026 with a free key on `BINANCE:BTCUSDT`, which trades around the clock; stock
+  trades use the same message format.
+
+## US market hours
+
+Equity feeds turn stale after 30 s without a message, counted only during the regular session
+(Mon–Fri 09:30–16:00 New York time; exchange holidays are not modelled). Outside it, the watchlist
+and ticker rail show the last hourly close and the change since the previous session's close.

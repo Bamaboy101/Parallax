@@ -522,3 +522,51 @@ describe('FeedHub key check', () => {
     ]);
   });
 });
+
+describe('FeedHub symbol caps', () => {
+  const stock = (id: string): SymbolRef => ({ id, kind: 'equity', base: id, quote: 'USD' });
+
+  function cappedFeed(id: string, limit?: number) {
+    const feed = fakeFeed(id, ['equity'], { needsKey: true });
+    if (limit !== undefined) feed.registration.symbolLimit = limit;
+    return feed;
+  }
+
+  it('sends symbols past a cap to the next feed, and back once room frees up', () => {
+    const alpaca = cappedFeed('alpaca', 2);
+    const finnhub = cappedFeed('finnhub');
+    const hub = startHub([alpaca.registration, finnhub.registration]);
+    hub.handle({ type: 'keys', keys: { alpaca: 'ID:SECRET', finnhub: 'token' } });
+    hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'trade' });
+    hub.handle({ type: 'subscribe', symbol: stock('MSFT'), channel: 'trade' });
+    // A second channel on a symbol already streaming takes no extra room.
+    hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'quote' });
+    hub.handle({ type: 'subscribe', symbol: stock('NVDA'), channel: 'trade' });
+
+    expect(alpaca.latest().subscriptions).toEqual(
+      new Set(['AAPL|trade', 'MSFT|trade', 'AAPL|quote']),
+    );
+    expect(finnhub.latest().subscriptions).toEqual(new Set(['NVDA|trade']));
+
+    hub.handle({ type: 'unsubscribe', symbol: stock('MSFT'), channel: 'trade' });
+    expect(alpaca.latest().subscriptions).toEqual(
+      new Set(['AAPL|trade', 'AAPL|quote', 'NVDA|trade']),
+    );
+    expect(finnhub.latest().subscriptions.size).toBe(0);
+  });
+
+  it('reports symbols left waiting when no other feed can take them', async () => {
+    const alpaca = cappedFeed('alpaca', 1);
+    const hub = startHub([alpaca.registration]);
+    hub.handle({ type: 'keys', keys: { alpaca: 'ID:SECRET' } });
+    hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'trade' });
+    hub.handle({ type: 'subscribe', symbol: stock('MSFT'), channel: 'trade' });
+    await advance(FRAME_MS);
+    expect(lastStatus('alpaca')).toMatchObject({ symbols: 1, symbolLimit: 1, waiting: ['MSFT'] });
+
+    hub.handle({ type: 'unsubscribe', symbol: stock('AAPL'), channel: 'trade' });
+    await advance(FRAME_MS);
+    expect(lastStatus('alpaca')).toMatchObject({ symbols: 1, waiting: [] });
+    expect(alpaca.latest().subscriptions).toEqual(new Set(['MSFT|trade']));
+  });
+});

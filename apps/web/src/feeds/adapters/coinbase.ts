@@ -7,6 +7,7 @@ import {
   type FeedAdapter,
   type SymbolRef,
 } from '../types';
+import { MinuteBars } from './bars';
 import { field, levels, list, num, parseFrame, str, time, type Json } from './parse';
 import { aggregate, getJson, throttle, tidy } from './rest';
 import { SocketAdapter, browserSocket, type SocketFactory } from './socket';
@@ -29,7 +30,6 @@ const GRANULARITY: Record<BarInterval, BarInterval> = {
 };
 /** Coinbase allows about 8 requests per second per IP; batch changes into one frame per gap. */
 const CONTROL_GAP_MS = 150;
-const MINUTE_MS = 60_000;
 
 /**
  * Upstream channel per app channel. `level2` needs authentication; `level2_batch` is the keyless
@@ -58,7 +58,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
   private readonly toSubscribe = new Map<string, Set<string>>();
   private readonly toUnsubscribe = new Map<string, Set<string>>();
   private flushTimer: number | undefined;
-  private readonly bars = new Map<string, Bar>();
+  private readonly bars = new MinuteBars();
 
   constructor(ctx: AdapterContext, createSocket: SocketFactory = browserSocket) {
     super(ctx, createSocket);
@@ -256,17 +256,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
     price: number,
     size: number,
   ): void {
-    const open = Math.floor(ts / MINUTE_MS) * MINUTE_MS;
-    let bar = this.bars.get(product);
-    if (bar && open < bar.ts) return; // out-of-order match from a closed minute
-    if (!bar || open > bar.ts) {
-      bar = { ts: open, open: price, high: price, low: price, close: price, volume: 0 };
-      this.bars.set(product, bar);
-    }
-    bar.high = Math.max(bar.high, price);
-    bar.low = Math.min(bar.low, price);
-    bar.close = price;
-    bar.volume += size;
-    this.ctx.emit({ ...base, channel: 'bar', interval: '1m', ...bar });
+    const bar = this.bars.fold(product, ts, price, size);
+    if (bar) this.ctx.emit({ ...base, channel: 'bar', interval: '1m', ...bar });
   }
 }

@@ -148,6 +148,16 @@ function ProviderKeys({ provider }: { provider: KeyProvider }) {
         {checkMessage(check, provider.name)}
       </p>
       <p className="settings-state">{feedState(stored !== undefined, status)}</p>
+      {status?.symbolLimit != null && status.symbols > 0 && (
+        <p className="settings-state">
+          Streaming {status.symbols} of {status.symbolLimit} symbols allowed on the free plan
+        </p>
+      )}
+      {status !== undefined && status.waiting.length > 0 && (
+        <p className="settings-check settings-check--bad">
+          Over the free limit, not streaming: {status.waiting.join(', ')}
+        </p>
+      )}
     </section>
   );
 }

@@ -68,9 +68,19 @@ export default function Watchlist({ api, params }: IDockviewPanelProps<Watchlist
     <div className="market-panel watchlist-panel">
       <div className="market-columns watchlist-columns">
         <span>Symbol</span>
-        <span className="watchlist-sparkline">24h</span>
+        <span
+          className="watchlist-sparkline"
+          title="Last 24 hours; the latest session for US stocks"
+        >
+          Trend
+        </span>
         <span className="text-right">Last</span>
-        <span className="text-right">Chg 24h</span>
+        <span
+          className="text-right"
+          title="24-hour change; for US stocks, change since the previous session's close"
+        >
+          Chg
+        </span>
       </div>
       <ul>
         {items.map((item) => (

@@ -38,8 +38,18 @@ const fx = (base: string, quote: string, decimals = 5): Instrument => ({
   decimals,
   note: 'exchange FX',
 });
+const equity = (ticker: string, name: string, note?: string): Instrument => ({
+  id: ticker,
+  kind: 'equity',
+  base: ticker,
+  quote: 'USD',
+  label: ticker,
+  name,
+  decimals: 2,
+  ...(note === undefined ? {} : { note }),
+});
 
-/** Keyless instruments. US stocks and ETF proxies join with their adapters in T13. */
+/** Crypto and FX need no key; US stocks and ETF proxies stream with an Alpaca or Finnhub key. */
 export const INSTRUMENTS: readonly Instrument[] = [
   crypto('BTC', 'USD', 'Bitcoin'),
   crypto('ETH', 'USD', 'Ether'),
@@ -66,6 +76,23 @@ export const INSTRUMENTS: readonly Instrument[] = [
   fx('EUR', 'CAD'),
   fx('EUR', 'AUD'),
   fx('AUD', 'JPY', 3),
+  equity('SPY', 'SPDR S&P 500 ETF', 'S&P 500 proxy'),
+  equity('QQQ', 'Invesco QQQ Trust', 'Nasdaq-100 proxy'),
+  equity('DIA', 'SPDR Dow Jones Industrial Average ETF', 'Dow proxy'),
+  equity('IWM', 'iShares Russell 2000 ETF', 'Russell 2000 proxy'),
+  equity('USO', 'United States Oil Fund', 'oil proxy, US hours'),
+  equity('AAPL', 'Apple'),
+  equity('MSFT', 'Microsoft'),
+  equity('NVDA', 'NVIDIA'),
+  equity('AMZN', 'Amazon'),
+  equity('GOOGL', 'Alphabet'),
+  equity('META', 'Meta Platforms'),
+  equity('TSLA', 'Tesla'),
+  equity('AMD', 'Advanced Micro Devices'),
+  equity('NFLX', 'Netflix'),
+  equity('JPM', 'JPMorgan Chase'),
+  equity('V', 'Visa'),
+  equity('XOM', 'Exxon Mobil'),
 ];
 
 const byId = new Map(INSTRUMENTS.map((instrument) => [instrument.id, instrument]));

@@ -9,5 +9,11 @@ export const meta: WidgetMeta = {
   input: 'none',
 };
 
-/** Headline instruments. ETF index proxies (SPY, QQQ, DIA, IWM) join with the equity feeds. */
+/** Headline instruments that need no key. */
 export const RAIL_SYMBOLS = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'PAXG-USD', 'EUR-USD', 'USD-JPY'];
+
+/** US index proxies, shown first once a stock feed key is saved. */
+export const EQUITY_RAIL_SYMBOLS = ['SPY', 'QQQ', 'DIA', 'IWM'];
+
+/** Feeds whose key switches on US stocks. */
+export const EQUITY_KEY_PROVIDERS = ['alpaca', 'finnhub'];

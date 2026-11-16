@@ -244,14 +244,21 @@ at or before it. Live data keeps flowing into history while rewound.
 
 `feeds/router.ts` gives each symbol an ordered list of feeds. The hub keeps the registered feeds
 that support the symbol, in that order, and serves each subscription from the first usable one
-(not `down`, not `auth-failed`, has its key).
+(not `down`, not `auth-failed`, has its key) that has room under its symbol cap.
 
 | Symbol                 | Order            |
 | ---------------------- | ---------------- |
 | Crypto against USD     | Coinbase, Kraken |
 | Crypto against USDT    | Binance, Kraken  |
 | FX (Kraken's 12 pairs) | Kraken           |
-| US stocks (T13)        | Alpaca, Finnhub  |
+| US stocks              | Alpaca, Finnhub  |
+
+**Symbol caps.** A registration may set `symbolLimit` (Alpaca 30, Finnhub 50: their free stream
+limits). The hub counts distinct symbols per feed across channels and never routes more. A symbol
+past the cap goes to the next usable feed; with none, it waits with no feed. Each
+`SourceStatus` carries `symbols`, `symbolLimit` and `waiting`; the top bar and Settings show a
+warning naming the waiting symbols. When a capped feed drops a symbol, waiting or overflowed
+symbols move back to it.
 
 USD pairs never route to Binance: Binance quotes USDT, and a USDT price is never shown under a USD
 label. A USDT pair keeps its USDT label on every feed.

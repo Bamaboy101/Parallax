@@ -37,9 +37,10 @@ export class FakeSocket implements SocketLike {
   }
 }
 
-/** Build an adapter wired to a fake socket and an event collector. */
+/** Build an adapter wired to a fake socket and an event collector, with optional stored keys. */
 export function harness<A extends FeedAdapter>(
   create: (ctx: AdapterContext, createSocket: SocketFactory) => A,
+  keys: Readonly<Record<string, string>> = {},
 ) {
   const events: FeedEvent[] = [];
   const logs: string[] = [];
@@ -47,7 +48,7 @@ export function harness<A extends FeedAdapter>(
   const adapter = create(
     {
       emit: (event) => events.push(event),
-      getKey: () => undefined,
+      getKey: (provider) => keys[provider],
       log: (level, message) => logs.push(`${level}: ${message}`),
     },
     (url) => {

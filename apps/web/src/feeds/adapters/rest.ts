@@ -16,9 +16,24 @@ export function throttle(gapMs: number) {
   };
 }
 
-export async function getJson(url: string): Promise<unknown> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${String(response.status)} from ${new URL(url).host}`);
+/** A non-2xx response. `status` lets adapters map 401/403 to FeedAuthError. */
+export class HttpError extends Error {
+  override name = 'HttpError';
+  constructor(
+    readonly status: number,
+    host: string,
+  ) {
+    super(`HTTP ${String(status)} from ${host}`);
+  }
+}
+
+/**
+ * GET JSON. Keys go in `headers` where the provider's CORS allows it. HttpError names only the
+ * host, so a key in a query string never reaches a message or a log.
+ */
+export async function getJson(url: string, headers?: Record<string, string>): Promise<unknown> {
+  const response = await fetch(url, headers ? { headers } : undefined);
+  if (!response.ok) throw new HttpError(response.status, new URL(url).host);
   return response.json() as Promise<unknown>;
 }
 
