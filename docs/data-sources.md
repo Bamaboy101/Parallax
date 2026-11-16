@@ -86,6 +86,9 @@ Needs the user's free key.
   **50 symbols** on the stream; one connection per key. Personal-use licence.
 - Stock candles are a paid feature: a free key gets `403 You don't have access to this resource`
   (recorded). Finnhub therefore serves no history; Alpaca does.
+- Company news: `GET /api/v1/company-news?symbol=&from=&to=` works on the free plan (recorded:
+  87 AAPL items over 3 days, `{headline, url, source, datetime (s), summary}`). The adapter keeps
+  the newest 50. It shares the 60-a-minute budget with key checks (one request a second).
 - A refused token fails the WebSocket handshake with no readable reason (close code 1006, the
   same as a network failure). After a handshake that never opened, the adapter asks
   `GET /api/v1/quote?symbol=AAPL`: 401 means the key is refused. The token rides in that URL too,

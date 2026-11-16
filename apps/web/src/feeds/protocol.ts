@@ -1,4 +1,4 @@
-import type { Bar, BarInterval, Channel, FeedEvent, SymbolRef } from './types';
+import type { Bar, BarInterval, Channel, FeedEvent, NewsItem, SymbolRef } from './types';
 
 /** Messages from the app to the hub worker. */
 export type HubRequest =
@@ -14,6 +14,8 @@ export type HubRequest =
       from: number;
       to: number;
     }
+  /** Company news for a symbol from the first feed that has it. */
+  | { type: 'news'; requestId: number; symbol: SymbolRef; from: number; to: number }
   /** Check a key the user has typed, before it is saved. */
   | { type: 'verify-key'; requestId: number; provider: string; key: string };
 
@@ -66,4 +68,6 @@ export type HubMessage =
   | { type: 'status'; sources: SourceStatus[] }
   | { type: 'history'; requestId: number; bars: Bar[] }
   | { type: 'history-error'; requestId: number; message: string }
+  | { type: 'news'; requestId: number; items: NewsItem[]; source: string }
+  | { type: 'news-error'; requestId: number; message: string }
   | { type: 'verify-result'; requestId: number; outcome: VerifyOutcome };

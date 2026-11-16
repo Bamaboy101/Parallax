@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FeedAuthError, type SymbolRef } from '../types';
 import { FinnhubAdapter } from './finnhub';
 import recording from './fixtures/finnhub.jsonl?raw';
+import companyNews from './fixtures/finnhub-news.json?raw';
 import { harness } from './testing';
 
 const AAPL: SymbolRef = { id: 'AAPL', kind: 'equity', base: 'AAPL', quote: 'USD' };
@@ -95,5 +96,33 @@ describe('FinnhubAdapter', () => {
     const error: unknown = await done.catch((reason: unknown) => reason);
     expect(error).toBeInstanceOf(Error);
     expect(error).not.toBeInstanceOf(FeedAuthError);
+  });
+
+  it('normalises recorded company news, newest first, for the requested days', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(companyNews));
+    vi.stubGlobal('fetch', fetchMock);
+    const { adapter } = create();
+
+    const items = await adapter.fetchNews(
+      AAPL,
+      Date.parse('2026-11-13T12:00:00Z'),
+      Date.parse('2026-11-16T12:00:00Z'),
+    );
+
+    expect(items).toHaveLength(3);
+    expect(items[0]).toEqual({
+      title: expect.stringContaining('AAPL Stock Posted Best Week In 4 Months') as string,
+      url: expect.stringMatching(/^https:\/\/finnhub\.io\/api\/news\?id=/) as string,
+      source: 'Yahoo',
+      published: 1794815165000,
+      summary: expect.stringContaining('smart glasses') as string,
+    });
+    expect(items.map((item) => item.published)).toEqual([
+      1794815165000, 1794808800000, 1794807120000,
+    ]);
+    const [url] = (fetchMock.mock.calls[0] ?? []) as [string];
+    expect(url).toBe(
+      'https://finnhub.io/api/v1/company-news?symbol=AAPL&from=2026-11-13&to=2026-11-16&token=tok%2Fen',
+    );
   });
 });

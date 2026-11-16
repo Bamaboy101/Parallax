@@ -1,0 +1,35 @@
+[
+  {
+    "category": "company",
+    "datetime": 1794815165,
+    "headline": "AAPL Stock Posted Best Week In 4 Months Amid Nvidia Disruption: Apple Reportedly Plans Smart Glasses To Rival Meta Next Year",
+    "id": 143843604,
+    "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+    "related": "AAPL",
+    "source": "Yahoo",
+    "summary": "Apple’s rumoured smart glasses will debut at WWDC 2027, Bloomberg reported.",
+    "url": "https://finnhub.io/api/news?id=f32140d466536638fc7873c97de37c8e361045337d321591a5ad01a7602e3772"
+  },
+  {
+    "category": "company",
+    "datetime": 1794808800,
+    "headline": "Pixalate Adds Vizio, VIDAA (Hisense), and Titan OS Across 85 Country Storefronts, Expanding CTV App Store Intelligence to 8 Platforms",
+    "id": 143843605,
+    "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+    "related": "AAPL",
+    "source": "Yahoo",
+    "summary": "Adding 1,275 apps to existing coverage of Roku, Amazon Fire TV, Samsung, Apple tvOS, and LG, Pixalate enables platforms to filter out the 71–74% of unmapped Bundle IDs observed on Vizio, VIDAA (Hisense), and Titan OS trafficLONDON, Nov. 16, 2026 (GLOBE NEWSWIRE) -- Pixalate, a global ad fraud and privacy compliance platform, today added the Vizio, VIDAA (Hisense) and Titan OS app stores, spanning VIDAA storefronts in 25 countries, Titan OS storefronts in 57 countries, and Vizio storefronts acros",
+    "url": "https://finnhub.io/api/news?id=e593b3872528947cd0125f0f362c130ca18572ae31cf9389b47385f0b6e272fc"
+  },
+  {
+    "category": "company",
+    "datetime": 1794807120,
+    "headline": "Biel Crystal Stands as a Primary UTG Supplier for iPhone Duo",
+    "id": 143842461,
+    "image": "https://s.yimg.com/rz/stage/p/yahoo_finance_en-US_h_p_finance_2.png",
+    "related": "AAPL",
+    "source": "Yahoo",
+    "summary": "The launch of Apple's first foldable iPhone, the iPhone Duo, has brought ultra-thin flexible glass (UTG) into the industry spotlight. Leveraging extensive expertise in back-end precision finishing and large-scale delivery capabilities, Biel Crystal has become a core UTG supplier for the model. Its dedicated UTG production lines in Huizhou and Vietnam began volume shipments at the end of the second quarter this year and have been running at full capacity for several months, providing stable suppo",
+    "url": "https://finnhub.io/api/news?id=dda3dba71cd334da0bec7980a84b6cc8b93f8df79e0ef98f368d5d7d46451a48"
+  }
+]

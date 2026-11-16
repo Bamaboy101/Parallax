@@ -66,7 +66,7 @@ export function suggest(
       }));
   }
 
-  const commandable = widgets.filter((widget) => widget.dock && widget.input !== 'none');
+  const commandable = widgets.filter((widget) => widget.dock);
   let widget: WidgetMeta | undefined;
   let interval: BarInterval | undefined;
   const words: string[] = [];
@@ -77,6 +77,17 @@ export function suggest(
     else words.push(token);
   }
   const text = words.join(' ');
+
+  if (widget?.input === 'none') {
+    return [
+      {
+        id: `open:${widget.id}`,
+        title: `Open ${widget.title}`,
+        detail: '',
+        command: { kind: 'open', widget },
+      },
+    ];
+  }
 
   if (widget?.input === 'query') {
     const query = text === '' ? undefined : text;

@@ -79,6 +79,8 @@ interface FeedAdapter {
   dispose(): void;
   /** Optional REST history. Only the hub calls this; it writes the result to the store. */
   fetchHistory?(symbol: SymbolRef, interval: BarInterval, from: number, to: number): Promise<Bar[]>;
+  /** Optional company news, newest first. Only the hub calls this. */
+  fetchNews?(symbol: SymbolRef, from: number, to: number): Promise<NewsItem[]>;
   /**
    * Optional key check for Settings' "Test my key". Resolves when the provider accepts the key
    * from ctx.getKey; rejects with FeedAuthError when it refuses it, with any other error when the
@@ -118,10 +120,13 @@ The app talks to the worker only through these messages (`feeds/protocol.ts`).
 | app → hub | `keys`          | Full replacement of the user's keys; changed keys restart sources |
 | app → hub | `verify-key`    | Check a typed, unsaved key for one provider                       |
 | app → hub | `history`       | Request bars for a symbol, interval and time range                |
+| app → hub | `news`          | Request company news for a symbol and time range                  |
 | hub → app | `events`        | One batch per frame                                               |
 | hub → app | `status`        | Every source's `SourceStatus`, on change and once a second        |
 | hub → app | `history`       | The bars for a request                                            |
 | hub → app | `history-error` | The request could not be served                                   |
+| hub → app | `news`          | The headlines, and the feed that supplied them                    |
+| hub → app | `news-error`    | No usable feed with news, or the request failed                   |
 | hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason |
 
 **Key vault.** `store/keys.ts` keeps keys by provider id in `localStorage`
@@ -210,6 +215,19 @@ bar event's `ts` is the bar's open time.
 
 `fetchHistory(symbol, interval, from, to)` is called by the hub only. The hub writes the bars to
 the store. Widgets ask the store for history and never call `fetchHistory`.
+
+## News
+
+The News widget (`store/news.ts`) merges two sources, newest first, one entry per link or
+headline:
+
+- Publisher RSS from the edge (`/news?q=`), for everyone, no key.
+- Company news through the hub (`fetchNews`), only for a catalogue stock and only when a feed
+  with news is usable, i.e. the user has saved a Finnhub key. It goes from the browser to
+  Finnhub on the user's own key, never through the edge: Finnhub's free licence is personal.
+
+A query that is a catalogue ticker searches RSS by company name ("aapl" → "Apple"), because
+headlines rarely carry tickers. `NewsItem` is `{ title, url, source, published, summary }`.
 
 ## Tick store and Rewind
 

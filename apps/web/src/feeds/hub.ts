@@ -157,6 +157,9 @@ export class FeedHub {
           request.to,
         );
         break;
+      case 'news':
+        this.fetchNews(request.requestId, request.symbol, request.from, request.to);
+        break;
       case 'verify-key':
         this.verifyKey(request.requestId, request.provider, request.key);
         break;
@@ -452,6 +455,28 @@ export class FeedHub {
           requestId,
           message: describeError(error),
         });
+      },
+    );
+  }
+
+  /** Company news from the first usable feed for the symbol that offers it. */
+  private fetchNews(requestId: number, symbol: SymbolRef, from: number, to: number): void {
+    const source = this.candidatesFor(symbol).find(
+      (candidate) => candidate.adapter.fetchNews !== undefined && this.usable(candidate),
+    );
+    const fetchNews = source?.adapter.fetchNews?.bind(source.adapter);
+    if (!source || !fetchNews) {
+      this.env.post({ type: 'news-error', requestId, message: `No news source for ${symbol.id}` });
+      return;
+    }
+    fetchNews(symbol, from, to).then(
+      (items) => {
+        if (!this.disposed) this.env.post({ type: 'news', requestId, items, source: source.id });
+      },
+      (error: unknown) => {
+        if (!this.disposed) {
+          this.env.post({ type: 'news-error', requestId, message: describeError(error) });
+        }
       },
     );
   }

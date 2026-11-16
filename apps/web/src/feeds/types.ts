@@ -81,6 +81,17 @@ export interface BarEvent extends BaseEvent, Bar {
 
 export type FeedEvent = TradeEvent | QuoteEvent | BookEvent | BarEvent;
 
+/** One headline, from a feed's company news or the edge's publisher RSS. */
+export interface NewsItem {
+  title: string;
+  url: string;
+  /** Publisher name, e.g. 'Reuters'. */
+  source: string;
+  /** Epoch ms; 0 when unknown. */
+  published: number;
+  summary: string;
+}
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 /** Never pass a key, or a URL that contains one, to a logger. */
@@ -115,6 +126,8 @@ export interface FeedAdapter {
   dispose(): void;
   /** Optional REST history. Only the hub calls this. */
   fetchHistory?(symbol: SymbolRef, interval: BarInterval, from: number, to: number): Promise<Bar[]>;
+  /** Optional company news for a symbol, newest first. Only the hub calls this. */
+  fetchNews?(symbol: SymbolRef, from: number, to: number): Promise<NewsItem[]>;
   /**
    * Optional key check for the Settings "test my key" button. Resolves when the provider accepts
    * the key from `ctx.getKey`, rejects with FeedAuthError when it refuses it, and with any other

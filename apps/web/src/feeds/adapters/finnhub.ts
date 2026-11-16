@@ -3,6 +3,7 @@ import {
   type AdapterContext,
   type Channel,
   type FeedAdapter,
+  type NewsItem,
   type SymbolRef,
 } from '../types';
 import { MinuteBars } from './bars';
@@ -14,8 +15,10 @@ const STREAM = 'wss://ws.finnhub.io';
 const REST = 'https://finnhub.io/api/v1';
 /** Free plan: 50 symbols on the stream. The hub enforces it through the registration. */
 export const FINNHUB_SYMBOL_LIMIT = 50;
-/** Free plan: 60 REST calls a minute. Only key checks use REST here. */
+/** Free plan: 60 REST calls a minute, shared by key checks and company news. */
 const restQueue = throttle(1000);
+/** Company news items kept per request. */
+const NEWS_LIMIT = 50;
 
 /** Channels the free trade stream can serve; quotes and books are not offered. */
 const SERVED = new Set<Channel>(['trade', 'bar']);
@@ -76,20 +79,51 @@ export class FinnhubAdapter extends SocketAdapter implements FeedAdapter {
     }
   }
 
-  /**
-   * One quote request: 401 means Finnhub refuses the key. The token rides in the query because
-   * Finnhub's CORS preflight does not allow its X-Finnhub-Token header from a browser; HttpError
-   * carries only the host, so the URL is never logged.
-   */
+  /** One quote request: 401 means Finnhub refuses the key. */
   async verifyKey(): Promise<void> {
+    await this.rest('/quote?symbol=AAPL');
+  }
+
+  /** Company news (free plan: North American companies), newest first. */
+  async fetchNews(symbol: SymbolRef, from: number, to: number): Promise<NewsItem[]> {
+    const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+    const body = await this.rest(
+      `/company-news?symbol=${encodeURIComponent(symbol.base)}&from=${day(from)}&to=${day(to)}`,
+    );
+    if (!Array.isArray(body)) throw new Error('company news is not a list');
+    return body
+      .flatMap((row): NewsItem[] =>
+        isObject(row) && typeof row.headline === 'string' && typeof row.url === 'string'
+          ? [
+              {
+                title: row.headline.trim(),
+                url: row.url,
+                source: typeof row.source === 'string' ? row.source : 'Finnhub',
+                published: typeof row.datetime === 'number' ? row.datetime * 1000 : 0,
+                summary: typeof row.summary === 'string' ? row.summary.trim() : '',
+              },
+            ]
+          : [],
+      )
+      .sort((a, b) => b.published - a.published)
+      .slice(0, NEWS_LIMIT);
+  }
+
+  /**
+   * GET a REST path with the user's token. The token rides in the query because Finnhub's CORS
+   * preflight does not allow its X-Finnhub-Token header from a browser; HttpError carries only
+   * the host, so the URL is never logged. 401 means Finnhub refuses the key.
+   */
+  private async rest(path: string): Promise<unknown> {
     const token = this.ctx.getKey(this.id);
     if (!token) throw new FeedAuthError('no Finnhub key');
+    const separator = path.includes('?') ? '&' : '?';
     try {
-      await restQueue(() =>
-        getJson(`${REST}/quote?symbol=AAPL&token=${encodeURIComponent(token)}`),
+      return await restQueue(() =>
+        getJson(`${REST}${path}${separator}token=${encodeURIComponent(token)}`),
       );
     } catch (error) {
-      if (error instanceof HttpError && (error.status === 401 || error.status === 403)) {
+      if (error instanceof HttpError && error.status === 401) {
         throw new FeedAuthError('Finnhub rejected the key');
       }
       throw error;

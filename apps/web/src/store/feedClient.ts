@@ -1,5 +1,5 @@
 import type { HubMessage, HubRequest, VerifyOutcome } from '../feeds/protocol';
-import type { Bar, BarInterval, Channel, SymbolRef } from '../feeds/types';
+import type { Bar, BarInterval, Channel, NewsItem, SymbolRef } from '../feeds/types';
 import { useKeyVault } from './keys';
 import { ingest, setStatuses } from './ticks';
 
@@ -16,6 +16,16 @@ const pendingHistory = new Map<
   { resolve: (bars: Bar[]) => void; reject: (error: Error) => void }
 >();
 const pendingVerify = new Map<number, (outcome: VerifyOutcome) => void>();
+
+/** Company news and the feed it came from. */
+export interface CompanyNews {
+  items: NewsItem[];
+  source: string;
+}
+const pendingNews = new Map<
+  number,
+  { resolve: (news: CompanyNews) => void; reject: (error: Error) => void }
+>();
 
 function nextId(): number {
   const id = nextRequestId;
@@ -38,6 +48,14 @@ function handle(message: HubMessage): void {
     case 'history-error':
       pendingHistory.get(message.requestId)?.reject(new Error(message.message));
       pendingHistory.delete(message.requestId);
+      break;
+    case 'news':
+      pendingNews.get(message.requestId)?.resolve({ items: message.items, source: message.source });
+      pendingNews.delete(message.requestId);
+      break;
+    case 'news-error':
+      pendingNews.get(message.requestId)?.reject(new Error(message.message));
+      pendingNews.delete(message.requestId);
       break;
     case 'verify-result':
       pendingVerify.get(message.requestId)?.(message.outcome);
@@ -85,6 +103,8 @@ export function disconnectFeed(): void {
   port = null;
   for (const { reject } of pendingHistory.values()) reject(new Error('feed disconnected'));
   pendingHistory.clear();
+  for (const { reject } of pendingNews.values()) reject(new Error('feed disconnected'));
+  pendingNews.clear();
   for (const resolve of pendingVerify.values()) {
     resolve({ result: 'failed', message: 'feed disconnected' });
   }
@@ -123,5 +143,14 @@ export function requestHistory(
   return new Promise<Bar[]>((resolve, reject) => {
     pendingHistory.set(requestId, { resolve, reject });
     connectFeed().postMessage({ type: 'history', requestId, symbol, interval, from, to });
+  });
+}
+
+/** Company news for a symbol from the first feed that has it (Finnhub, on the user's key). */
+export function requestNews(symbol: SymbolRef, from: number, to: number): Promise<CompanyNews> {
+  const requestId = nextId();
+  return new Promise<CompanyNews>((resolve, reject) => {
+    pendingNews.set(requestId, { resolve, reject });
+    connectFeed().postMessage({ type: 'news', requestId, symbol, from, to });
   });
 }

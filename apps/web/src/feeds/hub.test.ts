@@ -18,6 +18,7 @@ import {
   type Channel,
   type FeedAdapter,
   type FeedEvent,
+  type NewsItem,
   type SymbolRef,
 } from './types';
 
@@ -33,6 +34,7 @@ class FakeAdapter implements FeedAdapter {
   disposed = false;
   history: ((symbol: SymbolRef) => Promise<Bar[]>) | undefined;
   verify: (() => Promise<void>) | undefined;
+  news: (() => Promise<NewsItem[]>) | undefined;
   private end: { resolve: () => void; reject: (error: unknown) => void } | undefined;
 
   constructor(
@@ -63,6 +65,9 @@ class FakeAdapter implements FeedAdapter {
   get fetchHistory() {
     const history = this.history;
     return history ? (symbol: SymbolRef) => history(symbol) : undefined;
+  }
+  get fetchNews() {
+    return this.news;
   }
   get verifyKey() {
     return this.verify;
@@ -392,6 +397,32 @@ describe('FeedHub history', () => {
       requestId: 8,
       message: 'No history source for AAPL',
     });
+  });
+});
+
+describe('FeedHub company news', () => {
+  it('asks only a usable feed that has news, and names it in the answer', async () => {
+    const alpaca = fakeFeed('alpaca', ['equity'], { needsKey: true });
+    const finnhub = fakeFeed('finnhub', ['equity'], { needsKey: true });
+    const hub = startHub([alpaca.registration, finnhub.registration]);
+    const items: NewsItem[] = [
+      { title: 'Apple ships', url: 'https://x.test/a', source: 'Yahoo', published: 1, summary: '' },
+    ];
+    finnhub.latest().news = () => Promise.resolve(items);
+
+    hub.handle({ type: 'news', requestId: 1, symbol: AAPL, from: 0, to: 1 });
+    hub.handle({ type: 'keys', keys: { finnhub: 'token' } });
+    finnhub.latest().news = () => Promise.resolve(items);
+    hub.handle({ type: 'news', requestId: 2, symbol: AAPL, from: 0, to: 1 });
+    await advance(0);
+
+    // Without its key Finnhub is not usable; Alpaca, first in order, has no news.
+    expect(messages).toContainEqual({
+      type: 'news-error',
+      requestId: 1,
+      message: 'No news source for AAPL',
+    });
+    expect(messages).toContainEqual({ type: 'news', requestId: 2, items, source: 'finnhub' });
   });
 });
 

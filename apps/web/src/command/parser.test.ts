@@ -16,6 +16,8 @@ const WIDGETS = [
   widget('book', ['book', 'depth'], 'symbol'),
   widget('watchlist', ['watch', 'watchlist'], 'symbols'),
   widget('news', ['news'], 'query'),
+  widget('settings', ['settings', 'keys'], 'none'),
+  { ...widget('ticker-rail', ['rail'], 'none'), dock: false },
 ];
 const LAYOUTS = ['default', 'crypto', 'macro'];
 
@@ -81,6 +83,12 @@ describe('suggest', () => {
 
   it('offers no news command while no widget registers the alias', () => {
     expect(suggest('news tesla', WIDGETS.slice(0, 3), LAYOUTS)).toEqual([]);
+  });
+
+  it('opens a widget that takes no input by its alias, but not one the shell places', () => {
+    const [open] = suggest('keys', WIDGETS, LAYOUTS);
+    expect(open?.command).toMatchObject({ kind: 'open', widget: { id: 'settings' } });
+    expect(suggest('rail', WIDGETS, LAYOUTS).every((s) => s.command.kind !== 'open')).toBe(true);
   });
 
   it('switches layouts by prefix', () => {
