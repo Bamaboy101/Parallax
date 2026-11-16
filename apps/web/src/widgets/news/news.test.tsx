@@ -95,9 +95,8 @@ describe('News', () => {
   it('says so when the edge cannot be reached and there is no company news', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     render(<News {...props('rates')} />);
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'News is unavailable: Failed to fetch',
-    );
+    // A request that never reached the edge reads as unreachable, not as broken.
+    expect(await screen.findByRole('alert')).toHaveTextContent("Headlines can't be reached");
     expect(sent.some((message) => message.type === 'news')).toBe(false);
   });
 });

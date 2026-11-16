@@ -1,4 +1,12 @@
-import type { HubMessage, HubRequest, SourceState, SourceStatus, VerifyOutcome } from './protocol';
+import type {
+  HubMessage,
+  HubRequest,
+  RequestFailure,
+  SourceState,
+  SourceStatus,
+  VerifyOutcome,
+} from './protocol';
+import { HttpError } from './adapters/rest';
 import { routeOrder } from './router';
 import {
   FeedAuthError,
@@ -38,6 +46,8 @@ export const DOWN_COOLDOWN_MS = 60_000;
 export const DOWN_COOLDOWN_MAX_MS = 30 * 60_000;
 /** A key check that has not answered by then is reported as failed. */
 export const VERIFY_TIMEOUT_MS = 15_000;
+/** A provider that answered 429 without Retry-After is left alone at least this long. */
+export const RATE_LIMIT_WAIT_MS = 60_000;
 
 /** Exponential backoff with equal jitter: half the ceiling fixed, half random. */
 export function backoffDelay(attempt: number, random: number): number {
@@ -48,6 +58,18 @@ export function backoffDelay(attempt: number, random: number): number {
 function describeError(error: unknown): string {
   if (error instanceof Error) return error.message;
   return typeof error === 'string' ? error : 'unknown error';
+}
+
+const isRateLimit = (error: unknown): error is HttpError =>
+  error instanceof HttpError && error.status === 429;
+
+/** What a failed history or news request tells the app beyond its message. */
+function requestFailure(error: unknown, now: number): RequestFailure | undefined {
+  if (!isRateLimit(error)) return undefined;
+  return {
+    reason: 'rate-limited',
+    retryAt: error.retryAfterMs === null ? null : now + error.retryAfterMs,
+  };
 }
 
 interface Source {
@@ -130,6 +152,8 @@ export class FeedHub {
           symbolLimit: registration.symbolLimit ?? null,
           waiting: [],
           pollMs: registration.pollMs ?? null,
+          key: adapter.needsKey ? (registration.key ?? adapter.id) : null,
+          rateLimited: false,
         },
       };
       ref.current = source;
@@ -386,6 +410,7 @@ export class FeedHub {
     source.running = false;
     if (error instanceof FeedAuthError) {
       this.env.log('warn', `${source.id} rejected the key`);
+      source.status.rateLimited = false;
       this.setState(source, 'auth-failed');
       this.reassign();
       return;
@@ -400,7 +425,11 @@ export class FeedHub {
       this.setState(source, 'idle');
       return;
     }
-    const delay = backoffDelay(source.status.attempt, this.env.random());
+    // A rate limit is not an outage: wait as long as the provider asked, at least.
+    const limited = isRateLimit(error);
+    source.status.rateLimited = limited;
+    const backoff = backoffDelay(source.status.attempt, this.env.random());
+    const delay = limited ? Math.max(backoff, error.retryAfterMs ?? RATE_LIMIT_WAIT_MS) : backoff;
     source.status.attempt += 1;
     source.status.retryAt = this.env.now() + delay;
     this.setState(source, 'reconnecting');
@@ -474,6 +503,7 @@ export class FeedHub {
         type: 'history-error',
         requestId,
         message: `No history source for ${symbol.id}`,
+        failure: { reason: 'no-source' },
       });
       return;
     }
@@ -483,10 +513,12 @@ export class FeedHub {
       },
       (error: unknown) => {
         if (this.disposed) return;
+        const failure = requestFailure(error, this.env.now());
         this.env.post({
           type: 'history-error',
           requestId,
           message: describeError(error),
+          ...(failure ? { failure } : {}),
         });
       },
     );
@@ -499,7 +531,12 @@ export class FeedHub {
     );
     const fetchNews = source?.adapter.fetchNews?.bind(source.adapter);
     if (!source || !fetchNews) {
-      this.env.post({ type: 'news-error', requestId, message: `No news source for ${symbol.id}` });
+      this.env.post({
+        type: 'news-error',
+        requestId,
+        message: `No news source for ${symbol.id}`,
+        failure: { reason: 'no-source' },
+      });
       return;
     }
     fetchNews(symbol, from, to).then(
@@ -507,9 +544,14 @@ export class FeedHub {
         if (!this.disposed) this.env.post({ type: 'news', requestId, items, source: source.id });
       },
       (error: unknown) => {
-        if (!this.disposed) {
-          this.env.post({ type: 'news-error', requestId, message: describeError(error) });
-        }
+        if (this.disposed) return;
+        const failure = requestFailure(error, this.env.now());
+        this.env.post({
+          type: 'news-error',
+          requestId,
+          message: describeError(error),
+          ...(failure ? { failure } : {}),
+        });
       },
     );
   }
@@ -576,7 +618,8 @@ export class FeedHub {
     if (event.channel !== 'bar') {
       status.latencyMs = Math.max(0, event.receivedAt + this.env.clockOffset() - event.ts);
     }
-    if (status.state !== 'live' || status.stale) {
+    if (status.state !== 'live' || status.stale || status.rateLimited) {
+      status.rateLimited = false;
       status.state = 'live';
       status.stale = false;
       status.attempt = 0;

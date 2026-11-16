@@ -3,6 +3,7 @@ import '../../design/market.css';
 import { usePriceLine } from '../../store/hooks';
 import { useKeyVault } from '../../store/keys';
 import { instruments, type Instrument } from '../../store/symbols';
+import { RowReason } from '../RowReason';
 import { EQUITY_KEY_PROVIDERS, EQUITY_RAIL_SYMBOLS, RAIL_SYMBOLS } from './meta';
 
 function Item({ item }: { item: Instrument }) {
@@ -16,9 +17,13 @@ function Item({ item }: { item: Instrument }) {
   return (
     <li className="ticker-item" title={line.source ? `${item.name} · ${line.source}` : item.name}>
       <span className="ticker-symbol">{item.label}</span>
-      <span className={line.live ? 'ticker-price' : 'ticker-price opacity-60'}>
-        <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
-      </span>
+      {line.price === undefined ? (
+        <RowReason symbol={item} label={item.label} />
+      ) : (
+        <span className={line.live ? 'ticker-price' : 'ticker-price opacity-60'}>
+          <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
+        </span>
+      )}
       <Cell
         value={line.changePct}
         decimals={2}

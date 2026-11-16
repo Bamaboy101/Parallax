@@ -54,6 +54,75 @@
   font-size: var(--size-label);
 }
 
+/* Empty, no-key, rate-limited and offline states (design/PanelNotice.tsx). Tone follows the
+   truth badge: amber for limits and rejected keys, grey offline, muted text for setup. */
+.panel-notice {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin: var(--pad);
+  padding: 8px var(--pad);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--muted);
+  border-radius: 4px;
+  background: var(--panel);
+  font-size: var(--size-label);
+}
+
+.panel-notice[data-tone='warn'] {
+  border-left-color: var(--warn);
+}
+
+.panel-notice[data-tone='info'] {
+  border-left-color: var(--live);
+}
+
+.panel-notice.is-compact {
+  margin: 0;
+  border-width: 0 0 1px;
+  border-left-width: 2px;
+  border-radius: 0;
+}
+
+.panel-notice-title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.panel-notice[data-tone='warn'] .panel-notice-title {
+  color: var(--warn);
+}
+
+.panel-notice-detail {
+  margin: 0;
+  color: var(--muted);
+}
+
+.panel-notice-action {
+  padding: 2px 8px;
+  border: 1px solid var(--live);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--live);
+  font-size: var(--size-label);
+  cursor: pointer;
+}
+
+/* A row's reason in place of its price: needs key, cap full, offline… */
+.market-reason {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-reason[data-tone='warn'] {
+  color: var(--warn);
+}
+
 /* Session ring */
 
 .session-panel {
@@ -355,6 +424,12 @@
   bottom: 8px;
   left: 8px;
   color: var(--muted);
+}
+
+.constellation-notice {
+  padding: 0;
+  overflow: hidden;
+  pointer-events: auto;
 }
 
 /* Instrument faces retain the same semantic colours as their textual readouts. */

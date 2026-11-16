@@ -3,10 +3,14 @@ import { Badge } from '../../design/Badge';
 import { Cell } from '../../design/Cell';
 import '../../design/market.css';
 import '../../design/panels.css';
+import { availabilityNotice, failureNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
+import { useSharedAvailability } from '../../store/availability';
 import { useEcbRates } from '../../store/ecb';
 import { usePriceLine } from '../../store/hooks';
 import { useFreshness, useReportSources } from '../../store/panels';
 import { INSTRUMENTS, type Instrument } from '../../store/symbols';
+import { RowReason } from '../RowReason';
 
 const LIVE_PAIRS = INSTRUMENTS.filter((item) => item.kind === 'fx');
 
@@ -21,12 +25,16 @@ function LivePair({ item }: { item: Instrument }) {
   return (
     <li className="market-row fx-columns" title={`${item.label}: mid of Kraken's best bid and ask`}>
       <span className="market-symbol">{item.label}</span>
-      <span
-        className={line.live ? 'text-right' : 'text-right opacity-60'}
-        title={line.live ? undefined : 'Last hourly close; no live quote yet'}
-      >
-        <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
-      </span>
+      {line.price === undefined ? (
+        <RowReason symbol={item} label={item.label} />
+      ) : (
+        <span
+          className={line.live ? 'text-right' : 'text-right opacity-60'}
+          title={line.live ? undefined : 'Last hourly close; no live quote yet'}
+        >
+          <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
+        </span>
+      )}
       <Cell value={line.changePct} decimals={2} signed suffix="%" tone={toneOf(line.changePct)} />
     </li>
   );
@@ -50,6 +58,8 @@ function SectionHead({ title, source, note }: { title: string; source: string; n
 export default function Fx({ api }: IDockviewPanelProps) {
   const ecb = useEcbRates();
   useReportSources(api.id, ['kraken', 'ecb']);
+  const shared = useSharedAvailability(LIVE_PAIRS);
+  const notice = shared ? availabilityNotice(shared, 'the live pairs') : null;
 
   return (
     <div className="market-panel fx-panel">
@@ -61,6 +71,7 @@ export default function Fx({ api }: IDockviewPanelProps) {
           Chg
         </span>
       </div>
+      {notice && <PanelNotice notice={notice} compact />}
       <ul>
         {LIVE_PAIRS.map((item) => (
           <LivePair key={item.id} item={item} />
@@ -83,8 +94,8 @@ export default function Fx({ api }: IDockviewPanelProps) {
         </span>
       </div>
       {ecb.state === 'loading' && <p className="panel-empty">Loading the ECB's rates…</p>}
-      {ecb.state === 'error' && (
-        <p className="panel-empty">ECB rates are unavailable right now ({ecb.error}).</p>
+      {ecb.failure && (
+        <PanelNotice notice={failureNotice(ecb.failure, "The ECB's rates")} compact={!!ecb.data} />
       )}
       {ecb.data && (
         <ul>

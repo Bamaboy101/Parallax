@@ -200,6 +200,11 @@
   pointer-events: none;
 }
 
+/* A notice over an empty chart keeps its Settings button clickable. */
+.chart-notice {
+  pointer-events: auto;
+}
+
 .ticker-list {
   display: flex;
   min-width: 0;

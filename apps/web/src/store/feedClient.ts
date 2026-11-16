@@ -1,5 +1,6 @@
 import type { HubMessage, HubRequest, VerifyOutcome } from '../feeds/protocol';
 import type { Bar, BarInterval, Channel, NewsItem, SymbolRef } from '../feeds/types';
+import { hubRequestError } from './failure';
 import { useKeyVault } from './keys';
 import { ingest, setStatuses } from './ticks';
 
@@ -46,7 +47,9 @@ function handle(message: HubMessage): void {
       pendingHistory.delete(message.requestId);
       break;
     case 'history-error':
-      pendingHistory.get(message.requestId)?.reject(new Error(message.message));
+      pendingHistory
+        .get(message.requestId)
+        ?.reject(hubRequestError(message.message, message.failure));
       pendingHistory.delete(message.requestId);
       break;
     case 'news':
@@ -54,7 +57,7 @@ function handle(message: HubMessage): void {
       pendingNews.delete(message.requestId);
       break;
     case 'news-error':
-      pendingNews.get(message.requestId)?.reject(new Error(message.message));
+      pendingNews.get(message.requestId)?.reject(hubRequestError(message.message, message.failure));
       pendingNews.delete(message.requestId);
       break;
     case 'verify-result':

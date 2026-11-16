@@ -1,4 +1,6 @@
 import type { IDockviewPanelProps } from 'dockview-react';
+import { failureNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import '../../design/panels.css';
 import { useNews, newsTarget } from '../../store/news';
 
@@ -34,13 +36,16 @@ export default function News({ params }: IDockviewPanelProps<NewsParams>) {
         {stock && <span className="panel-caption">{stock.name}</span>}
       </div>
       {news.state === 'loading' && <p className="panel-empty">Loading headlines…</p>}
-      {news.state === 'error' && (
-        <p className="panel-empty" role="alert">
-          News is unavailable: {news.error}
-        </p>
+      {news.failure && (
+        <PanelNotice
+          notice={failureNotice(news.failure, 'Headlines')}
+          compact={news.items.length > 0}
+        />
       )}
       {news.state === 'ready' && news.items.length === 0 && (
-        <p className="panel-empty">No recent headlines match “{query}”.</p>
+        <p className="panel-empty">
+          {query === '' ? 'No headlines right now.' : `No recent headlines match “${query}”.`}
+        </p>
       )}
       {news.items.length > 0 && (
         <ol className="news-list">

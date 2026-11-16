@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { isObject } from '../feeds/adapters/parse';
-import { reportRestFreshness } from './panels';
+import { failureOf, RequestError, retryAtFrom, type Failure } from './failure';
+import { freshnessOfFailure, reportRestFreshness } from './panels';
 
 /**
  * ECB euro reference rates through Frankfurter (keyless, CORS open). v1 serves the ECB's own
@@ -61,18 +62,24 @@ export function parseEcb(series: unknown, names: unknown): EcbRates | null {
 export interface EcbState {
   state: 'loading' | 'ready' | 'error';
   data: EcbRates | null;
-  error: string | undefined;
+  failure: Failure | undefined;
 }
 
 async function getJson(url: string): Promise<unknown> {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Frankfurter answered ${String(response.status)}`);
+  if (!response.ok) {
+    throw new RequestError(
+      `Frankfurter answered ${String(response.status)}`,
+      response.status,
+      response.status === 429 ? retryAtFrom(response.headers.get('Retry-After')) : null,
+    );
+  }
   return response.json() as Promise<unknown>;
 }
 
 /** The ECB's latest reference rates against the dollar, refreshed hourly. */
 export function useEcbRates(): EcbState {
-  const [ecb, setEcb] = useState<EcbState>({ state: 'loading', data: null, error: undefined });
+  const [ecb, setEcb] = useState<EcbState>({ state: 'loading', data: null, failure: undefined });
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -86,15 +93,16 @@ export function useEcbRates(): EcbState {
         if (!data) throw new Error('unreadable rates');
         if (cancelled) return;
         reportRestFreshness('ecb', { kind: 'eod' });
-        setEcb({ state: 'ready', data, error: undefined });
+        setEcb({ state: 'ready', data, failure: undefined });
       } catch (error) {
         if (cancelled) return;
-        reportRestFreshness('ecb', { kind: 'offline' });
+        const failure = failureOf(error);
+        reportRestFreshness('ecb', freshnessOfFailure(failure));
         setEcb((current) => ({
-          // Keep the last good fixing on a failed refresh; the badge says it is offline.
+          // Keep the last good fixing on a failed refresh; the badge says why it is not fresh.
           state: current.data ? 'ready' : 'error',
           data: current.data,
-          error: error instanceof Error ? error.message : 'rates unavailable',
+          failure,
         }));
       }
     };

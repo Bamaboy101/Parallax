@@ -1,12 +1,16 @@
 import type { IDockviewPanelProps } from 'dockview-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Cell } from '../../design/Cell';
 import { Sparkline } from '../../design/Sparkline';
 import '../../design/market.css';
+import { availabilityNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
+import { useSharedAvailability } from '../../store/availability';
 import { usePriceLine } from '../../store/hooks';
 import { linkGroupOf, selectLinked, useLinkStore, type LinkGroup } from '../../store/links';
 import { useReportSources } from '../../store/panels';
 import { instruments, type Instrument } from '../../store/symbols';
+import { RowReason } from '../RowReason';
 import { DEFAULT_SYMBOLS } from './meta';
 
 interface WatchlistParams {
@@ -68,12 +72,16 @@ function Row({
           width={40}
         />
       </span>
-      <span
-        className={line.live ? 'text-right' : 'text-right opacity-60'}
-        title={line.live ? undefined : 'Last hourly close; no live trade yet'}
-      >
-        <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
-      </span>
+      {line.price === undefined ? (
+        <RowReason symbol={item} label={item.label} />
+      ) : (
+        <span
+          className={line.live ? 'text-right' : 'text-right opacity-60'}
+          title={line.live ? undefined : 'Last hourly close; no live trade yet'}
+        >
+          <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
+        </span>
+      )}
       <Cell value={line.changePct} decimals={2} signed suffix="%" tone={tone} />
     </li>
   );
@@ -81,7 +89,9 @@ function Row({
 
 /** Price, rolling 24-hour change and a 24-hour sparkline for any mix of symbols. */
 export default function Watchlist({ api, params }: IDockviewPanelProps<WatchlistParams>) {
-  const items = instruments(params.symbols ?? DEFAULT_SYMBOLS);
+  const items = useMemo(() => instruments(params.symbols ?? DEFAULT_SYMBOLS), [params.symbols]);
+  const shared = useSharedAvailability(items);
+  const notice = shared && items.length > 1 ? availabilityNotice(shared, 'these symbols') : null;
   const link = linkGroupOf(params);
   const [sources, setSources] = useState<Record<string, string>>({});
   const onSource = useCallback((id: string, source: string) => {
@@ -107,11 +117,18 @@ export default function Watchlist({ api, params }: IDockviewPanelProps<Watchlist
           Chg
         </span>
       </div>
-      <ul>
-        {items.map((item) => (
-          <Row key={item.id} item={item} link={link} onSource={onSource} />
-        ))}
-      </ul>
+      {notice && <PanelNotice notice={notice} compact />}
+      {items.length === 0 ? (
+        <p className="panel-empty">
+          This watchlist is empty. Type a symbol in the command bar, e.g. “watch sol”, to add one.
+        </p>
+      ) : (
+        <ul>
+          {items.map((item) => (
+            <Row key={item.id} item={item} link={link} onSource={onSource} />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

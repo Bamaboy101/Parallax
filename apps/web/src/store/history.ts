@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { create } from 'zustand';
 import type { Bar, BarInterval, SymbolRef } from '../feeds/types';
 import { requestHistory } from './feedClient';
+import { failureOf, type Failure } from './failure';
 
 export interface HistoryEntry {
   state: 'loading' | 'ready' | 'error';
   bars: Bar[];
-  error?: string;
+  /** Why the last load failed; kept beside older bars when a refresh fails. */
+  failure?: Failure;
   loadedAt?: number;
 }
 
@@ -41,7 +43,7 @@ export function loadHistory(symbol: SymbolRef, interval: BarInterval, spanMs: nu
           // Keep bars from an earlier load rather than blanking a sparkline on a refresh error.
           state: previous?.bars.length ? 'ready' : 'error',
           bars: previous?.bars ?? [],
-          error: error instanceof Error ? error.message : 'history unavailable',
+          failure: failureOf(error),
         });
       },
     )

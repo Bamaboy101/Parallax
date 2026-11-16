@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { NewsItem } from '../feeds/types';
 import { edgeJson } from './edge';
+import { failureOf, type Failure } from './failure';
 import { requestNews } from './feedClient';
 import { instrument, type Instrument } from './symbols';
 
@@ -16,7 +17,7 @@ export interface NewsState {
   feeds: { name: string; ok: boolean }[];
   /** The feed that supplied company news for a stock query, e.g. 'finnhub'. */
   companySource: string | undefined;
-  error: string | undefined;
+  failure: Failure | undefined;
   /** When this answer arrived, so "today" is judged against it, not render time. */
   loadedAt: number;
 }
@@ -63,7 +64,7 @@ const INITIAL: NewsState = {
   items: [],
   feeds: [],
   companySource: undefined,
-  error: undefined,
+  failure: undefined,
   loadedAt: 0,
 };
 
@@ -88,13 +89,15 @@ export function useNews(query: string): NewsState {
         edge.status === 'fulfilled' && isEdgeNews(edge.value) ? edge.value : undefined;
       const companyNews = company.status === 'fulfilled' ? company.value : undefined;
       if (!edgeNews && !companyNews) {
-        const reason = edge.status === 'rejected' ? (edge.reason as unknown) : undefined;
-        setNews({
-          ...INITIAL,
-          query,
-          state: 'error',
-          error: reason instanceof Error ? reason.message : 'news unavailable',
-        });
+        const failure = failureOf(
+          edge.status === 'rejected' ? (edge.reason as unknown) : new Error('news unavailable'),
+        );
+        // A failed refresh keeps the headlines already shown; the panel says why they are old.
+        setNews((current) =>
+          current.query === query && current.items.length > 0
+            ? { ...current, failure }
+            : { ...INITIAL, query, state: 'error', failure },
+        );
         return;
       }
       setNews({
@@ -103,7 +106,7 @@ export function useNews(query: string): NewsState {
         items: mergeNews(edgeNews?.items ?? [], companyNews?.items ?? []),
         feeds: edgeNews?.sources ?? [],
         companySource: companyNews?.source,
-        error: undefined,
+        failure: undefined,
         loadedAt: now,
       });
     };

@@ -1,5 +1,7 @@
 import '../../design/panels.css';
 import { Cell } from '../../design/Cell';
+import { failureNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import {
   CURVE,
   daysBefore,
@@ -119,13 +121,12 @@ export default function Macro() {
   const two = latest(curve.series.DGS2);
   const spread: Stat | undefined =
     ten && two ? { value: ten.value - two.value, change: undefined, asOf: ten.asOf } : undefined;
+  const failure = curve.failure ?? stats.failure;
 
-  if (curve.unconfigured || stats.unconfigured) {
+  if (failure?.kind === 'unconfigured') {
     return (
       <div className="macro-panel">
-        <p className="panel-empty" role="alert">
-          FRED is not connected yet: the edge needs the project&apos;s FRED key (FRED_API_KEY).
-        </p>
+        <PanelNotice notice={failureNotice(failure, 'FRED')} />
       </div>
     );
   }
@@ -133,10 +134,8 @@ export default function Macro() {
   return (
     <div className="macro-panel">
       {curve.state === 'loading' && <p className="panel-empty">Loading FRED…</p>}
-      {curve.state === 'error' && (
-        <p className="panel-empty" role="alert">
-          FRED is unavailable: {curve.error}
-        </p>
+      {failure && (
+        <PanelNotice notice={failureNotice(failure, 'FRED')} compact={curve.state === 'ready'} />
       )}
       {curve.state === 'ready' && <YieldCurve fred={curve} />}
       <ul className="macro-stats" aria-label="Macro indicators">

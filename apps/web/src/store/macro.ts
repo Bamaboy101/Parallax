@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { EdgeError, edgeJson } from './edge';
+import { edgeJson } from './edge';
+import { failureOf, type Failure } from './failure';
 
 /** The edge caches FRED for an hour; FRED itself publishes daily at most. */
 export const FRED_REFRESH_MS = 60 * 60_000;
@@ -15,9 +16,8 @@ export type SeriesMap = Readonly<Record<string, readonly Observation[]>>;
 export interface FredState {
   state: 'loading' | 'ready' | 'error';
   series: SeriesMap;
-  error: string | undefined;
-  /** The edge has no FRED key yet: a setup gap, not an outage. */
-  unconfigured: boolean;
+  /** Why the last load failed; `unconfigured` means the edge has no FRED key yet. */
+  failure: Failure | undefined;
 }
 
 /** Treasury constant-maturity yields for the curve, shortest first. */
@@ -106,7 +106,7 @@ function isSeriesMap(value: unknown): value is { series: SeriesMap } {
   );
 }
 
-const LOADING: FredState = { state: 'loading', series: {}, error: undefined, unconfigured: false };
+const LOADING: FredState = { state: 'loading', series: {}, failure: undefined };
 
 /** FRED series through the edge, refreshed hourly. `start` is 'YYYY-MM-DD'. */
 export function useFred(series: readonly string[], start: string): FredState {
@@ -121,22 +121,16 @@ export function useFred(series: readonly string[], start: string): FredState {
         const body = await edgeJson(`/fred?series=${ids}&start=${from}`);
         if (cancelled) return;
         if (!isSeriesMap(body)) throw new Error('unexpected FRED answer');
-        setFred({
-          key,
-          state: 'ready',
-          series: body.series,
-          error: undefined,
-          unconfigured: false,
-        });
+        setFred({ key, state: 'ready', series: body.series, failure: undefined });
       } catch (error) {
         if (cancelled) return;
-        setFred({
-          key,
-          state: 'error',
-          series: {},
-          error: error instanceof Error ? error.message : 'FRED unavailable',
-          unconfigured: error instanceof EdgeError && error.status === 503,
-        });
+        const failure = failureOf(error);
+        // A failed refresh keeps the series already shown.
+        setFred((current) =>
+          current.key === key && current.state === 'ready'
+            ? { ...current, failure }
+            : { key, state: 'error', series: {}, failure },
+        );
       }
     };
     void load();

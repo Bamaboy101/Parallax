@@ -240,6 +240,13 @@ body {
   text-overflow: ellipsis;
 }
 
+.connection-offline {
+  padding: 2px 8px;
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
 /*
  * Market weather: cool mint when markets are calm, orchid as short-term volatility rises.
  * Orchid carries regime intensity, never direction or stale-data status.

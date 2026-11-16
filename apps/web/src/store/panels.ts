@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import type { Freshness } from '../design/format';
 import type { SourceStatus } from '../feeds/protocol';
+import type { Failure } from './failure';
 import { useTickStore } from './ticks';
 
 const EMPTY: readonly string[] = [];
@@ -45,13 +46,31 @@ export function reportRestFreshness(source: string, freshness: Freshness): void 
 
 /**
  * A hub status as badge freshness: live streams show their exchange-to-browser delay, a live
- * poller its interval; anything not live is offline for now (T18).
+ * poller its interval; otherwise what is in the way (rate limit, key) or that it is connecting.
  */
 function freshnessOf(status: SourceStatus): Freshness {
-  if (status.state !== 'live') return { kind: 'offline' };
-  if (status.pollMs !== null && !status.stale) return { kind: 'polled', everyMs: status.pollMs };
-  return { kind: 'live', ageMs: status.latencyMs ?? 0, stale: status.stale };
+  if (status.rateLimited) return { kind: 'rate-limited' };
+  switch (status.state) {
+    case 'live':
+      if (status.pollMs !== null && !status.stale)
+        return { kind: 'polled', everyMs: status.pollMs };
+      return { kind: 'live', ageMs: status.latencyMs ?? 0, stale: status.stale };
+    case 'idle':
+    case 'connecting':
+      return { kind: 'connecting' };
+    case 'no-key':
+      return { kind: 'no-key' };
+    case 'auth-failed':
+      return { kind: 'key-rejected' };
+    case 'reconnecting':
+    case 'down':
+      return { kind: 'offline' };
+  }
 }
+
+/** A failed REST load as badge freshness: rate limited when the provider said so, else offline. */
+export const freshnessOfFailure = (failure: Failure): Freshness =>
+  failure.kind === 'rate-limited' ? { kind: 'rate-limited' } : { kind: 'offline' };
 
 /** Freshness per source: from the hub's status for feeds, as reported for REST sources. */
 export function useFreshness(sources: readonly string[]): Freshness[] {

@@ -16,15 +16,28 @@ export function throttle(gapMs: number) {
   };
 }
 
-/** A non-2xx response. `status` lets adapters map 401/403 to FeedAuthError. */
+/**
+ * A non-2xx response. `status` lets adapters map 401/403 to FeedAuthError; on 429, `retryAfterMs`
+ * is the provider's Retry-After, when it sent one.
+ */
 export class HttpError extends Error {
   override name = 'HttpError';
   constructor(
     readonly status: number,
     host: string,
+    readonly retryAfterMs: number | null = null,
   ) {
     super(`HTTP ${String(status)} from ${host}`);
   }
+}
+
+/** Retry-After as milliseconds from now: delta seconds or an HTTP date; null when absent. */
+export function retryAfterMs(header: string | null, now = Date.now()): number | null {
+  if (header === null || header.trim() === '') return null;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? null : Math.max(0, date - now);
 }
 
 /**
@@ -33,7 +46,13 @@ export class HttpError extends Error {
  */
 export async function getJson(url: string, headers?: Record<string, string>): Promise<unknown> {
   const response = await fetch(url, headers ? { headers } : undefined);
-  if (!response.ok) throw new HttpError(response.status, new URL(url).host);
+  if (!response.ok) {
+    throw new HttpError(
+      response.status,
+      new URL(url).host,
+      response.status === 429 ? retryAfterMs(response.headers.get('Retry-After')) : null,
+    );
+  }
   return response.json() as Promise<unknown>;
 }
 

@@ -24,6 +24,8 @@ const status = (source: string, serving: string[], pollMs: number | null = null)
   symbolLimit: null,
   waiting: [],
   pollMs,
+  key: 'alpaca',
+  rateLimited: false,
 });
 
 beforeEach(() => {
@@ -38,7 +40,7 @@ afterEach(() => {
 });
 
 describe('World markets board', () => {
-  it('lists every proxy in the catalogue, grouped, each labelled as a proxy', () => {
+  it('lists every proxy, grouped and labelled, and says a key is needed when there is none', () => {
     for (const group of GROUPS) {
       for (const row of group.rows) expect(instrument(row.id)?.kind).toBe('equity');
     }
@@ -49,7 +51,18 @@ describe('World markets board', () => {
     expect(japan?.textContent).toContain('EWJ');
     expect(japan?.textContent).toContain('proxy');
     expect(screen.getAllByText('proxy')).toHaveLength(31);
-    expect(screen.getByText(/add a free Alpaca or Finnhub key/)).toBeTruthy();
+
+    // The hub reports the stock feeds idle with no key stored.
+    act(() => {
+      setStatuses([
+        { ...status('alpaca', []), state: 'idle' },
+        { ...status('finnhub', []), state: 'idle', key: 'finnhub' },
+        { ...status('alpaca-poll', [], 15_000), state: 'idle' },
+      ]);
+    });
+    expect(screen.getByText('Add a free Alpaca or Finnhub key to see these ETFs')).toBeTruthy();
+    expect(screen.getAllByText('Needs key')).toHaveLength(31);
+    expect(screen.getByRole('button', { name: 'Open Settings' })).toBeTruthy();
   });
 
   it('subscribes every row and labels each by the feed serving it now', () => {

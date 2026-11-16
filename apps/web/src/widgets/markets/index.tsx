@@ -1,15 +1,24 @@
 import type { IDockviewPanelProps } from 'dockview-react';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Cell } from '../../design/Cell';
 import '../../design/market.css';
+import { availabilityNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import '../../design/panels.css';
+import { useSharedAvailability } from '../../store/availability';
 import { usePriceLine, useServingSource } from '../../store/hooks';
-import { useKeyVault } from '../../store/keys';
 import { useReportSources } from '../../store/panels';
 import { instrument, type Instrument } from '../../store/symbols';
+import { RowReason } from '../RowReason';
 import { useVisibleRows } from '../useVisibleRows';
 import { GROUPS, type BoardRow } from './meta';
 
+const ITEMS = GROUPS.flatMap((group) =>
+  group.rows.flatMap((row) => {
+    const item = instrument(row.id);
+    return item ? [item] : [];
+  }),
+);
 const toneOf = (change: number | undefined) =>
   change === undefined || change === 0 ? 'neutral' : change > 0 ? 'up' : 'down';
 
@@ -59,12 +68,17 @@ const Row = memo(function Row({
         <span className="market-symbol">{item.label}</span>
         <span className="markets-tag">proxy</span>
       </span>
-      <span
-        className={line.live ? 'text-right' : 'text-right opacity-60'}
-        title={line.live ? undefined : 'Last hourly close; no live trade yet'}
-      >
-        <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
-      </span>
+      {line.price === undefined ? (
+        <RowReason symbol={item} label={item.label} />
+      ) : (
+        // No pulse: the board is a list, and lists get no per-row animation.
+        <span
+          className={line.live ? 'text-right' : 'text-right opacity-60'}
+          title={line.live ? undefined : 'Last hourly close; no live trade yet'}
+        >
+          <Cell value={line.price} decimals={item.decimals} />
+        </span>
+      )}
       <Cell value={line.changePct} decimals={2} signed suffix="%" tone={tone} />
       <span className="markets-feed" title={feed.title}>
         {feed.text}
@@ -78,8 +92,10 @@ const Row = memo(function Row({
  * take the capped stream slots; the rest are polled.
  */
 export default function Markets({ api }: IDockviewPanelProps) {
-  const hasKey = useKeyVault(
-    (state) => state.keys.alpaca !== undefined || state.keys.finnhub !== undefined,
+  const shared = useSharedAvailability(ITEMS);
+  const notice = useMemo(
+    () => (shared ? availabilityNotice(shared, 'these ETFs') : null),
+    [shared],
   );
   const { root, row, isVisible } = useVisibleRows();
   const [sources, setSources] = useState<Record<string, string>>({});
@@ -103,12 +119,7 @@ export default function Markets({ api }: IDockviewPanelProps) {
         </span>
         <span className="text-right">Feed</span>
       </div>
-      {!hasKey && (
-        <p className="panel-empty">
-          These are US-listed ETFs: add a free Alpaca or Finnhub key in Settings (the key icon in
-          the top bar) to see them.
-        </p>
-      )}
+      {notice && <PanelNotice notice={notice} compact />}
       {GROUPS.map((group) => (
         <section key={group.title} aria-label={group.title}>
           <h3 className="markets-group">{group.title}</h3>

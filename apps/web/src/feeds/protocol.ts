@@ -59,7 +59,18 @@ export interface SourceStatus {
   waiting: string[];
   /** A polling source's interval, or null for a stream. */
   pollMs: number | null;
+  /** The key this source needs (the vault's provider id), or null for a keyless source. */
+  key: string | null;
+  /** The last failure was the provider's rate limit (HTTP 429); cleared by the next message. */
+  rateLimited: boolean;
 }
+
+/**
+ * Why a history or news request failed, when the app can do something with it: `rate-limited`
+ * (retry after `retryAt`, when the provider said) or `no-source` (no usable feed: often no key).
+ */
+export type RequestFailure =
+  { reason: 'rate-limited'; retryAt: number | null } | { reason: 'no-source' };
 
 /** Outcome of a 'verify-key' request. */
 export type VerifyOutcome =
@@ -73,7 +84,7 @@ export type HubMessage =
   | { type: 'events'; events: FeedEvent[] }
   | { type: 'status'; sources: SourceStatus[] }
   | { type: 'history'; requestId: number; bars: Bar[] }
-  | { type: 'history-error'; requestId: number; message: string }
+  | { type: 'history-error'; requestId: number; message: string; failure?: RequestFailure }
   | { type: 'news'; requestId: number; items: NewsItem[]; source: string }
-  | { type: 'news-error'; requestId: number; message: string }
+  | { type: 'news-error'; requestId: number; message: string; failure?: RequestFailure }
   | { type: 'verify-result'; requestId: number; outcome: VerifyOutcome };

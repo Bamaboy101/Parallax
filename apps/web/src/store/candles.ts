@@ -6,6 +6,7 @@ import {
   type BarInterval,
   type SymbolRef,
 } from '../feeds/types';
+import type { Failure } from './failure';
 import { useHistory } from './history';
 import { useTick } from './hooks';
 import { recentValues, useTickStore } from './ticks';
@@ -76,7 +77,7 @@ export function foldLive(
 
 export interface Candles {
   state: 'loading' | 'ready' | 'error';
-  error?: string;
+  failure?: Failure;
   /** History, oldest first. A new array only when history reloads. */
   history: readonly Bar[];
   /** Bars at or after the end of history, rebuilt from live 1-minute bars. */
@@ -114,7 +115,7 @@ export function useCandles(symbol: SymbolRef, interval: BarInterval): Candles {
 
   return {
     state: entry?.state ?? 'loading',
-    ...(entry?.error === undefined ? {} : { error: entry.error }),
+    ...(entry?.failure === undefined ? {} : { failure: entry.failure }),
     history,
     tail,
   };

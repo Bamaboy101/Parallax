@@ -93,6 +93,12 @@ export default function Movers({ api }: IDockviewPanelProps) {
           <span className="movers-bar-down" style={{ width: share(down) }} />
         </div>
       </div>
+      {view.universe.length === 0 && (
+        <p className="panel-empty">
+          Nothing priced yet. Movers ranks the symbols other panels are streaming; open a watchlist
+          or board to give it some.
+        </p>
+      )}
       <div className="movers-lists">
         <MoverList title="Top gainers" movers={view.gainers} empty="Nothing up yet." />
         <MoverList title="Top losers" movers={view.losers} empty="Nothing down yet." />

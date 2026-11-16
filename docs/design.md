@@ -107,8 +107,15 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 ## Primitives
 
 - `Panel`: widget surface with a title and slots for the truth badge and header actions.
-- `Badge`: the truth badge. `LIVE 140ms`, `DELAYED 15m`, `EOD` or `OFFLINE`, plus the source. Mint
-  when live, amber when stale or delayed, grey when offline; alternative palettes use yellow/ochre warnings.
+- `Badge`: the truth badge. `LIVE 140ms`, `DELAYED 15m`, `POLLED 15s`, `EOD`, `CONNECTING`,
+  `RATE LIMITED`, `NO KEY`, `KEY REJECTED` or `OFFLINE`, plus the source. Mint when live; amber
+  when stale, delayed, polled, rate limited or the key was rejected; grey when connecting, without
+  a key or offline. Alternative palettes use yellow/ochre warnings.
+- `PanelNotice`: a panel's empty, no-key, rate-limited or offline state (T18): a title, one line
+  on what happens next, and "Open Settings" when a key would fix it. Its left rule follows the
+  badge tones (mint for setup, amber for limits, grey offline); V4 polishes the look. Rows show a
+  short muted reason (`Needs key`, `Cap full`, `Offline`) where a price is missing. The World
+  markets board, like the tape and the book, has no per-row pulse.
 - `Cell`: a number in mono with tabular figures, optional sign, suffix and up/down tone. Missing
   values render as an em dash. With `pulse`, a change washes the cell in `--up` or `--down` at
   28% and fades over `--motion-pulse` (Web Animations API, so no React render; none under reduced

@@ -7,6 +7,7 @@ import type { TradeEvent } from '../../feeds/types';
 import { useTrades } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument, type Instrument } from '../../store/symbols';
+import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_SYMBOL } from './meta';
 
 interface TapeParams {
@@ -92,7 +93,7 @@ export default function Tape({ api, params }: IDockviewPanelProps<TapeParams>) {
         <span className="text-right">Size</span>
       </div>
       {trades.length === 0 ? (
-        <p className="market-empty">Waiting for trades…</p>
+        <SymbolNotice item={item} waiting="Waiting for trades…" />
       ) : (
         <ol className="tape-prints">
           {trades.map((trade, index) => {

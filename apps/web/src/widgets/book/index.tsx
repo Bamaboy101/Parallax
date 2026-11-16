@@ -6,6 +6,8 @@ import type { Level } from '../../feeds/types';
 import { useBook } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument, type Instrument } from '../../store/symbols';
+import { PanelNotice } from '../../design/PanelNotice';
+import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_SYMBOL } from './meta';
 
 interface BookParams {
@@ -141,10 +143,25 @@ export default function OrderBook({ api, params }: IDockviewPanelProps<BookParam
   // Compact ladder rows follow density; reserve one row for the spread.
   const rows = Math.max(1, Math.floor((ladderHeight / rowHeight - 1) / 2));
 
+  if (item.kind === 'equity') {
+    return (
+      <div className="h-full bg-panel">
+        <PanelNotice
+          notice={{
+            tone: 'info',
+            title: `No free order book for ${item.label}`,
+            detail:
+              'The free US stock feeds (IEX through Alpaca, Finnhub trades) carry no depth. Open the tape or chart instead.',
+          }}
+        />
+      </div>
+    );
+  }
+
   if (!book || book.bids.length === 0 || book.asks.length === 0) {
     return (
-      <div className="grid h-full place-items-center bg-panel text-label text-muted">
-        Waiting for the {item.label} book…
+      <div className="h-full bg-panel">
+        <SymbolNotice item={item} waiting={`Waiting for the ${item.label} book…`} />
       </div>
     );
   }

@@ -1,6 +1,8 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import '../../design/market.css';
 import '../../design/panels.css';
+import { failureNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import { newYorkInstant, useCalendar, type Release } from '../../store/calendar';
 import { useReportSources } from '../../store/panels';
 import { useNow } from '../useNow';
@@ -63,8 +65,11 @@ export default function Calendar({ api }: IDockviewPanelProps) {
   return (
     <div className="market-panel calendar-panel">
       {calendar.state === 'loading' && <p className="panel-empty">Loading the calendar…</p>}
-      {calendar.state === 'error' && (
-        <p className="panel-empty">The calendar is unavailable right now ({calendar.error}).</p>
+      {calendar.failure && (
+        <PanelNotice
+          notice={failureNotice(calendar.failure, 'The calendar')}
+          compact={calendar.releases.length > 0}
+        />
       )}
       {calendar.state === 'ready' && days.length === 0 && (
         <p className="panel-empty">No major releases scheduled in the next 30 days.</p>

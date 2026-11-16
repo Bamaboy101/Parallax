@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
+import { OPEN_SETTINGS_EVENT } from '../design/settingsRequest';
 import TickerRail from '../widgets/ticker-rail';
 import { Clock } from './Clock';
 import { runCommand } from './commands';
@@ -18,6 +19,13 @@ function openSettings(): void {
 /** Top bar, dock area, ticker rail. */
 export function Shell() {
   useMarketWeather();
+  // Panels ask for Settings (e.g. "Open Settings" on a no-key notice) through a window event.
+  useEffect(() => {
+    window.addEventListener(OPEN_SETTINGS_EVENT, openSettings);
+    return () => {
+      window.removeEventListener(OPEN_SETTINGS_EVENT, openSettings);
+    };
+  }, []);
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
   );

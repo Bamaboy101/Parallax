@@ -3,11 +3,15 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Cell } from '../../design/Cell';
 import { formatCompact, formatNumber } from '../../design/format';
 import '../../design/market.css';
+import { availabilityNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import '../../design/panels.css';
+import { useSharedAvailability } from '../../store/availability';
 import { useCursor, useLiquidations, useTick } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { PERPS, type Perp } from '../../store/perps';
 import { REWIND_MS } from '../../store/ticks';
+import { RowReason } from '../RowReason';
 import { useNow } from '../useNow';
 
 const LIST_ROWS = 40;
@@ -50,7 +54,11 @@ const PerpRow = memo(function PerpRow({
   return (
     <li className="market-row derivs-columns" title={`${perp.name} · ${perp.label}`}>
       <span className="market-symbol">{perp.base}</span>
-      <Cell value={tick?.markPrice} decimals={perp.decimals} />
+      {tick ? (
+        <Cell value={tick.markPrice} decimals={perp.decimals} />
+      ) : (
+        <RowReason symbol={perp} label={`${perp.base} perp`} />
+      )}
       <Cell value={tick ? tick.fundingRate * 100 : undefined} decimals={4} signed suffix="%" />
       <span className="derivs-muted text-right font-mono">
         {tick && tick.nextFundingTime > 0 ? countdown(tick.nextFundingTime - at) : '—'}
@@ -86,6 +94,8 @@ export default function Derivatives({ api }: IDockviewPanelProps) {
     });
   }, []);
 
+  const shared = useSharedAvailability(PERPS);
+  const notice = shared ? availabilityNotice(shared, 'the perpetual futures') : null;
   const liquidations = useLiquidations(PERPS, TOTAL_ROWS);
   const totals = useMemo(() => {
     const since = at - REWIND_MS;
@@ -114,6 +124,7 @@ export default function Derivatives({ api }: IDockviewPanelProps) {
           OI
         </span>
       </div>
+      {notice && <PanelNotice notice={notice} compact />}
       <ul>
         {PERPS.map((perp) => (
           <PerpRow key={perp.id} perp={perp} at={at} onSource={onSource} />

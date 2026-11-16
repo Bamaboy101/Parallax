@@ -2,7 +2,10 @@ import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Cell } from './Cell';
 
-const animate = vi.fn();
+// Like the real API, animate() returns an Animation; this one has already finished.
+const animate = vi.fn<HTMLElement['animate']>(
+  () => ({ playState: 'finished', cancel: vi.fn() }) as unknown as Animation,
+);
 
 beforeEach(() => {
   HTMLElement.prototype.animate = animate;

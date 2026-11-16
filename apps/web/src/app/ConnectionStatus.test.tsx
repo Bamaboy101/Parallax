@@ -16,6 +16,8 @@ const status = (source: string, patch: Partial<SourceStatus>): SourceStatus => (
   symbolLimit: null,
   waiting: [],
   pollMs: null,
+  key: null,
+  rateLimited: false,
   ...patch,
 });
 
@@ -36,5 +38,15 @@ describe('ConnectionStatus', () => {
     const notice = screen.getByText('Alpaca limit · 2 symbols waiting');
     expect(notice).toHaveAttribute('title', expect.stringContaining('Not streaming: NFLX, XOM'));
     expect(screen.getByText('2 live')).toBeInTheDocument();
+  });
+
+  it('says which provider is rate limiting', () => {
+    render(<ConnectionStatus />);
+    act(() => {
+      setStatuses([status('alpaca-poll', { state: 'reconnecting', rateLimited: true })]);
+    });
+
+    expect(screen.getByText('Alpaca snapshots rate limited')).toBeInTheDocument();
+    expect(screen.getByText('0 live')).toBeInTheDocument();
   });
 });

@@ -124,9 +124,9 @@ The app talks to the worker only through these messages (`feeds/protocol.ts`).
 | hub → app | `events`        | One batch per frame                                                                                                 |
 | hub → app | `status`        | Every source's `SourceStatus`, on change and once a second                                                          |
 | hub → app | `history`       | The bars for a request                                                                                              |
-| hub → app | `history-error` | The request could not be served                                                                                     |
+| hub → app | `history-error` | The request could not be served; `failure` says `rate-limited` (with `retryAt`) or `no-source` when that is why     |
 | hub → app | `news`          | The headlines, and the feed that supplied them                                                                      |
-| hub → app | `news-error`    | No usable feed with news, or the request failed                                                                     |
+| hub → app | `news-error`    | No usable feed with news, or the request failed; same `failure` as `history-error`                                  |
 | hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason                                                   |
 
 **Key vault.** `store/keys.ts` keeps keys by provider id in `localStorage`
@@ -142,7 +142,8 @@ the latest per symbol per frame, and bars only the latest per symbol, interval a
 
 **Status and age.** Each `SourceStatus` has `state` (`idle`, `connecting`, `live`,
 `reconnecting`, `no-key`, `auth-failed`, `down`), `lastEventAt`, `latencyMs` (receivedAt − ts of
-the last trade, quote or book event: exchange-to-browser delay), `stale`, `attempt` and `retryAt`.
+the last trade, quote or book event: exchange-to-browser delay), `stale`, `attempt`, `retryAt`,
+`key` (the vault id it needs, or null) and `rateLimited` (the last failure was HTTP 429).
 Some streams carry no exchange time (Binance best bid/ask and book); their events use
 `ts = receivedAt`, so latency comes from trades. The delay is measured against the local clock,
 so a clock running behind the exchange reads as 0 ms.
@@ -271,10 +272,57 @@ once per working day around 16:00 CET and refreshed hourly; a currency's change 
 latest fixing with the one before (positive: it strengthened against the dollar).
 
 Sources outside the hub report their freshness to `store/panels.ts`
-(`reportRestFreshness('ecb', { kind: 'eod' })`, or `offline` when a fetch fails).
-`useFreshness(sources)` gives one `Freshness` per source from the hub status or that report;
-panel headers and in-panel badges both use it. A panel with several sources shows the worst:
-offline, then stale, then EOD or delayed, then polled, then the slowest live stream.
+(`reportRestFreshness('ecb', { kind: 'eod' })`, or `freshnessOfFailure(failure)` when a fetch
+fails). `useFreshness(sources)` gives one `Freshness` per source from the hub status or that
+report; panel headers and in-panel badges both use it. A panel with several sources shows the
+worst: offline, no key or key rejected, then rate limited, then stale, then EOD or delayed, then
+polled or connecting, then the slowest live stream.
+
+## Empty, no-key, rate-limited and offline states (T18)
+
+Every panel says why it has nothing to show, from two models:
+
+- **Live data**: `store/availability.ts` `availabilityOf(symbol, statuses, keys)` reads the
+  router's order, each feed's `SourceStatus` and the key vault: `live`, `connecting`, `no-key`
+  (every feed needs a key; names them), `key-rejected`, `capped` (the free stream is full),
+  `rate-limited`, `offline` (with the soonest retry) or `unsupported`. A feed parked on a symbol
+  without a key does not count as serving it. Rows show a short reason in place of a missing
+  price (`widgets/RowReason.tsx`: Needs key, Cap full, Rate limited, Offline); a list whose rows
+  all share one reason shows it once (`useSharedAvailability`); single-symbol panels (book,
+  tape, chart) use `widgets/SymbolNotice.tsx`. US stocks have no free order book, and the book
+  says so.
+- **REST data**: stores keep a classified `Failure` (`store/failure.ts`: `rate-limited` with
+  `retryAt`, `offline`, `no-source`, `unconfigured`, `error`) instead of a message, and keep the
+  last good data on a failed refresh (news, FRED, calendar, ECB). The edge passes an upstream 429
+  through with its `Retry-After` (exposed to the page by CORS) and never caches it.
+
+`design/notices.ts` turns either into one sentence on what is missing and one on what happens
+next, and `design/PanelNotice.tsx` shows it with an "Open Settings" button when a key would fix
+it (a window event the shell answers, so widgets never import the shell). Truth badges gained
+`CONNECTING`, `NO KEY`, `KEY REJECTED` and `RATE LIMITED`; the top bar shows "No network" while
+the browser is offline and names any provider that is rate limiting.
+
+**Rate limits.** `getJson` turns a 429 into `HttpError` with the provider's `Retry-After`. The
+hub marks the source `rateLimited` and waits at least that long (60 s when none was given) before
+reconnecting; the next message clears it. History and news requests that hit a limit return
+`failure: { reason: 'rate-limited', retryAt }`.
+
+**Performance (T18).** Measured on the production build in headless Chromium at 1440×900, Mission
+Control plus a 50-symbol watchlist (13 crypto, 12 FX, 25 US stocks), glass on, 20 s per run:
+
+| Load                                      | Dark fps | Light fps | p95 frame |
+| ----------------------------------------- | -------- | --------- | --------- |
+| Live feeds (90–175 events/s)              | 59.4     | 59.7      | 16.8 ms   |
+| Synthetic: every symbol 20 times a second | 58.3     | 59.3      | 16.8 ms   |
+
+The synthetic run feeds about 1,000 events/s through the real store path (one batch per 50 ms,
+as the hub posts). Script time stays small (under 10% of the profile); the rest is style, layout
+and paint. Two changes bound that work per update, though the frame rate was already within a
+frame of 60 before them: the pulse reads its tokens once (`design/pulse.ts`, refreshed on theme,
+palette, inline-style or motion changes) instead of a computed-style read on every price change,
+and a cell runs at most one wash at a time (a same-direction change lets the running wash
+finish; a reversal replaces it). The development build is several times slower and is not a
+measure.
 
 ## Movers and breadth
 

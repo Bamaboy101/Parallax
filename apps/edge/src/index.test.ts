@@ -108,6 +108,20 @@ describe('/fred', () => {
     );
     expect(response.status).toBe(503);
   });
+
+  it("passes FRED's rate limit on as a 429 with its Retry-After, uncached", async () => {
+    fetchMock.mockResolvedValue(
+      new Response('', { status: 429, headers: { 'Retry-After': '30' } }),
+    );
+    const response = await get('/fred?series=DGS10');
+    expect(response.status).toBe(429);
+    expect(response.headers.get('Retry-After')).toBe('30');
+    expect(response.headers.get('Access-Control-Expose-Headers')).toContain('Retry-After');
+    expect(await response.json()).toEqual({ error: 'FRED DGS10: rate limited' });
+
+    await get('/fred?series=DGS10');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('/news', () => {

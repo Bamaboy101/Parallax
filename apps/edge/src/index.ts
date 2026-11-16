@@ -48,6 +48,8 @@ function withCors(response: Response, origin: string): Response {
   const headers = new Headers(response.headers);
   headers.set('Access-Control-Allow-Origin', origin);
   headers.set('Vary', 'Origin');
+  // Readable from the page: the cache verdict, and how long to wait after a 429.
+  headers.set('Access-Control-Expose-Headers', 'Retry-After, X-Edge-Cache');
   return new Response(response.body, { status: response.status, headers });
 }
 
@@ -125,8 +127,11 @@ export async function handle(request: Request, env: Env): Promise<Response> {
         return withCors(json(404, { error: 'unknown route' }), origin);
     }
   } catch (error) {
-    if (error instanceof RouteError)
-      return withCors(json(error.status, { error: error.message }), origin);
+    if (error instanceof RouteError) {
+      const retry: Record<string, string> =
+        error.retryAfter === null ? {} : { 'Retry-After': error.retryAfter };
+      return withCors(json(error.status, { error: error.message }, retry), origin);
+    }
     return withCors(json(502, { error: 'upstream failed' }), origin);
   }
 }

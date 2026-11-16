@@ -19,9 +19,23 @@ export class RouteError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** Upstream's Retry-After, passed on with a 429. */
+    readonly retryAfter: string | null = null,
   ) {
     super(message);
   }
+}
+
+/**
+ * A failed upstream answer: its rate limit becomes our 429 (with its Retry-After), so the app can
+ * say "rate limited" rather than "broken"; anything else is a 502. The upstream URL may carry a
+ * key, so only the status is reported.
+ */
+export function upstreamError(label: string, response: Response): RouteError {
+  if (response.status === 429) {
+    return new RouteError(429, `${label}: rate limited`, response.headers.get('Retry-After'));
+  }
+  return new RouteError(502, `${label}: HTTP ${String(response.status)}`);
 }
 
 /** Public publisher feeds. Headlines link to the publisher; nothing else is copied. */
@@ -144,8 +158,7 @@ export async function fred(params: URLSearchParams, env: Env): Promise<RouteResu
         (start ? `&observation_start=${start}` : '') +
         `&api_key=${encodeURIComponent(key)}`;
       const response = await fetch(url);
-      // The upstream URL carries the key: report the status only.
-      if (!response.ok) throw new RouteError(502, `FRED ${id}: HTTP ${String(response.status)}`);
+      if (!response.ok) throw upstreamError(`FRED ${id}`, response);
       const data: { observations?: { date: string; value: string }[] } = await response.json();
       const observations = (data.observations ?? []).flatMap(({ date, value }) => {
         const number = Number(value);
@@ -192,8 +205,7 @@ export async function calendar(env: Env, now = Date.now()): Promise<RouteResult>
     `&realtime_start=${from}&realtime_end=${to}&include_release_dates_with_no_data=true` +
     `&order_by=release_date&sort_order=asc&limit=1000&api_key=${encodeURIComponent(env.FRED_API_KEY)}`;
   const response = await fetch(url);
-  // The upstream URL carries the key: report the status only.
-  if (!response.ok) throw new RouteError(502, `FRED calendar: HTTP ${String(response.status)}`);
+  if (!response.ok) throw upstreamError('FRED calendar', response);
   const data: { release_dates?: { release_id?: number; date?: string }[] } = await response.json();
   const seen = new Set<string>();
   const releases = (data.release_dates ?? []).flatMap(({ release_id: id, date }) => {
@@ -221,7 +233,7 @@ export async function sec(params: URLSearchParams, env: Env): Promise<RouteResul
     headers: { 'User-Agent': env.SEC_USER_AGENT, Accept: 'application/json' },
   });
   if (response.status === 404) throw new RouteError(404, `no SEC filer ${cik}`);
-  if (!response.ok) throw new RouteError(502, `SEC: HTTP ${String(response.status)}`);
+  if (!response.ok) throw upstreamError('SEC', response);
   const data: {
     name?: string;
     tickers?: string[];

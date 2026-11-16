@@ -9,6 +9,7 @@ import {
   backoffDelay,
   type HubEnv,
 } from './hub';
+import { HttpError } from './adapters/rest';
 import type { HubMessage, SourceStatus } from './protocol';
 import {
   FeedAuthError,
@@ -297,6 +298,26 @@ describe('FeedHub reconnect', () => {
     expect(lastStatus('coinbase')).toMatchObject({ state: 'live', attempt: 0, latencyMs: 140 });
   });
 
+  it('waits out a rate limit as long as the provider asked, and clears it on the next message', async () => {
+    const feed = fakeFeed('coinbase', ['crypto']);
+    const hub = startHub([feed.registration]);
+    hub.handle({ type: 'subscribe', symbol: BTC, channel: 'trade' });
+
+    feed.latest().fail(new HttpError(429, 'api.example', 5000));
+    await advance(FRAME_MS);
+    expect(lastStatus('coinbase')).toMatchObject({ state: 'reconnecting', rateLimited: true });
+
+    // Far past the ordinary first backoff, but inside Retry-After: no new attempt yet.
+    await advance(4000);
+    expect(feed.instances).toHaveLength(1);
+    await advance(1000);
+    expect(feed.instances).toHaveLength(2);
+
+    feed.latest().trade('BTC-USD', 100, Date.now());
+    await advance(FRAME_MS);
+    expect(lastStatus('coinbase')).toMatchObject({ state: 'live', rateLimited: false });
+  });
+
   it('ignores events from an adapter instance it has replaced', async () => {
     const feed = fakeFeed('coinbase', ['crypto']);
     const hub = startHub([feed.registration]);
@@ -396,6 +417,7 @@ describe('FeedHub history', () => {
       type: 'history-error',
       requestId: 8,
       message: 'No history source for AAPL',
+      failure: { reason: 'no-source' },
     });
   });
 });
@@ -421,6 +443,7 @@ describe('FeedHub company news', () => {
       type: 'news-error',
       requestId: 1,
       message: 'No news source for AAPL',
+      failure: { reason: 'no-source' },
     });
     expect(messages).toContainEqual({ type: 'news', requestId: 2, items, source: 'finnhub' });
   });

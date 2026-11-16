@@ -12,11 +12,14 @@ import {
 } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import '../../design/market.css';
+import { failureNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import type { Bar, BarInterval } from '../../feeds/types';
 import { INTERVALS, useCandles } from '../../store/candles';
 import { useTick } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument } from '../../store/symbols';
+import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_INTERVAL, DEFAULT_SYMBOL } from './meta';
 
 interface ChartParams {
@@ -236,9 +239,12 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
             </button>
           ))}
         </div>
-        {candles.state === 'error' && (
-          <span className="ml-auto text-label text-warn" title={candles.error}>
-            History unavailable
+        {candles.failure && history.length > 0 && (
+          <span
+            className="ml-auto text-label text-warn"
+            title={failureNotice(candles.failure, 'History').detail}
+          >
+            {failureNotice(candles.failure, 'History').title}
           </span>
         )}
       </div>
@@ -246,6 +252,16 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
         <div ref={container} className="absolute inset-0" />
         {candles.state === 'loading' && history.length === 0 && (
           <p className="market-empty chart-empty">Loading history…</p>
+        )}
+        {candles.failure && history.length === 0 && (
+          <div className="chart-empty chart-notice">
+            {candles.failure.kind === 'no-source' ? (
+              // No history feed usually means no key: say which one.
+              <SymbolNotice item={item} waiting="No history source for this symbol yet." />
+            ) : (
+              <PanelNotice notice={failureNotice(candles.failure, `${item.label} history`)} />
+            )}
+          </div>
         )}
       </div>
     </div>

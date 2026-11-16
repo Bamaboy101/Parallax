@@ -1,28 +1,37 @@
 import { useShallow } from 'zustand/react/shallow';
+import { sourceName } from '../design/sources';
+import { useOnline } from '../store/network';
 import { useTickStore } from '../store/ticks';
 
-const NAMES: Record<string, string> = {
-  alpaca: 'Alpaca',
-  'alpaca-poll': 'Alpaca snapshots',
-  finnhub: 'Finnhub',
-  binance: 'Binance',
-  coinbase: 'Coinbase',
-  kraken: 'Kraken',
-};
-
 /**
- * Top-bar connection status: how many feeds are live, and a warning when a provider's free
- * symbol cap leaves symbols waiting.
+ * Top-bar connection status: how many feeds are live, a notice when the network is gone or a
+ * provider is rate limiting, and a warning when a free symbol cap leaves symbols waiting.
  */
 export function ConnectionStatus() {
+  const online = useOnline();
   const statuses = useTickStore(useShallow((state) => Object.values(state.status)));
   const live = statuses.filter((status) => status.state === 'live').length;
   const capped = statuses.filter((status) => status.waiting.length > 0);
+  const limited = statuses.filter((status) => status.rateLimited);
 
   return (
     <div className="connection-status" role="status">
+      {!online && (
+        <span className="connection-offline" title="Feeds reconnect when the network is back">
+          No network
+        </span>
+      )}
+      {limited.map((status) => (
+        <span
+          key={`limit-${status.source}`}
+          className="connection-cap"
+          title={`${sourceName(status.source)} answered "too many requests". The terminal waits before asking again.`}
+        >
+          {sourceName(status.source)} rate limited
+        </span>
+      ))}
       {capped.map((status) => {
-        const name = NAMES[status.source] ?? status.source;
+        const name = sourceName(status.source);
         const count = status.waiting.length;
         return (
           <span

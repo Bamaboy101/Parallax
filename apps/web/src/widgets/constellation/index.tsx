@@ -1,6 +1,9 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { availabilityNotice } from '../../design/notices';
+import { PanelNotice } from '../../design/PanelNotice';
 import '../../design/panels.css';
+import { useSharedAvailability } from '../../store/availability';
 import { CONSTELLATION_SAMPLES, MIN_PAIRS, skyAt, type Sky } from '../../store/constellation';
 import { usePriceSubscriptions } from '../../store/hooks';
 import { useKeyVault } from '../../store/keys';
@@ -410,6 +413,8 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
   const hovered = hover === undefined ? undefined : items[hover];
   const hoveredStar = hover === undefined ? undefined : sky.stars[hover];
   const gathering = sky.samples < MIN_PAIRS;
+  const shared = useSharedAvailability(items);
+  const notice = shared ? availabilityNotice(shared, 'these instruments') : null;
 
   return (
     <div className="constellation-panel">
@@ -444,11 +449,17 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
             <span>{hovered.name}</span>
           </p>
         )}
-        {gathering && (
-          <p className="constellation-gathering">
-            Gathering prices: correlations appear after {String(MIN_PAIRS)} five-second samples (
-            {String(sky.samples)} so far).
-          </p>
+        {notice ? (
+          <div className="constellation-gathering constellation-notice">
+            <PanelNotice notice={notice} compact />
+          </div>
+        ) : (
+          gathering && (
+            <p className="constellation-gathering">
+              Gathering prices: correlations appear after {String(MIN_PAIRS)} five-second samples (
+              {String(sky.samples)} so far).
+            </p>
+          )
         )}
       </div>
       <ul className="sr-only" aria-label="Constellation instruments">

@@ -5,6 +5,13 @@ export type Freshness =
   /** Fetched on a timer instead of streamed (a REST snapshot every `everyMs`). */
   | { kind: 'polled'; everyMs: number }
   | { kind: 'eod' }
+  /** First connection in progress; nothing has arrived yet. */
+  | { kind: 'connecting' }
+  /** The provider asked us to slow down (HTTP 429); retrying later. */
+  | { kind: 'rate-limited' }
+  /** The source needs a key: none stored, or the provider rejected it. */
+  | { kind: 'no-key' }
+  | { kind: 'key-rejected' }
   | { kind: 'offline' };
 
 export type BadgeTone = 'live' | 'warn' | 'offline';
@@ -27,12 +34,23 @@ export function badgeLabel(freshness: Freshness): string {
       return `POLLED ${formatAge(freshness.everyMs).replace(/\.0s$/, 's')}`;
     case 'eod':
       return 'EOD';
+    case 'connecting':
+      return 'CONNECTING';
+    case 'rate-limited':
+      return 'RATE LIMITED';
+    case 'no-key':
+      return 'NO KEY';
+    case 'key-rejected':
+      return 'KEY REJECTED';
     case 'offline':
       return 'OFFLINE';
   }
 }
 
-/** Cyan when live, amber when stale, delayed or polled, grey when offline. */
+/**
+ * Cyan when live; amber when stale, delayed, polled, rate limited or the key was rejected; grey
+ * when offline, connecting or waiting for a key.
+ */
 export function badgeTone(freshness: Freshness): BadgeTone {
   switch (freshness.kind) {
     case 'live':
@@ -40,7 +58,11 @@ export function badgeTone(freshness: Freshness): BadgeTone {
     case 'delayed':
     case 'polled':
     case 'eod':
+    case 'rate-limited':
+    case 'key-rejected':
       return 'warn';
+    case 'connecting':
+    case 'no-key':
     case 'offline':
       return 'offline';
   }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { isObject } from '../feeds/adapters/parse';
 import { edgeJson } from './edge';
-import { reportRestFreshness } from './panels';
+import { failureOf, type Failure } from './failure';
+import { freshnessOfFailure, reportRestFreshness } from './panels';
 
 /** The edge caches the calendar for 6 hours; looking hourly picks up a new day promptly. */
 export const CALENDAR_REFRESH_MS = 60 * 60_000;
@@ -51,7 +52,7 @@ export function newYorkInstant(date: string, time: string): number {
 export interface CalendarState {
   state: 'loading' | 'ready' | 'error';
   releases: Release[];
-  error: string | undefined;
+  failure: Failure | undefined;
 }
 
 /** Upcoming major US releases, from FRED's calendar through the edge. */
@@ -59,7 +60,7 @@ export function useCalendar(): CalendarState {
   const [calendar, setCalendar] = useState<CalendarState>({
     state: 'loading',
     releases: [],
-    error: undefined,
+    failure: undefined,
   });
   useEffect(() => {
     let cancelled = false;
@@ -69,14 +70,15 @@ export function useCalendar(): CalendarState {
         if (!releases) throw new Error('unreadable calendar');
         if (cancelled) return;
         reportRestFreshness('fred', { kind: 'eod' });
-        setCalendar({ state: 'ready', releases, error: undefined });
+        setCalendar({ state: 'ready', releases, failure: undefined });
       } catch (error) {
         if (cancelled) return;
-        reportRestFreshness('fred', { kind: 'offline' });
+        const failure = failureOf(error);
+        reportRestFreshness('fred', freshnessOfFailure(failure));
         setCalendar((current) => ({
           state: current.releases.length > 0 ? 'ready' : 'error',
           releases: current.releases,
-          error: error instanceof Error ? error.message : 'calendar unavailable',
+          failure,
         }));
       }
     };
