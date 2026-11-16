@@ -69,20 +69,23 @@ export function latest(observations: readonly Observation[] | undefined): Stat |
   };
 }
 
-/** Year-on-year percent change of a monthly index (CPI): latest against the same month a year ago. */
+/**
+ * Year-on-year percent change of a monthly index (CPI): the latest month that has a reading a
+ * year earlier, against that reading. Releases can be missing (October 2025 CPI was never
+ * published), so the newest month may have no base; `asOf` says which month is shown.
+ */
 export function yearOnYear(observations: readonly Observation[] | undefined): Stat | undefined {
   if (!observations) return undefined;
-  /** YoY percent at a position from the end, against the same month a year earlier. */
-  const at = (index: number) => {
-    const reading = observations.at(index);
-    if (!reading) return undefined;
-    const yearAgo = `${String(Number(reading.date.slice(0, 4)) - 1)}${reading.date.slice(4)}`;
-    const base = observations.find((observation) => observation.date === yearAgo);
-    return base ? { date: reading.date, value: (reading.value / base.value - 1) * 100 } : undefined;
-  };
-  const now = at(-1);
+  const byDate = new Map(observations.map((observation) => [observation.date, observation.value]));
+  const changes = observations.flatMap((reading) => {
+    const base = byDate.get(
+      `${String(Number(reading.date.slice(0, 4)) - 1)}${reading.date.slice(4)}`,
+    );
+    return base ? [{ date: reading.date, value: (reading.value / base - 1) * 100 }] : [];
+  });
+  const now = changes.at(-1);
   if (!now) return undefined;
-  const prior = at(-2);
+  const prior = changes.at(-2);
   return { value: now.value, change: prior ? now.value - prior.value : undefined, asOf: now.date };
 }
 

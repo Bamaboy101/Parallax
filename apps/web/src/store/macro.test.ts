@@ -19,6 +19,14 @@ describe('macro figures', () => {
     expect(yearOnYear(cpi.slice(-6))).toBeUndefined();
   });
 
+  it('falls back to the latest month with a year-ago reading when a release is missing', () => {
+    const cpi = monthly(9, [100, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 103, 104]);
+    // No reading for October 2025, as happened with the 2025 shutdown.
+    const gap = cpi.filter((reading) => reading.date !== '2025-10-01');
+    expect(yearOnYear(gap)).toMatchObject({ asOf: '2026-09-01', change: undefined });
+    expect(yearOnYear(gap)?.value).toBeCloseTo(3, 6);
+  });
+
   it('reports the latest reading and the monthly change of a level series', () => {
     const payrolls = monthly(1, [159_000, 159_150, 159_120]);
     expect(latest(payrolls)).toEqual({ value: 159_120, change: -30, asOf: '2025-03-01' });
