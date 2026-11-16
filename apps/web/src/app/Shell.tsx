@@ -121,6 +121,9 @@ export function Shell() {
       </main>
       <footer aria-label="Ticker rail" className="shell-rail">
         <TickerRail />
+        <span className="shell-disclaimer">
+          Market data as delivered by its sources · not investment advice
+        </span>
       </footer>
       <CommandPalette />
     </div>

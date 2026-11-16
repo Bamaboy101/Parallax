@@ -1,0 +1,28 @@
+Open Terminal
+Copyright 2026 Open Terminal contributors
+
+This product includes the following third-party software, bundled with or
+linked by the web application. Each keeps its own licence; see the named
+licence file in `node_modules` for the full terms.
+
+- lightweight-charts v5, Copyright TradingView, Inc.
+  Apache License 2.0. The chart panel carries the required attribution link
+  ("Charting by TradingView").
+- Inter Variable, Copyright 2016 The Inter Project Authors
+  (https://github.com/rsms/inter). SIL Open Font License 1.1.
+- JetBrains Mono Variable, Copyright 2020 The JetBrains Mono Project Authors
+  (https://github.com/JetBrains/JetBrainsMono). SIL Open Font License 1.1.
+  Both fonts are self-hosted through Fontsource (@fontsource-variable).
+- React and React DOM, Copyright (c) Facebook, Inc. and its affiliates.
+  MIT License.
+- dockview (dockview-react), Copyright Will Willson. MIT License.
+- zustand, Copyright (c) 2019 Paul Henschel. MIT License.
+
+The application code, the edge Worker and the documentation are original
+work of the contributors, licensed under the Apache License 2.0 (LICENSE).
+
+Market data is displayed as delivered by its public sources (Binance,
+Coinbase, Kraken, Bybit, OKX, Alpaca, Finnhub, FRED, SEC EDGAR, Frankfurter
+and the listed publisher feeds) under each source's own terms. This project
+is not affiliated with, endorsed by, or a redistribution of any of them, and
+each visitor's own keys serve only that visitor.

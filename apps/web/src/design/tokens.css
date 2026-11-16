@@ -198,6 +198,27 @@ body {
   border-top: 1px solid var(--line);
 }
 
+.shell-rail .ticker-list {
+  flex: 1 1 auto;
+}
+
+.shell-disclaimer {
+  flex-shrink: 0;
+  padding-inline: var(--pad);
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font: 9px var(--font-num);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .shell-disclaimer {
+    display: none;
+  }
+}
+
 .truth-badge {
   height: calc(var(--row-h) - 4px);
   max-height: 20px;
