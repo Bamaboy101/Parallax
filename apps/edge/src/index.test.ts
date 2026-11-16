@@ -216,3 +216,52 @@ describe('/sec', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe('/calendar', () => {
+  it('keeps the major releases, soonest first, and caches for six hours without the key', async () => {
+    const soon = (days: number) =>
+      new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+    // Shape of fred/releases/dates with include_release_dates_with_no_data=true.
+    fetchMock.mockResolvedValue(
+      Response.json({
+        release_dates: [
+          { release_id: 10, release_name: 'Consumer Price Index', date: soon(5) },
+          { release_id: 99, release_name: 'Some Minor Release', date: soon(1) },
+          {
+            release_id: 180,
+            release_name: 'Unemployment Insurance Weekly Claims Report',
+            date: soon(2),
+          },
+          {
+            release_id: 180,
+            release_name: 'Unemployment Insurance Weekly Claims Report',
+            date: soon(2),
+          },
+          { release_id: 50, release_name: 'Employment Situation', date: soon(60) },
+        ],
+      }),
+    );
+    const first = await get('/calendar');
+    const text = await first.text();
+    expect(JSON.parse(text)).toMatchObject({
+      releases: [
+        { date: soon(2), id: 180, name: 'Jobless Claims' },
+        { date: soon(5), id: 10, name: 'Consumer Price Index' },
+      ],
+    });
+    expect(text).not.toContain('fred-secret-key');
+    expect(first.headers.get('Cache-Control')).toBe('public, max-age=21600');
+    expect(fetchMock.mock.calls[0]?.[0]).toContain('include_release_dates_with_no_data=true');
+
+    expect((await get('/calendar')).headers.get('X-Edge-Cache')).toBe('HIT');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports a missing key as not configured', async () => {
+    const response = await handle(
+      new Request('https://edge.example/calendar', { headers: { Origin: SITE } }),
+      { ...ENV, FRED_API_KEY: undefined },
+    );
+    expect(response.status).toBe(503);
+  });
+});

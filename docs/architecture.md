@@ -423,6 +423,7 @@ suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.
 | `funding`       | Crypto derivatives board (also `derivatives`, `perps`, `liquidations`, `oi`)        |
 | `fx`            | FX board: Kraken live pairs and ECB daily rates (also `forex`, `currencies`, `ecb`) |
 | `movers`        | Top gainers, losers, most active and breadth (also `gainers`, `losers`, `breadth`)  |
+| `calendar`      | Upcoming US data releases (also `econ`, `releases`, `events`)                       |
 | `layout crypto` | Replaces the panels with a workspace preset                                         |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
@@ -457,6 +458,15 @@ Every route is a cached GET; a request needs an `Origin` on `ALLOWED_ORIGINS` (w
 | `/news?q=`                | 8 publisher RSS feeds (`NEWS_FEEDS`) | 2 min      | Fetched once per window, filtered per query  |
 | `/fred?series=A,B&start=` | FRED `series/observations`           | 1 h        | Only the Macro board's series; ≤ 10 per call |
 | `/sec?cik=`               | SEC `data.sec.gov/submissions`       | 10 min     | Latest 20 filings with document links        |
+| `/calendar`               | FRED `releases/dates`                | 6 h        | Next 30 days, 11 major releases (T13e)       |
+
+The calendar asks FRED with `include_release_dates_with_no_data=true` and a future
+`realtime_end` (without them FRED lists only past dates), then keeps an allow-list of major
+releases by FRED release id (`CALENDAR_RELEASES`: jobs 50, CPI 10, PPI 46, GDP 53, PCE 54,
+retail sales 9, JOLTS 192, industrial production 13, housing starts 27, Michigan sentiment 91,
+jobless claims 180). FRED has dates, not times: the board shows each agency's usual New York
+time (`widgets/calendar/meta.ts`, labelled as usual) beside the viewer's local time. FOMC
+meetings are not FRED releases and are not listed.
 
 - No user key ever reaches the edge. The Worker holds two project secrets, set with
   `wrangler secret put`: `FRED_API_KEY`, and `SEC_USER_AGENT` (name and contact email, as SEC

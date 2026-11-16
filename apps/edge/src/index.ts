@@ -1,5 +1,6 @@
 import {
   allNews,
+  calendar,
   filterNews,
   fred,
   isNewsBody,
@@ -9,8 +10,11 @@ import {
   type RouteResult,
 } from './routes';
 
-/** Seconds each route's answer is cached at the edge (plan: news 2 min, FRED 1 h, SEC 10 min). */
-export const CACHE_SECONDS = { news: 120, fred: 3600, sec: 600 } as const;
+/**
+ * Seconds each route's answer is cached at the edge (plan: news 2 min, FRED 1 h, SEC 10 min;
+ * the release calendar changes rarely, 6 h).
+ */
+export const CACHE_SECONDS = { news: 120, fred: 3600, sec: 600, calendar: 21_600 } as const;
 
 type Route = keyof typeof CACHE_SECONDS;
 
@@ -112,6 +116,11 @@ export async function handle(request: Request, env: Env): Promise<Response> {
         key.searchParams.set('cik', url.searchParams.get('cik') ?? '');
         return withCors(await cached('sec', key, () => sec(url.searchParams, env)), origin);
       }
+      case 'calendar':
+        return withCors(
+          await cached('calendar', new URL('/calendar', url), () => calendar(env)),
+          origin,
+        );
       default:
         return withCors(json(404, { error: 'unknown route' }), origin);
     }

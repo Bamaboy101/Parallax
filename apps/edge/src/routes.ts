@@ -157,6 +157,57 @@ export async function fred(params: URLSearchParams, env: Env): Promise<RouteResu
   return { status: 200, body: { series: Object.fromEntries(entries) } };
 }
 
+/**
+ * Major US releases on FRED's calendar, by FRED release id (fred.stlouisfed.org/release?rid=).
+ * FRED lists about 900 release dates a month; the calendar keeps these.
+ */
+export const CALENDAR_RELEASES: Readonly<Record<number, string>> = {
+  50: 'Employment Situation',
+  10: 'Consumer Price Index',
+  46: 'Producer Price Index',
+  53: 'Gross Domestic Product',
+  54: 'Personal Income and Outlays',
+  9: 'Retail Sales',
+  192: 'Job Openings and Labor Turnover',
+  13: 'Industrial Production',
+  27: 'Housing Starts',
+  91: 'Consumer Sentiment (Michigan)',
+  180: 'Jobless Claims',
+};
+/** Days ahead the calendar covers. */
+export const CALENDAR_DAYS = 30;
+
+const isoDate = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+
+/**
+ * Upcoming major releases, soonest first. FRED lists scheduled dates only with
+ * `include_release_dates_with_no_data=true` and a future `realtime_end`; it has dates, not times.
+ */
+export async function calendar(env: Env, now = Date.now()): Promise<RouteResult> {
+  if (!env.FRED_API_KEY) throw new RouteError(503, 'FRED key not configured');
+  const from = isoDate(now);
+  const to = isoDate(now + CALENDAR_DAYS * 86_400_000);
+  const url =
+    'https://api.stlouisfed.org/fred/releases/dates?file_type=json' +
+    `&realtime_start=${from}&realtime_end=${to}&include_release_dates_with_no_data=true` +
+    `&order_by=release_date&sort_order=asc&limit=1000&api_key=${encodeURIComponent(env.FRED_API_KEY)}`;
+  const response = await fetch(url);
+  // The upstream URL carries the key: report the status only.
+  if (!response.ok) throw new RouteError(502, `FRED calendar: HTTP ${String(response.status)}`);
+  const data: { release_dates?: { release_id?: number; date?: string }[] } = await response.json();
+  const seen = new Set<string>();
+  const releases = (data.release_dates ?? []).flatMap(({ release_id: id, date }) => {
+    const name = id === undefined ? undefined : CALENDAR_RELEASES[id];
+    if (name === undefined || date === undefined || date < from || date > to) return [];
+    const key = `${String(id)}|${date}`;
+    if (seen.has(key)) return [];
+    seen.add(key);
+    return [{ date, id, name }];
+  });
+  releases.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+  return { status: 200, body: { from, to, releases } };
+}
+
 const SEC_FILINGS = 20;
 
 export async function sec(params: URLSearchParams, env: Env): Promise<RouteResult> {
