@@ -55,6 +55,10 @@
   white-space: nowrap;
 }
 
+.market-columns.tape-columns > :first-child {
+  text-align: right;
+}
+
 .market-row {
   position: relative;
   min-height: var(--row-h);
@@ -316,6 +320,9 @@
   color: var(--muted);
   font-size: var(--size-label);
   font-weight: 500;
+  font-family: var(--font-num);
+  letter-spacing: 0.02em;
+  line-height: 16px;
 }
 
 .markets-market {
@@ -344,25 +351,21 @@
 
 @container (max-width: 360px) {
   .markets-columns {
-    grid-template-columns: minmax(62px, 1.2fr) minmax(52px, 0.9fr) minmax(54px, 1fr) minmax(
+    grid-template-columns: minmax(64px, 1.2fr) minmax(52px, 0.9fr) minmax(56px, 1fr) minmax(
         48px,
         0.8fr
       );
     gap: 4px;
     padding-inline: 8px;
-    font-size: 11px;
+    font-size: var(--size-label);
   }
 
   .markets-columns .text-num {
-    font-size: 11px;
+    font-size: var(--size-label);
   }
 
   .markets-proxy .market-symbol {
     flex-shrink: 0;
-  }
-
-  .markets-tag {
-    font-size: 9px;
   }
 
   .markets-columns > :last-child {
@@ -446,7 +449,7 @@
 .fx-currency {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -480,7 +483,7 @@
 
 .movers-breadth {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   padding: 8px var(--pad);
   border-bottom: 1px solid var(--line);
 }
@@ -495,9 +498,9 @@
 
 .movers-bar {
   display: flex;
-  height: 6px;
+  height: 4px;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--line);
 }
 
@@ -525,13 +528,13 @@
 .calendar-columns {
   grid-template-columns: 76px minmax(0, 1fr);
   align-items: start;
-  padding-block: 6px;
+  padding-block: 8px;
 }
 
 .calendar-time,
 .calendar-release {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -558,18 +561,18 @@
   }
 
   .movers-lists .movers-columns {
-    grid-template-columns: minmax(58px, 1fr) minmax(54px, 1fr) minmax(52px, 0.8fr);
+    grid-template-columns: minmax(60px, 1fr) minmax(56px, 1fr) minmax(52px, 0.8fr);
     gap: 4px;
-    min-height: 22px;
+    min-height: var(--row-h);
     padding-inline: 8px;
-    font-size: 11px;
+    font-size: var(--size-label);
   }
 
   .movers-lists .movers-columns .text-num {
-    font-size: 11px;
+    font-size: var(--size-label);
   }
 
   .movers-lists .markets-group {
-    padding-block: 5px;
+    padding-block: 4px;
   }
 }

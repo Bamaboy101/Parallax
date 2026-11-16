@@ -251,3 +251,57 @@
     gap: 3px;
   }
 }
+
+/* Static state glyphs: neutral setup/offline, amber restrictions; never price colours. */
+.truth-badge-mark {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.truth-badge[data-state='connecting'] .truth-badge-mark {
+  border: 1px dashed currentColor;
+  background: transparent;
+}
+
+.truth-badge[data-state='no-key'] .truth-badge-mark {
+  border: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+}
+
+.truth-badge[data-state='key-rejected'] .truth-badge-mark {
+  border-radius: 0;
+  background: transparent;
+}
+
+.truth-badge[data-state='key-rejected'] .truth-badge-mark::before,
+.truth-badge[data-state='key-rejected'] .truth-badge-mark::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 8px;
+  height: 1px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.truth-badge[data-state='key-rejected'] .truth-badge-mark::after {
+  transform: rotate(-45deg);
+}
+
+.truth-badge[data-state='rate-limited'] .truth-badge-mark {
+  border-inline: 2px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+}
+
+.truth-badge[data-state='offline'] .truth-badge-mark {
+  height: 1px;
+  border-radius: 0;
+}

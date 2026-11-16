@@ -64,7 +64,7 @@ const PerpRow = memo(function PerpRow({
         {tick && tick.nextFundingTime > 0 ? countdown(tick.nextFundingTime - at) : '—'}
       </span>
       <span
-        className="text-right font-mono"
+        className="text-right font-mono text-num"
         title={
           tick?.openInterest == null
             ? undefined
@@ -133,7 +133,10 @@ export default function Derivatives({ api }: IDockviewPanelProps) {
 
       <div className="derivs-heading">
         <h3 className="markets-group">Liquidations</h3>
-        <span className="derivs-muted" title="Since this page opened, at most the last hour">
+        <span
+          className="derivs-muted font-mono"
+          title="Since this page opened, at most the last hour"
+        >
           last hour: longs ${formatCompact(totals.long)} · shorts ${formatCompact(totals.short)}
         </span>
       </div>
@@ -160,7 +163,7 @@ export default function Derivatives({ api }: IDockviewPanelProps) {
                 <span>{event.side === 'long' ? 'Long' : 'Short'}</span>
                 <Cell value={event.price} decimals={perp?.decimals ?? 2} />
                 <span
-                  className="text-right font-mono"
+                  className="text-right font-mono text-num"
                   title={`${formatNumber(event.size, 4)} ${perp?.base ?? ''}`}
                 >
                   ${formatCompact(event.size * event.price)}
