@@ -3,7 +3,9 @@ import {
   type AdapterContext,
   type Bar,
   type BarInterval,
+  isMarketChannel,
   type Channel,
+  type MarketChannel,
   type FeedAdapter,
   type Level,
   type SymbolRef,
@@ -49,7 +51,7 @@ export const KRAKEN_FX_PAIRS: ReadonlySet<string> = new Set([
   'USD/JPY',
 ]);
 
-const UPSTREAM: Record<Channel, { channel: string; params: Json }> = {
+const UPSTREAM: Record<MarketChannel, { channel: string; params: Json }> = {
   trade: { channel: 'trade', params: {} },
   quote: { channel: 'ticker', params: { event_trigger: 'bbo' } },
   book: { channel: 'book', params: { depth: BOOK_DEPTH } },
@@ -68,8 +70,8 @@ export class KrakenAdapter extends SocketAdapter implements FeedAdapter {
 
   private readonly pairs = new Map<string, SymbolRef>();
   private readonly wanted = new Set<string>();
-  private readonly toSubscribe = new Map<Channel, Set<string>>();
-  private readonly toUnsubscribe = new Map<Channel, Set<string>>();
+  private readonly toSubscribe = new Map<MarketChannel, Set<string>>();
+  private readonly toUnsubscribe = new Map<MarketChannel, Set<string>>();
   private flushTimer: number | undefined;
   /** Local top-of-book per pair; Kraken expects clients to truncate to the subscribed depth. */
   private readonly books = new Map<string, { bids: Side; asks: Side }>();
@@ -116,6 +118,7 @@ export class KrakenAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   subscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const pair = pairOf(symbol);
     this.pairs.set(pair, symbol);
     this.wanted.add(`${pair}|${channel}`);
@@ -123,6 +126,7 @@ export class KrakenAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   unsubscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const pair = pairOf(symbol);
     if (!this.wanted.delete(`${pair}|${channel}`)) return;
     if (channel === 'book') this.books.delete(pair);
@@ -140,17 +144,17 @@ export class KrakenAdapter extends SocketAdapter implements FeedAdapter {
     this.toUnsubscribe.clear();
     for (const key of this.wanted) {
       const [pair = '', channel = ''] = key.split('|');
-      const pairs = this.toSubscribe.get(channel as Channel) ?? new Set<string>();
+      const pairs = this.toSubscribe.get(channel as MarketChannel) ?? new Set<string>();
       pairs.add(pair);
-      this.toSubscribe.set(channel as Channel, pairs);
+      this.toSubscribe.set(channel as MarketChannel, pairs);
     }
     this.flush();
   }
 
   private queue(
-    into: Map<Channel, Set<string>>,
-    cancel: Map<Channel, Set<string>>,
-    channel: Channel,
+    into: Map<MarketChannel, Set<string>>,
+    cancel: Map<MarketChannel, Set<string>>,
+    channel: MarketChannel,
     pair: string,
   ): void {
     if (cancel.get(channel)?.delete(pair)) return;

@@ -48,6 +48,13 @@
       "component": "tape",
       "params": { "symbol": "BTC-USD", "link": 1 },
       "position": { "referencePanel": "book", "direction": "below" }
+    },
+    {
+      "id": "derivs",
+      "component": "derivs",
+      "params": {},
+      "position": { "referencePanel": "book", "direction": "within" },
+      "inactive": true
     }
   ]
 }

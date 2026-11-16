@@ -3,7 +3,9 @@ import {
   type AdapterContext,
   type Bar,
   type BarInterval,
+  isMarketChannel,
   type Channel,
+  type MarketChannel,
   type FeedAdapter,
   type SymbolRef,
 } from '../types';
@@ -23,7 +25,7 @@ const CONTROL_GAP_MS = 250;
 /** Keep each SUBSCRIBE frame small. */
 const MAX_PARAMS = 100;
 
-function streamName(symbol: SymbolRef, channel: Channel): string {
+function streamName(symbol: SymbolRef, channel: MarketChannel): string {
   const pair = `${symbol.base}${symbol.quote}`.toLowerCase();
   switch (channel) {
     case 'trade':
@@ -47,7 +49,7 @@ export class BinanceAdapter extends SocketAdapter implements FeedAdapter {
   protected readonly url = URL;
 
   /** Stream name → subscribed symbol and channel. */
-  private readonly streams = new Map<string, { symbol: SymbolRef; channel: Channel }>();
+  private readonly streams = new Map<string, { symbol: SymbolRef; channel: MarketChannel }>();
   private readonly toSubscribe = new Set<string>();
   private readonly toUnsubscribe = new Set<string>();
   private flushTimer: number | undefined;
@@ -94,6 +96,7 @@ export class BinanceAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   subscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const name = streamName(symbol, channel);
     this.streams.set(name, { symbol, channel });
     this.toUnsubscribe.delete(name);
@@ -102,6 +105,7 @@ export class BinanceAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   unsubscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const name = streamName(symbol, channel);
     if (!this.streams.delete(name)) return;
     this.toSubscribe.delete(name);

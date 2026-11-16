@@ -589,11 +589,15 @@ export class FeedHub {
     if (subscription?.source === source) this.queue(event);
   }
 
-  /** Trades and book updates are all kept; quotes and bars keep only the latest per frame. */
+  /**
+   * Trades, liquidations and book updates are all kept; quotes, perp funding and bars keep only
+   * the latest per frame.
+   */
   private queue(event: FeedEvent): void {
     let key: string | null = null;
-    if (event.channel === 'quote') key = `quote|${event.source}|${event.symbol}`;
-    else if (event.channel === 'bar') {
+    if (event.channel === 'quote' || event.channel === 'deriv') {
+      key = `${event.channel}|${event.source}|${event.symbol}`;
+    } else if (event.channel === 'bar') {
       key = `bar|${event.source}|${event.symbol}|${event.interval}|${String(event.ts)}`;
     }
     if (key !== null) {

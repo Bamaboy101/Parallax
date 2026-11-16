@@ -206,11 +206,42 @@ interface BarEvent extends BaseEvent, Bar {
   channel: 'bar';
   interval: BarInterval;
 }
+
+// Perpetual futures (kind 'perp', id 'BTC-USDT-PERP'), added in T13b.
+interface DerivEvent extends BaseEvent {
+  channel: 'deriv';
+  markPrice: number;
+  fundingRate: number; // current interval, as a fraction: 0.0001 = 0.01%; positive: longs pay
+  nextFundingTime: number; // when the current interval settles
+  openInterest: number | null; // base coin
+  openInterestUsd: number | null;
+}
+
+interface LiquidationEvent extends BaseEvent {
+  channel: 'liquidation';
+  side: 'long' | 'short'; // the liquidated position: 'long' is a forced sell
+  price: number;
+  size: number; // base coin
+}
 ```
 
 The `bar` channel always streams **1-minute** bars (`interval: '1m'`), because `subscribe` takes no
 interval. Longer intervals are built from them, and from `fetchHistory`, in the chart (T9). A
-bar event's `ts` is the bar's open time.
+bar event's `ts` is the bar's open time. `MarketChannel` (every channel but `deriv` and
+`liquidation`) is what spot, FX and stock adapters serve; they ignore the perp channels.
+
+**Perp feeds** (all public, no key; each converts to the event's units):
+
+| Feed              | Funding and mark                    | Open interest           | Liquidations                                                |
+| ----------------- | ----------------------------------- | ----------------------- | ----------------------------------------------------------- |
+| `bybit`           | `tickers.<PAIR>` (snapshot + delta) | same ticker (coin, USD) | `allLiquidation.<PAIR>`, every one; `Buy` = long liquidated |
+| `okx` (port 443)  | `funding-rate`, `mark-price`        | REST every 30 s         | `liquidation-orders` (all swaps), contracts × `ctVal`       |
+| `binance-futures` | `/market` `<pair>@markPrice@1s`     | REST every 30 s, × mark | `!forceOrder@arr`: largest per symbol per second            |
+
+Binance moved futures streams to routed paths in 2026; the old `/stream` path sends nothing.
+Bybit and OKX echo the page's origin for CORS, Binance answers `*`. Exchanges can refuse some
+countries (Binance's futures API is documented to answer US addresses with 451); if every perp
+feed fails, the board reads offline.
 
 ## History
 
@@ -307,6 +338,7 @@ that support the symbol, in that order, and serves each subscription from the fi
 | Crypto against USDT    | Binance, Kraken                         |
 | FX (Kraken's 12 pairs) | Kraken                                  |
 | US stocks              | Alpaca, Finnhub, Alpaca snapshot poller |
+| USDT perpetuals        | Bybit, OKX, Binance futures             |
 
 **Symbol caps.** A registration may set `symbolLimit` (Alpaca 30, Finnhub 50: their free stream
 limits). The hub counts distinct symbols per feed across channels and never routes more. A symbol
@@ -354,15 +386,16 @@ The command bar (`command/`) opens on `/` or Ctrl/Cmd+K. `parser.ts` turns text 
 suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.ts`);
 `app/commands.ts` carries the chosen command out on the dock.
 
-| Typed           | Does                                                                    |
-| --------------- | ----------------------------------------------------------------------- |
-| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)   |
-| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel           |
-| `watch sol`     | Adds SOL/USD to the open watchlist                                      |
-| `news tesla`    | Opens News searching for "tesla"                                        |
-| `settings`      | Opens (or focuses) a widget that takes no input                         |
-| `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`) |
-| `layout crypto` | Replaces the panels with a workspace preset                             |
+| Typed           | Does                                                                         |
+| --------------- | ---------------------------------------------------------------------------- |
+| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)        |
+| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel                |
+| `watch sol`     | Adds SOL/USD to the open watchlist                                           |
+| `news tesla`    | Opens News searching for "tesla"                                             |
+| `settings`      | Opens (or focuses) a widget that takes no input                              |
+| `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`)      |
+| `funding`       | Crypto derivatives board (also `derivatives`, `perps`, `liquidations`, `oi`) |
+| `layout crypto` | Replaces the panels with a workspace preset                                  |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
 

@@ -12,8 +12,13 @@ export class FakeSocket implements SocketLike {
 
   constructor(readonly url: string) {}
 
+  /** JSON frames are recorded parsed; plain text (OKX's `ping`) as the string itself. */
   send(data: string): void {
-    this.sent.push(JSON.parse(data));
+    try {
+      this.sent.push(JSON.parse(data));
+    } catch {
+      this.sent.push(data);
+    }
   }
 
   close(code = 1000): void {

@@ -95,6 +95,7 @@ describe('runCommand', () => {
       'book',
       'chart',
       'constellation',
+      'derivs',
       'tape',
       'watchlist',
     ]);

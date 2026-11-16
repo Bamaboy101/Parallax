@@ -34,6 +34,13 @@
       "component": "session-ring",
       "params": {},
       "position": { "referencePanel": "news", "direction": "below" }
+    },
+    {
+      "id": "derivs",
+      "component": "derivs",
+      "params": {},
+      "position": { "referencePanel": "sessions", "direction": "within" },
+      "inactive": true
     }
   ]
 }

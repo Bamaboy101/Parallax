@@ -3,7 +3,9 @@ import {
   type AdapterContext,
   type Bar,
   type BarInterval,
+  isMarketChannel,
   type Channel,
+  type MarketChannel,
   type FeedAdapter,
   type SymbolRef,
 } from '../types';
@@ -36,7 +38,7 @@ const CONTROL_GAP_MS = 150;
  * equivalent, batched every 50 ms. Coinbase has no candle channel, so 1-minute bars are built
  * from matches.
  */
-const UPSTREAM: Record<Channel, string> = {
+const UPSTREAM: Record<MarketChannel, string> = {
   trade: 'matches',
   bar: 'matches',
   quote: 'ticker',
@@ -103,6 +105,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   subscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const product = productId(symbol);
     this.products.set(product, symbol);
     const upstream = UPSTREAM[channel];
@@ -112,6 +115,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   unsubscribe(symbol: SymbolRef, channel: Channel): void {
+    if (!isMarketChannel(channel)) return;
     const product = productId(symbol);
     if (!this.wanted.delete(`${product}|${channel}`)) return;
     if (channel === 'bar') this.bars.delete(product);
@@ -131,7 +135,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
     this.toUnsubscribe.clear();
     for (const key of this.wanted) {
       const [product = '', channel = ''] = key.split('|');
-      const upstream = UPSTREAM[channel as Channel];
+      const upstream = UPSTREAM[channel as MarketChannel];
       const products = this.toSubscribe.get(upstream) ?? new Set<string>();
       products.add(product);
       this.toSubscribe.set(upstream, products);
@@ -140,7 +144,7 @@ export class CoinbaseAdapter extends SocketAdapter implements FeedAdapter {
   }
 
   private needsUpstream(product: string, upstream: string): boolean {
-    return (Object.keys(UPSTREAM) as Channel[]).some(
+    return (Object.keys(UPSTREAM) as MarketChannel[]).some(
       (channel) => UPSTREAM[channel] === upstream && this.wanted.has(`${product}|${channel}`),
     );
   }

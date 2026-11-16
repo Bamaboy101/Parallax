@@ -3,7 +3,17 @@
  * All times are Unix epoch milliseconds.
  */
 
-export type Channel = 'trade' | 'quote' | 'book' | 'bar';
+/**
+ * `deriv`: funding rate, mark price and open interest of a perpetual future.
+ * `liquidation`: forced closes of perpetual positions.
+ */
+export type Channel = 'trade' | 'quote' | 'book' | 'bar' | 'deriv' | 'liquidation';
+
+/** The price channels of spot crypto, FX and stocks: everything except the perp channels. */
+export type MarketChannel = Exclude<Channel, 'deriv' | 'liquidation'>;
+
+export const isMarketChannel = (channel: Channel): channel is MarketChannel =>
+  channel !== 'deriv' && channel !== 'liquidation';
 
 export type BarInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
 
@@ -16,7 +26,8 @@ export const INTERVAL_MS: Readonly<Record<BarInterval, number>> = {
   '1d': 86_400_000,
 };
 
-export type AssetKind = 'crypto' | 'equity' | 'fx';
+/** `perp`: a perpetual future, quoted in `quote` (USDT), on its own symbol id ('BTC-USDT-PERP'). */
+export type AssetKind = 'crypto' | 'equity' | 'fx' | 'perp';
 
 /** One instrument as the app names it. `id` is the key used in events and the store. */
 export interface SymbolRef {
@@ -79,7 +90,30 @@ export interface BarEvent extends BaseEvent, Bar {
   interval: BarInterval;
 }
 
-export type FeedEvent = TradeEvent | QuoteEvent | BookEvent | BarEvent;
+/** A perpetual future's funding and positioning, as one snapshot per update. */
+export interface DerivEvent extends BaseEvent {
+  channel: 'deriv';
+  markPrice: number;
+  /** Rate for the current funding interval as a fraction: 0.0001 is 0.01%. Positive: longs pay. */
+  fundingRate: number;
+  /** When the current interval settles. */
+  nextFundingTime: number;
+  /** Open interest in the base coin, and in USD; null until the feed has reported it. */
+  openInterest: number | null;
+  openInterestUsd: number | null;
+}
+
+/** One forced close. A `long` liquidation is a forced sell of a long position. */
+export interface LiquidationEvent extends BaseEvent {
+  channel: 'liquidation';
+  side: 'long' | 'short';
+  price: number;
+  /** In the base coin. */
+  size: number;
+}
+
+export type FeedEvent =
+  TradeEvent | QuoteEvent | BookEvent | BarEvent | DerivEvent | LiquidationEvent;
 
 /** One headline, from a feed's company news or the edge's publisher RSS. */
 export interface NewsItem {

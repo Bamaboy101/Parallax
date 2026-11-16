@@ -349,3 +349,50 @@
     display: none;
   }
 }
+
+/* Crypto derivatives: perps table and liquidation list. */
+.derivs-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.derivs-columns {
+  grid-template-columns: 40px minmax(64px, 1fr) minmax(72px, 1fr) 60px minmax(56px, 0.8fr);
+}
+
+/* Narrow: drop the funding countdown, which is the same for every row. */
+@container (max-width: 420px) {
+  .derivs-columns {
+    grid-template-columns: 40px minmax(64px, 1fr) minmax(72px, 1fr) minmax(56px, 0.8fr);
+  }
+
+  .derivs-columns > :nth-child(4) {
+    display: none;
+  }
+}
+
+.liquidation-columns {
+  grid-template-columns: 64px 48px minmax(48px, 0.7fr) minmax(72px, 1fr) minmax(56px, 0.8fr);
+}
+
+.derivs-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: var(--pad);
+  border-top: 1px solid var(--line);
+}
+
+.derivs-heading .markets-group {
+  border-bottom: 0;
+}
+
+.derivs-muted {
+  color: var(--muted);
+  font-size: var(--size-label);
+}

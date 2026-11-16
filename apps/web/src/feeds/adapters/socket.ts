@@ -96,11 +96,12 @@ export abstract class SocketAdapter {
     this.socket?.close();
   }
 
-  /** Send `message` every `ms` while the socket is open. */
+  /** Send `message` every `ms` while the socket is open. A string goes as is (OKX wants `ping`). */
   protected keepAlive(ms: number, message: unknown): void {
     globalThis.clearInterval(this.keepAliveTimer);
     this.keepAliveTimer = globalThis.setInterval(() => {
-      this.send(message);
+      if (typeof message !== 'string') this.send(message);
+      else if (this.isOpen) this.socket?.send(message);
     }, ms);
   }
 }

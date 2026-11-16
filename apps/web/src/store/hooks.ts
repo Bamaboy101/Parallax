@@ -111,6 +111,51 @@ export function useTrades(symbol: SymbolRef, limit: number): TickOf['trade'][] {
   );
 }
 
+/**
+ * The most recent liquidations across several perps, newest first, at the Rewind cursor or live.
+ * Each symbol's `liquidation` channel stays subscribed while mounted.
+ */
+export function useLiquidations(
+  symbols: readonly SymbolRef[],
+  limit: number,
+): TickOf['liquidation'][] {
+  const key = symbols
+    .map(({ id, kind, base, quote }) => [id, kind, base, quote].join('|'))
+    .join(',');
+  useEffect(() => {
+    const releases = key
+      .split(',')
+      .filter(Boolean)
+      .map((entry) => {
+        const [id = '', kind = 'perp', base = '', quote = ''] = entry.split('|');
+        return subscribeFeed({ id, kind: kind as AssetKind, base, quote }, 'liquidation');
+      });
+    return () => {
+      for (const release of releases) release();
+    };
+  }, [key]);
+  const versionStore = useMemo(() => {
+    const ids = key.split(',').map((entry) => entry.split('|')[0] ?? '');
+    return throttledValue(
+      (state) => ids.map((id) => state.versions.liquidation[id] ?? 0).join(','),
+      LIST_REFRESH_MS,
+    );
+  }, [key]);
+  const version = useSyncExternalStore(versionStore.subscribe, versionStore.get);
+  const cursor = useTickStore((state) => state.cursor);
+  return useMemo(
+    () =>
+      key
+        .split(',')
+        .flatMap((entry) => recentValues('liquidation', entry.split('|')[0] ?? '', limit, cursor))
+        .sort((a, b) => b.ts - a.ts)
+        .slice(0, limit),
+    // `version` invalidates the memo when new liquidations arrive.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key, limit, cursor, version],
+  );
+}
+
 /** The top of one symbol's book at the Rewind cursor or live, refreshed ten times a second. */
 export function useBook(symbol: SymbolRef): TickOf['book'] | undefined {
   useFeedSubscription(symbol, 'book');

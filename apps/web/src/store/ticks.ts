@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import type { SourceStatus } from '../feeds/protocol';
-import type { BarEvent, Channel, FeedEvent, QuoteEvent, TradeEvent } from '../feeds/types';
+import type {
+  BarEvent,
+  Channel,
+  DerivEvent,
+  FeedEvent,
+  LiquidationEvent,
+  QuoteEvent,
+  TradeEvent,
+} from '../feeds/types';
 import { OrderBook, type BookView } from './orderBook';
 import { RingBuffer } from './ringBuffer';
 
@@ -16,19 +24,23 @@ export interface TickOf {
   quote: QuoteEvent;
   bar: BarEvent;
   book: BookView;
+  deriv: DerivEvent;
+  liquidation: LiquidationEvent;
 }
 
 type PerChannel<T extends { [C in Channel]: unknown }> = { [C in Channel]: Record<string, T[C]> };
 
 /**
- * History kept per symbol. Trades are all kept; quotes and books are sampled (latest per bucket)
- * so an hour of a busy symbol stays in a few MB.
+ * History kept per symbol. Trades and liquidations are all kept; quotes, books and funding are
+ * sampled (latest per bucket) so an hour of a busy symbol stays in a few MB.
  */
 const RETENTION: { [C in Channel]: { capacity: number; bucketMs: number } } = {
   trade: { capacity: 100_000, bucketMs: 0 },
   quote: { capacity: 15_000, bucketMs: 250 },
   bar: { capacity: 120, bucketMs: 0 },
   book: { capacity: 3_700, bucketMs: 1000 },
+  deriv: { capacity: 3_700, bucketMs: 1000 },
+  liquidation: { capacity: 20_000, bucketMs: 0 },
 };
 
 export interface TickState {
@@ -47,6 +59,8 @@ const emptyChannels = <T extends { [C in Channel]: unknown }>(): PerChannel<T> =
   quote: {},
   bar: {},
   book: {},
+  deriv: {},
+  liquidation: {},
 });
 
 export const useTickStore = create<TickState>()(() => ({
@@ -61,6 +75,8 @@ const history: { [C in Channel]: Map<string, RingBuffer<TickOf[C]>> } = {
   quote: new Map(),
   bar: new Map(),
   book: new Map(),
+  deriv: new Map(),
+  liquidation: new Map(),
 };
 const books = new Map<string, OrderBook>();
 
@@ -94,7 +110,6 @@ function record<C extends Channel>(channel: C, symbol: string, value: TickOf[C])
 export function ingest(events: FeedEvent[]): void {
   if (events.length === 0) return;
   const latest = emptyChannels<TickOf>();
-  const touched = { trade: new Set<string>(), quote: new Set<string>(), bar: new Set<string>() };
   const changedBooks = new Set<OrderBook>();
 
   for (const event of events) {
@@ -102,19 +117,24 @@ export function ingest(events: FeedEvent[]): void {
       case 'trade':
         latest.trade[event.symbol] = event;
         record('trade', event.symbol, event);
-        touched.trade.add(event.symbol);
         break;
       case 'quote':
         latest.quote[event.symbol] = event;
         record('quote', event.symbol, event);
-        touched.quote.add(event.symbol);
+        break;
+      case 'deriv':
+        latest.deriv[event.symbol] = event;
+        record('deriv', event.symbol, event);
+        break;
+      case 'liquidation':
+        latest.liquidation[event.symbol] = event;
+        record('liquidation', event.symbol, event);
         break;
       case 'bar': {
         const current = useTickStore.getState().latest.bar[event.symbol];
         if (current && event.ts < current.ts) break; // late update for a closed bar
         latest.bar[event.symbol] = event;
         record('bar', event.symbol, event);
-        touched.bar.add(event.symbol);
         break;
       }
       case 'book': {
@@ -137,7 +157,7 @@ export function ingest(events: FeedEvent[]): void {
 
   useTickStore.setState((state) => {
     const versions = { ...state.versions };
-    for (const channel of ['trade', 'quote', 'bar', 'book'] as const) {
+    for (const channel of ['trade', 'quote', 'bar', 'book', 'deriv', 'liquidation'] as const) {
       const symbols = Object.keys(latest[channel]);
       if (symbols.length === 0) continue;
       versions[channel] = { ...versions[channel] };
@@ -150,6 +170,8 @@ export function ingest(events: FeedEvent[]): void {
         quote: { ...state.latest.quote, ...latest.quote },
         bar: { ...state.latest.bar, ...latest.bar },
         book: { ...state.latest.book, ...latest.book },
+        deriv: { ...state.latest.deriv, ...latest.deriv },
+        liquidation: { ...state.latest.liquidation, ...latest.liquidation },
       },
       versions,
     };

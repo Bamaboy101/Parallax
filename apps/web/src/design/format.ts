@@ -67,3 +67,14 @@ export function formatNumber(
   }
   return format.format(value);
 }
+
+const compactFormat = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 2,
+});
+
+/** Large amounts in short form: 4_534_224_665 → "4.53B", 69_990 → "69.99K". */
+export function formatCompact(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  return compactFormat.format(value);
+}

@@ -113,6 +113,6 @@ describe('layout files', () => {
     for (const panel of Object.values(broken.dock.panels)) panel.contentComponent = 'removed';
 
     expect(loadWorkspace(api, broken)).toBe(false);
-    expect(ids(api)).toEqual(['chart', 'markets', 'news', 'sessions', 'watchlist']);
+    expect(ids(api)).toEqual(['chart', 'derivs', 'markets', 'news', 'sessions', 'watchlist']);
   });
 });

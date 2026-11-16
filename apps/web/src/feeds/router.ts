@@ -18,5 +18,9 @@ export function routeOrder(symbol: SymbolRef): string[] {
     case 'equity':
       // Streams first; the snapshot poller takes what both streams have no room for.
       return ['alpaca', 'finnhub', 'alpaca-poll'];
+    case 'perp':
+      // Bybit carries funding, open interest and liquidations on one socket; OKX and Binance
+      // futures are the fallbacks.
+      return ['bybit', 'okx', 'binance-futures'];
   }
 }

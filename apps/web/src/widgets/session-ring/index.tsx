@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import '../../design/panels.css';
+import { useNow } from '../useNow';
 import { MARKETS, localTime, sessionState, sessionsOnClock } from './markets';
 
 const TICK_MS = 30_000;
@@ -41,22 +41,9 @@ function duration(minutes: number): string {
 const clock = (minute: number) =>
   `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNow(Date.now());
-    }, TICK_MS);
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
-  return now;
-}
-
 /** A 24-hour ring of which markets are open now, on the viewer's clock, with a hand at now. */
 export default function SessionRing() {
-  const now = useNow();
+  const now = useNow(TICK_MS);
   const viewerOffset = -new Date(now).getTimezoneOffset();
   const viewerMinute =
     (((new Date(now).getUTCHours() * 60 + new Date(now).getUTCMinutes() + viewerOffset) % DAY) +
