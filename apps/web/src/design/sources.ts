@@ -11,6 +11,7 @@ const NAMES: Readonly<Record<string, string>> = {
   kraken: 'Kraken',
   ecb: 'ECB',
   fred: 'FRED',
+  polymarket: 'Polymarket',
 };
 
 export const sourceName = (id: string): string => NAMES[id] ?? id;

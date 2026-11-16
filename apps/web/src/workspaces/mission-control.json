@@ -26,6 +26,13 @@
       "width": 320
     },
     {
+      "id": "predictions",
+      "component": "predictions",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "derivs",
       "component": "derivs",
       "params": {},
