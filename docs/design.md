@@ -43,7 +43,17 @@ from mint, up, down and warn in both palettes and from the greys, with at least 
 panel. Sand is held to low chroma so it never reads as the amber stale warning.
 
 Tailwind's default palette and all shadow utilities are removed. Subtle metal gradients appear
-only on the top bar and logo; panels remain flat.
+only on the top bar and logo.
+
+Two tokens were added in V3 (approved 16 Nov):
+
+| Token             | Dark                     | Light                    | Used for                                     |
+| ----------------- | ------------------------ | ------------------------ | -------------------------------------------- |
+| `--weather-warm`  | `#B79CED` (orchid)       | `#705294`                | Warm end of the market-weather glow          |
+| `--glass-surface` | `--panel` at 88% opacity | `--panel` at 90% opacity | Frosted panel surface in Comfortable density |
+
+Orchid means regime intensity only: it is neither a price direction (up, down) nor the amber that
+marks stale data, so the glow cannot be read as either.
 
 The alternative palette is selected with `<html data-palette="blue-orange">` and composes with
 either theme. Settings › Display sets it, together with density; `store/prefs.ts` saves both under
@@ -80,10 +90,19 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 
 - 4 px spacing grid: Tailwind's spacing unit is 4 px, so `p-2` is 8 px.
 - 8 px panel radius (`rounded-panel`). No drop shadows; depth comes from surface colour.
+- Panels are frosted glass in Comfortable density: one `backdrop-filter: blur(6px)` per dock
+  group over `--glass-surface`, never stacked inside widgets. Dense density is solid, and so is
+  the dock for the rest of the visit once more than 12 of 120 frames miss the 22 ms budget
+  (`data-render="solid"`, measured in `DockArea`).
+- The focused panel carries thin mint corner brackets; the app background has a faint 32 px
+  grid in `--line`.
 - Density: Comfortable by default; `<html data-density="dense">` tightens `--row-h`, `--pad` and
   type sizes.
 - Motion stays under 200 ms (`--motion-pulse` 150 ms, `--motion-fast` 120 ms) and drops to 0 when
-  the system asks for reduced motion.
+  the system asks for reduced motion. The one exception is the boot sequence: on the first load
+  of a browser session, dock groups fade in one by one (160 ms each, staggered over 800 ms, under
+  1 s in all). A click or key skips it; it never repeats in the session
+  (`open-terminal:cockpit-boot` in session storage) and does not run under reduced motion.
 
 ## Primitives
 
@@ -107,10 +126,16 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - Link dots sit before the truth badge: a numbered disc in `--link-1`…`--link-4`, or a dashed
   ring when the panel is unlinked. A linked watchlist row shows its selection with a 2 px mint
   bar.
-- Rewind turns the scrubber label and track amber (`--warn`), the colour already used for data
-  that is not live, with "Back to live" in mint.
-- Market weather tints a glow behind the panels from mint (calm) toward amber (stormy), at 5–14%
-  strength. It changes at most every 10 s and never animates. Using amber for "warm" is a V1
-  token reused, not a new meaning; V3 may refine the glow.
-- The Session ring draws open sessions in mint (interface state, not price) and closed ones in
-  muted grey.
+- Rewind is a timeline: quarter ticks, a faint trace of the feed-store update batches the page
+  has actually seen (per 5 s; nothing is inferred before the page opened), and a LIVE / PAST
+  marker. In the past the marker, label, track and the Session ring's hand turn amber
+  (`--warn`), the colour already used for data that is not live, with "Back to live" in mint.
+- Market weather tints a glow behind the panels from mint (calm) toward orchid
+  (`--weather-warm`, stormy), at 8–18% strength. It changes at most every 10 s and never animates.
+- The Session ring is a 24-hour dial on the viewer's clock: five-minute ticks, hour labels every
+  3 h, one arc per market (Tokyo, London, New York, crypto always on), open arcs in mint
+  (interface state, not price), closed ones in muted grey, and a hand at now.
+- The Constellation draws a soft glow per body scaled by traded value, faint lines between pairs
+  with |r| ≥ 0.65 (dashed when inverse), a mint ring on the selected body, and labels placed so
+  they never overlap bodies or each other. Layout motion lasts at most 160 ms, then settles; under
+  reduced motion it settles without animating.

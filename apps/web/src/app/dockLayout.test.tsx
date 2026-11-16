@@ -1,12 +1,14 @@
 import { render } from '@testing-library/react';
 import { DockviewReact, type DockviewApi, type SerializedDockview } from 'dockview-react';
 import { describe, expect, it } from 'vitest';
-import { WORKSPACES } from '../workspaces';
+import { DEFAULT_WORKSPACE, WORKSPACES } from '../workspaces';
 import { applyPreset, restoreLayout } from './dockLayout';
 import { DOCK_COMPONENTS } from './widgets';
 
 const stub = Object.fromEntries(Object.keys(DOCK_COMPONENTS).map((id) => [id, () => null]));
-const OVERVIEW_IDS = (WORKSPACES.find((workspace) => workspace.id === 'overview')?.panels ?? [])
+const DEFAULT_IDS = (
+  WORKSPACES.find((workspace) => workspace.id === DEFAULT_WORKSPACE)?.panels ?? []
+)
   .map((panel) => panel.id)
   .sort();
 
@@ -27,12 +29,12 @@ function mountDock(): DockviewApi {
 const panelIds = (api: DockviewApi) => api.panels.map((panel) => panel.id).sort();
 
 describe('restoreLayout', () => {
-  it('opens the Overview workspace when nothing is saved', () => {
+  it('opens Mission Control when nothing is saved', () => {
     const api = mountDock();
+    expect(DEFAULT_WORKSPACE).toBe('mission-control');
     expect(restoreLayout(api, null)).toBe('default');
-    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
-    // World markets waits as a background tab; a first visit, with no key, sees the watchlist.
-    expect(api.getPanel('markets')?.group.activePanel?.id).toBe('watchlist');
+    expect(panelIds(api)).toEqual(DEFAULT_IDS);
+    expect(api.getPanel('constellation')?.group.activePanel?.id).toBe('constellation');
   });
 
   it('restores a saved layout instead of the default', () => {
@@ -43,7 +45,7 @@ describe('restoreLayout', () => {
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('saved');
-    expect(panelIds(api)).toEqual(OVERVIEW_IDS.filter((id) => id !== 'sessions'));
+    expect(panelIds(api)).toEqual(DEFAULT_IDS.filter((id) => id !== 'sessions'));
   });
 
   it('falls back to the default when the saved layout names a removed component', () => {
@@ -54,7 +56,7 @@ describe('restoreLayout', () => {
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('default');
-    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
+    expect(panelIds(api)).toEqual(DEFAULT_IDS);
   });
 
   it('falls back to the default when the saved layout is malformed', () => {
@@ -62,18 +64,18 @@ describe('restoreLayout', () => {
     const corrupt = { grid: null, panels: {} } as unknown as SerializedDockview;
 
     expect(restoreLayout(api, corrupt)).toBe('default');
-    expect(panelIds(api)).toEqual(OVERVIEW_IDS);
+    expect(panelIds(api)).toEqual(DEFAULT_IDS);
   });
 });
 
 describe('workspace presets', () => {
-  it('ships the four original presets followed by Mission Control', () => {
+  it('ships Mission Control first, then Overview, Crypto, Equities and Macro', () => {
     expect(WORKSPACES.map((workspace) => workspace.id)).toEqual([
+      'mission-control',
       'overview',
       'crypto',
       'equities',
       'macro',
-      'mission-control',
     ]);
   });
 

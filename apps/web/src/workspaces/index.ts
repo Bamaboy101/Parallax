@@ -26,12 +26,12 @@ export interface Workspace {
 const files = import.meta.glob<Workspace>('./*.json', { eager: true, import: 'default' });
 
 /** Menu order; a preset added without an entry here goes last. */
-const ORDER = ['overview', 'crypto', 'equities', 'macro'];
+const ORDER = ['mission-control', 'overview', 'crypto', 'equities', 'macro'];
 const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
 
 export const WORKSPACES: readonly Workspace[] = Object.values(files).sort(
   (a, b) => rank(a.id) - rank(b.id),
 );
 
-/** What a first visit shows. */
-export const DEFAULT_WORKSPACE = 'overview';
+/** What a first visit shows; a saved layout always wins (restoreLayout). */
+export const DEFAULT_WORKSPACE = 'mission-control';

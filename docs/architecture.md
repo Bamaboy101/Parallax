@@ -430,12 +430,13 @@ Word order is free, and any alias in a widget's `meta.aliases` works as the widg
 
 ## Workspaces
 
-- **Presets** are JSON files in `apps/web/src/workspaces/` (`overview`, `crypto`, `equities`,
-  `macro`): each lists panels with their widget, params (symbol, interval, query, list, link
-  group), and position relative to an earlier panel; `inactive: true` adds a background tab.
-  `buildWorkspace` lays one out; titles come from `panelTitle`. Adding a preset is one JSON file
-  (plus its place in `ORDER`). Overview is the first-visit layout and the fallback when a saved
-  layout no longer loads.
+- **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,
+  `crypto`, `equities`, `macro`): each lists panels with their widget, params (symbol, interval,
+  query, list, link group), and position relative to an earlier panel; `inactive: true` adds a
+  background tab. `buildWorkspace` lays one out; titles come from `panelTitle`. Adding a preset
+  is one JSON file (plus its place in `ORDER`). Mission Control (`DEFAULT_WORKSPACE`) is the
+  first-visit layout and the fallback when a saved layout no longer loads; a returning visitor's
+  saved layout always wins.
 - **Switcher**: the top-bar Workspace menu, or `layout <name>` in the command bar.
 - **Files**: Download writes `{ app, kind: 'workspace', v: 1, dock, at? }` (`dock` is
   dockview's own layout JSON). Open accepts that or a bare dockview layout; a file that does not
