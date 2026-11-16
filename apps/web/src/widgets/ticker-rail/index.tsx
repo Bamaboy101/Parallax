@@ -1,4 +1,5 @@
 import { Cell } from '../../design/Cell';
+import '../../design/market.css';
 import { usePriceLine } from '../../store/hooks';
 import { instruments, type Instrument } from '../../store/symbols';
 import { RAIL_SYMBOLS } from './meta';
@@ -12,12 +13,9 @@ function Item({ item }: { item: Instrument }) {
         ? 'up'
         : 'down';
   return (
-    <li
-      className="flex shrink-0 items-center gap-2"
-      title={line.source ? `${item.name} · ${line.source}` : item.name}
-    >
-      <span className="text-label text-muted">{item.label}</span>
-      <span className={line.live ? undefined : 'opacity-60'}>
+    <li className="ticker-item" title={line.source ? `${item.name} · ${line.source}` : item.name}>
+      <span className="ticker-symbol">{item.label}</span>
+      <span className={line.live ? 'ticker-price' : 'ticker-price opacity-60'}>
         <Cell value={line.price} decimals={item.decimals} pulse={line.live} />
       </span>
       <Cell
@@ -26,7 +24,7 @@ function Item({ item }: { item: Instrument }) {
         signed
         suffix="%"
         tone={tone}
-        className="text-label"
+        className="ticker-change"
       />
     </li>
   );
@@ -35,7 +33,7 @@ function Item({ item }: { item: Instrument }) {
 /** Bottom strip of headline instruments. */
 export default function TickerRail() {
   return (
-    <ul className="flex min-w-0 items-center gap-6 overflow-hidden">
+    <ul className="ticker-list" aria-label="Headline markets" tabIndex={0}>
       {instruments(RAIL_SYMBOLS).map((item) => (
         <Item key={item.id} item={item} />
       ))}

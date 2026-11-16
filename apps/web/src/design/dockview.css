@@ -68,6 +68,7 @@
   border: 1px solid var(--line);
   border-radius: var(--panel-radius);
   overflow: hidden;
+  container: dock-group / inline-size;
 }
 
 .dockview-theme-cockpit .dv-tabs-and-actions-container {
@@ -98,5 +99,37 @@
 @media (hover: none) {
   .dockview-theme-cockpit .dv-default-tab-action {
     opacity: 1;
+  }
+}
+
+/* Source and latency yield to the panel title, never the other way around. The full badge
+   remains available through its accessible name and native tooltip. */
+.dockview-theme-cockpit .dv-tabs-container {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.panel-badges {
+  max-width: 40cqi;
+}
+
+@container dock-group (max-width: 480px) {
+  .panel-badges .truth-badge-source,
+  .panel-badges .truth-badge-divider {
+    display: none;
+  }
+}
+
+@container dock-group (max-width: 360px) {
+  .panel-badges .truth-badge-label,
+  .panel-badges-count {
+    display: none;
+  }
+
+  .panel-badges .truth-badge {
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    justify-content: center;
   }
 }

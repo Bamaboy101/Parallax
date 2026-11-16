@@ -10,6 +10,7 @@ import {
   type UTCTimestamp,
 } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
+import '../../design/market.css';
 import type { Bar, BarInterval } from '../../feeds/types';
 import { INTERVALS, useCandles } from '../../store/candles';
 import { useTick } from '../../store/hooks';
@@ -74,7 +75,10 @@ function applyTheme({ chart, candles }: Handles): void {
       // Lightweight Charts is Apache-2.0 and asks for a link to TradingView; the logo provides it.
       attributionLogo: true,
     },
-    grid: { vertLines: { color: colors.line }, horzLines: { color: colors.line } },
+    grid: {
+      vertLines: { color: withAlpha(colors.line, 0.25) },
+      horzLines: { color: withAlpha(colors.line, 0.45) },
+    },
     rightPriceScale: { borderColor: colors.line },
     timeScale: { borderColor: colors.line },
     crosshair: {
@@ -194,24 +198,24 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
   }, [tail]);
 
   return (
-    <div className="flex h-full flex-col bg-panel">
-      <div className="flex h-(--row-h) shrink-0 items-center gap-1 border-b border-line px-(--pad)">
-        <span className="mr-2 font-medium text-text">{item.label}</span>
-        {INTERVALS.map((option) => (
-          <button
-            key={option}
-            type="button"
-            aria-pressed={option === interval}
-            onClick={() => {
-              api.updateParameters({ ...params, interval: option });
-            }}
-            className={`rounded px-1.5 font-mono text-label ${
-              option === interval ? 'bg-line text-text' : 'text-muted hover:text-text'
-            }`}
-          >
-            {option}
-          </button>
-        ))}
+    <div className="market-panel chart-panel">
+      <div className="market-toolbar chart-toolbar">
+        <span className="market-symbol">{item.label}</span>
+        <div className="chart-intervals" role="group" aria-label="Chart interval">
+          {INTERVALS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={option === interval}
+              onClick={() => {
+                api.updateParameters({ ...params, interval: option });
+              }}
+              className="chart-interval"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
         {candles.state === 'error' && (
           <span className="ml-auto text-label text-warn" title={candles.error}>
             History unavailable
@@ -221,9 +225,7 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
       <div className="relative min-h-0 flex-1">
         <div ref={container} className="absolute inset-0" />
         {candles.state === 'loading' && history.length === 0 && (
-          <p className="absolute inset-0 grid place-items-center text-label text-muted">
-            Loading history…
-          </p>
+          <p className="market-empty chart-empty">Loading history…</p>
         )}
       </div>
     </div>

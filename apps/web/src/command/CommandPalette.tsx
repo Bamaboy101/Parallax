@@ -5,6 +5,7 @@ import { WIDGETS } from '../app/widgets';
 import type { WidgetMeta } from '../widgets/types';
 import { suggest, type Command } from './parser';
 import { closeCommandBar, openCommandBar, useCommandBar } from './state';
+import '../design/command.css';
 
 const EXAMPLES = [
   ['btc', 'Show BTC/USD in the active panel'],
@@ -13,6 +14,15 @@ const EXAMPLES = [
   ['eur book', 'Open the EUR/USD order book'],
   ['layout default', 'Reset the panels'],
 ] as const;
+
+function highlightMatch(label: string, query: string) {
+  const terms = query.trim().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return label;
+  const pattern = terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  return label
+    .split(new RegExp(`(${pattern})`, 'gi'))
+    .map((part, index) => (index % 2 === 1 ? <mark key={index}>{part}</mark> : part));
+}
 
 function isEditable(target: EventTarget | null): boolean {
   return (
@@ -73,74 +83,98 @@ function Palette({ run, widgets, layouts }: PaletteProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex justify-center bg-bg/60 pt-[12vh]"
+      className="command-backdrop"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) closeCommandBar();
       }}
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Command bar"
-        className="h-fit w-[min(560px,92vw)] overflow-hidden rounded-panel border border-line bg-panel"
-      >
-        <input
-          autoFocus
-          role="combobox"
-          aria-expanded={suggestions.length > 0}
-          aria-controls={listId}
-          aria-activedescendant={suggestions.length > 0 ? optionId(selected) : undefined}
-          aria-autocomplete="list"
-          placeholder="Symbol, widget or command…"
-          value={text}
-          onChange={(event) => {
-            setText(event.target.value);
-            setSelected(0);
-          }}
-          onKeyDown={onKeyDown}
-          className="h-11 w-full border-b border-line bg-transparent px-4 text-ui text-text outline-none placeholder:text-muted"
-        />
-        {text.trim() === '' ? (
-          <ul className="py-2">
-            {EXAMPLES.map(([example, meaning]) => (
-              <li key={example} className="flex gap-3 px-4 py-1 text-label">
-                <span className="w-28 font-mono text-text">{example}</span>
-                <span className="text-muted">{meaning}</span>
-              </li>
-            ))}
-          </ul>
-        ) : suggestions.length === 0 ? (
-          <p className="px-4 py-3 text-label text-muted">No matching symbol, widget or layout.</p>
-        ) : (
-          <ul
-            id={listId}
-            role="listbox"
-            aria-label="Suggestions"
-            className="max-h-80 overflow-auto py-1"
-          >
-            {suggestions.map((suggestion, index) => (
-              <li
-                key={suggestion.id}
-                id={optionId(index)}
-                role="option"
-                aria-selected={index === selected}
-                onMouseMove={() => {
-                  setSelected(index);
-                }}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  choose(index);
-                }}
-                className={`flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 ${
-                  index === selected ? 'bg-line' : ''
-                }`}
-              >
-                <span className="text-ui text-text">{suggestion.title}</span>
-                <span className="truncate text-label text-muted">{suggestion.detail}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div role="dialog" aria-modal="true" aria-label="Command bar" className="command-surface">
+        <div className="command-heading">
+          <span className="command-heading-label">Command center</span>
+          <span>Symbols · Widgets · Layouts</span>
+        </div>
+        <div className="command-query">
+          <span className="command-prompt" aria-hidden="true">
+            ›
+          </span>
+          <input
+            autoFocus
+            role="combobox"
+            aria-label="Search symbols, widgets or commands"
+            aria-expanded={suggestions.length > 0}
+            aria-controls={listId}
+            aria-activedescendant={suggestions.length > 0 ? optionId(selected) : undefined}
+            aria-autocomplete="list"
+            placeholder="Symbol, widget or command…"
+            value={text}
+            onChange={(event) => {
+              setText(event.target.value);
+              setSelected(0);
+            }}
+            onKeyDown={onKeyDown}
+            className="command-input"
+          />
+          <kbd className="command-key" aria-hidden="true">
+            /
+          </kbd>
+        </div>
+        <div className="command-content">
+          {text.trim() === '' ? (
+            <ul className="command-examples">
+              {EXAMPLES.map(([example, meaning]) => (
+                <li key={example} className="command-example">
+                  <span className="command-example-query">{example}</span>
+                  <span>{meaning}</span>
+                </li>
+              ))}
+            </ul>
+          ) : suggestions.length === 0 ? (
+            <p className="command-empty">No matching symbol, widget or layout.</p>
+          ) : (
+            <ul id={listId} role="listbox" aria-label="Suggestions" className="command-results">
+              {suggestions.map((suggestion, index) => (
+                <li
+                  key={suggestion.id}
+                  id={optionId(index)}
+                  role="option"
+                  aria-selected={index === selected}
+                  onMouseMove={() => {
+                    setSelected(index);
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    choose(index);
+                  }}
+                  className="command-result"
+                >
+                  <span className="command-result-copy">
+                    <span className="command-result-title">
+                      {highlightMatch(suggestion.title, text)}
+                    </span>
+                    <span className="command-result-detail">
+                      {highlightMatch(suggestion.detail, text)}
+                    </span>
+                  </span>
+                  <kbd className="command-result-enter command-key" aria-hidden="true">
+                    ↵
+                  </kbd>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="command-footer">
+          <span>
+            <kbd className="command-key">↑</kbd>
+            <kbd className="command-key">↓</kbd> Navigate
+          </span>
+          <span>
+            <kbd className="command-key">↵</kbd> Run
+          </span>
+          <span>
+            <kbd className="command-key">Esc</kbd> Close
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -178,10 +212,17 @@ export function CommandTrigger() {
     <button
       type="button"
       onClick={openCommandBar}
-      className="flex h-7 min-w-0 items-center gap-6 rounded-panel border border-line bg-panel px-3 text-label text-muted hover:text-text"
+      aria-label="Open command center"
+      aria-keyshortcuts="/ Control+k Meta+k"
+      className="command-trigger"
     >
+      <span className="command-trigger-icon" aria-hidden="true">
+        ⌕
+      </span>
       <span className="truncate">Search or run a command</span>
-      <kbd className="font-mono text-muted">/</kbd>
+      <kbd className="command-key" aria-hidden="true">
+        /
+      </kbd>
     </button>
   );
 }
