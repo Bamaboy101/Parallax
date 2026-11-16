@@ -276,6 +276,17 @@ Sources outside the hub report their freshness to `store/panels.ts`
 panel headers and in-panel badges both use it. A panel with several sources shows the worst:
 offline, then stale, then EOD or delayed, then polled, then the slowest live stream.
 
+## Movers and breadth
+
+`store/movers.ts` (T13d) ranks every catalogue symbol the store has a price for at the moment
+shown (now or the Rewind cursor), recomputed every 2 s. It only reads: nothing subscribes, so the
+board covers what the other panels stream, and opening more boards widens it. Change uses the
+same pure `priceLine()` as the watchlist (24 hours for crypto and FX, previous close for stocks),
+from the shared history cache (`cachedHistory`); missing histories are loaded once and refreshed
+every 15 minutes. Most active is dollars traded in the last hour the page has seen, from the
+trade history (USDT counted as USD; stocks are IEX prints only). Breadth counts symbols up, down
+and flat among those with a change.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to
@@ -411,6 +422,7 @@ suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.
 | `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`)             |
 | `funding`       | Crypto derivatives board (also `derivatives`, `perps`, `liquidations`, `oi`)        |
 | `fx`            | FX board: Kraken live pairs and ECB daily rates (also `forex`, `currencies`, `ecb`) |
+| `movers`        | Top gainers, losers, most active and breadth (also `gainers`, `losers`, `breadth`)  |
 | `layout crypto` | Replaces the panels with a workspace preset                                         |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.

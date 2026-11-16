@@ -71,6 +71,15 @@ export function useHistory(
   return useHistoryStore((state) => state.entries[keyOf(symbol, interval, spanMs)]);
 }
 
+/** What is cached for a symbol now, without fetching or subscribing. */
+export function cachedHistory(
+  symbol: SymbolRef,
+  interval: BarInterval,
+  spanMs: number,
+): HistoryEntry | undefined {
+  return useHistoryStore.getState().entries[keyOf(symbol, interval, spanMs)];
+}
+
 export function resetHistory(): void {
   inFlight.clear();
   useHistoryStore.setState({ entries: {} });

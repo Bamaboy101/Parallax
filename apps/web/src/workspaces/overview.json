@@ -37,6 +37,13 @@
       "width": 360
     },
     {
+      "id": "movers",
+      "component": "movers",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "sessions",
       "component": "session-ring",
       "params": {},

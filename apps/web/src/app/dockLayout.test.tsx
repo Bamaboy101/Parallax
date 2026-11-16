@@ -6,7 +6,9 @@ import { applyPreset, restoreLayout } from './dockLayout';
 import { DOCK_COMPONENTS } from './widgets';
 
 const stub = Object.fromEntries(Object.keys(DOCK_COMPONENTS).map((id) => [id, () => null]));
-const OVERVIEW_IDS = ['chart', 'derivs', 'fx', 'markets', 'news', 'sessions', 'watchlist'];
+const OVERVIEW_IDS = (WORKSPACES.find((workspace) => workspace.id === 'overview')?.panels ?? [])
+  .map((panel) => panel.id)
+  .sort();
 
 function mountDock(): DockviewApi {
   let api: DockviewApi | undefined;
@@ -41,7 +43,7 @@ describe('restoreLayout', () => {
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('saved');
-    expect(panelIds(api)).toEqual(['chart', 'derivs', 'fx', 'markets', 'news', 'watchlist']);
+    expect(panelIds(api)).toEqual(OVERVIEW_IDS.filter((id) => id !== 'sessions'));
   });
 
   it('falls back to the default when the saved layout names a removed component', () => {

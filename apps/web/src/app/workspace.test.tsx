@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import { DockviewReact, type DockviewApi } from 'dockview-react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HISTORY_SINCE, resetTicks, useTickStore } from '../store/ticks';
+import { WORKSPACES } from '../workspaces';
 import { applyPreset } from './dockLayout';
 import { DOCK_COMPONENTS } from './widgets';
 import {
@@ -34,6 +35,10 @@ function mountDock(): DockviewApi {
 }
 
 const ids = (api: DockviewApi) => api.panels.map((panel) => panel.id).sort();
+const presetIds = (id: string) =>
+  (WORKSPACES.find((workspace) => workspace.id === id)?.panels ?? [])
+    .map((panel) => panel.id)
+    .sort();
 
 afterEach(() => {
   resetTicks();
@@ -74,7 +79,7 @@ describe('share links', () => {
       { replaceState },
     );
 
-    expect(ids(api)).toEqual(['chart', 'fx', 'macro', 'news', 'sessions', 'watchlist']);
+    expect(ids(api)).toEqual(presetIds('macro'));
     expect(replaceState).toHaveBeenCalledWith(null, '', '/');
     expect(useTickStore.getState().cursor).toBeNull();
     expect(useWorkspaceNotice.getState().notice).toMatch(/before this page opened/);
@@ -113,6 +118,6 @@ describe('layout files', () => {
     for (const panel of Object.values(broken.dock.panels)) panel.contentComponent = 'removed';
 
     expect(loadWorkspace(api, broken)).toBe(false);
-    expect(ids(api)).toEqual(['chart', 'derivs', 'fx', 'markets', 'news', 'sessions', 'watchlist']);
+    expect(ids(api)).toEqual(presetIds('overview'));
   });
 });

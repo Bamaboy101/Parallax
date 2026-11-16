@@ -45,6 +45,13 @@
       "position": { "referencePanel": "news", "direction": "below" }
     },
     {
+      "id": "movers",
+      "component": "movers",
+      "params": {},
+      "position": { "referencePanel": "tape", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "sessions",
       "component": "session-ring",
       "params": {},

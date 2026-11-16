@@ -443,3 +443,51 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Movers: breadth bar, then gainers, losers and most active. */
+.movers-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.movers-columns {
+  grid-template-columns: minmax(80px, 1.2fr) minmax(80px, 1fr) minmax(64px, 0.8fr);
+}
+
+.movers-breadth {
+  display: grid;
+  gap: 6px;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.movers-breadth-counts {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.movers-bar {
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--line);
+}
+
+.movers-bar-up {
+  background: var(--up);
+}
+
+.movers-bar-flat {
+  background: var(--muted);
+}
+
+.movers-bar-down {
+  background: var(--down);
+}

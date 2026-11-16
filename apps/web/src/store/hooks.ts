@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { SourceStatus } from '../feeds/protocol';
-import type { AssetKind, Channel, SymbolRef } from '../feeds/types';
+import type { AssetKind, Bar, Channel, SymbolRef } from '../feeds/types';
 import { subscribeFeed } from './feedClient';
 import { useHistory } from './history';
 import {
@@ -194,22 +194,31 @@ export interface LastPrice {
   receivedAt: number;
 }
 
+/** The price a price-channel tick stands for: a trade's price, or a quote's mid. */
+export function lastPriceOf(tick: TickOf['trade'] | TickOf['quote']): LastPrice {
+  const { source, receivedAt } = tick;
+  if (tick.channel === 'quote') return { price: (tick.bid + tick.ask) / 2, source, receivedAt };
+  return { price: tick.price, source, receivedAt };
+}
+
 /**
  * The price to show for a symbol: the last trade for crypto, the mid of the best bid and ask for
  * FX (Kraken's FX pairs quote far more often than they trade).
  */
 export function useLastPrice(symbol: SymbolRef, background = false): LastPrice | undefined {
   const tick = useTick(symbol, priceChannel(symbol), background);
-  if (!tick) return undefined;
-  const { source, receivedAt } = tick;
-  if (tick.channel === 'quote') return { price: (tick.bid + tick.ask) / 2, source, receivedAt };
-  return { price: tick.price, source, receivedAt };
+  return tick ? lastPriceOf(tick) : undefined;
 }
 
 const DAY_MS = 24 * 3_600_000;
-const DAY_REFRESH_MS = 15 * 60_000;
+/** Hourly history behind price lines is refreshed this often. */
+export const PRICE_HISTORY_REFRESH_MS = 15 * 60_000;
 /** Long enough to reach the previous session across a weekend or a holiday. */
 const SESSIONS_MS = 5 * DAY_MS;
+
+/** How much hourly history a price line needs: a day, or for US stocks the last sessions. */
+export const priceHistorySpan = (symbol: SymbolRef): number =>
+  symbol.kind === 'equity' ? SESSIONS_MS : DAY_MS;
 
 const newYorkDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' });
 
@@ -229,19 +238,16 @@ export interface PriceLine {
   closes: number[];
 }
 
-/**
- * Price, change and hourly closes; history refreshes every 15 minutes. `background`: the caller
- * is off screen (see useTick).
- */
-export function usePriceLine(symbol: SymbolRef, background = false): PriceLine {
-  const last = useLastPrice(symbol, background);
-  const equity = symbol.kind === 'equity';
-  const history = useHistory(symbol, '1h', equity ? SESSIONS_MS : DAY_MS, DAY_REFRESH_MS);
-  const bars = history?.bars ?? [];
+/** Price, change and sparkline closes from the last price and the symbol's hourly history. */
+export function priceLine(
+  symbol: SymbolRef,
+  last: LastPrice | undefined,
+  bars: readonly Bar[],
+): PriceLine {
   const price = last?.price ?? bars.at(-1)?.close;
   let base = bars[0]?.open;
   let closes = bars.map((bar) => bar.close);
-  if (equity) {
+  if (symbol.kind === 'equity') {
     // Split hourly bars by New York trading date: the latest date is the current session.
     const latest = bars.at(-1);
     const session = latest ? newYorkDate.format(latest.ts) : undefined;
@@ -256,4 +262,14 @@ export function usePriceLine(symbol: SymbolRef, background = false): PriceLine {
     changePct: price !== undefined && base ? (price / base - 1) * 100 : undefined,
     closes,
   };
+}
+
+/**
+ * Price, change and hourly closes; history refreshes every 15 minutes. `background`: the caller
+ * is off screen (see useTick).
+ */
+export function usePriceLine(symbol: SymbolRef, background = false): PriceLine {
+  const last = useLastPrice(symbol, background);
+  const history = useHistory(symbol, '1h', priceHistorySpan(symbol), PRICE_HISTORY_REFRESH_MS);
+  return priceLine(symbol, last, history?.bars ?? []);
 }
