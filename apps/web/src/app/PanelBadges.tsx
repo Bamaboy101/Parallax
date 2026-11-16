@@ -1,32 +1,26 @@
 import type { IDockviewHeaderActionsProps, IDockviewPanel } from 'dockview-react';
 import { useCallback, useSyncExternalStore } from 'react';
-import { useShallow } from 'zustand/react/shallow';
 import { Badge } from '../design/Badge';
 import type { Freshness } from '../design/format';
-import type { SourceStatus } from '../feeds/protocol';
 import { linkGroupOf, useLinkStore, type LinkGroup } from '../store/links';
-import { usePanelSources } from '../store/panels';
-import { useTickStore } from '../store/ticks';
+import { useFreshness, usePanelSources } from '../store/panels';
 import { retarget } from './links';
 import { widgetMeta } from './widgets';
 
-/**
- * Live streams show their exchange-to-browser delay, a live poller its interval; anything not
- * live is offline for now (T18).
- */
-function freshnessOf(status: SourceStatus | undefined): Freshness {
-  if (status?.state === 'live') {
-    if (status.pollMs !== null && !status.stale) return { kind: 'polled', everyMs: status.pollMs };
-    return { kind: 'live', ageMs: status.latencyMs ?? 0, stale: status.stale };
-  }
-  return { kind: 'offline' };
-}
-
-/** Higher is worse: offline, then stale, then polled, then the slowest live stream. */
+/** Higher is worse: offline, then stale, then end-of-day or delayed, then polled, then the slowest
+ * live stream. */
 function severity(freshness: Freshness): number {
-  if (freshness.kind === 'polled') return Number.MAX_SAFE_INTEGER / 4;
-  if (freshness.kind !== 'live') return Number.MAX_SAFE_INTEGER;
-  return freshness.stale ? Number.MAX_SAFE_INTEGER / 2 : freshness.ageMs;
+  switch (freshness.kind) {
+    case 'offline':
+      return Number.MAX_SAFE_INTEGER;
+    case 'eod':
+    case 'delayed':
+      return Number.MAX_SAFE_INTEGER / 3;
+    case 'polled':
+      return Number.MAX_SAFE_INTEGER / 4;
+    case 'live':
+      return freshness.stale ? Number.MAX_SAFE_INTEGER / 2 : freshness.ageMs;
+  }
 }
 
 /**
@@ -87,11 +81,11 @@ export function PanelBadges({ group }: IDockviewHeaderActionsProps) {
   const panel = group.activePanel;
   const linkable = panel !== undefined && widgetMeta(panel.api.component)?.input !== 'none';
   const sources = usePanelSources(panelId === '' ? undefined : panelId);
-  const statuses = useTickStore(useShallow((state) => sources.map((s) => state.status[s])));
+  const freshness = useFreshness(sources);
 
   const feeds = sources.map((source, index) => ({
     source,
-    freshness: freshnessOf(statuses[index]),
+    freshness: freshness[index] ?? { kind: 'offline' as const },
   }));
   const worst =
     feeds.length > 0

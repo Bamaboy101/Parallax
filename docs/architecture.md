@@ -261,6 +261,21 @@ headline:
 A query that is a catalogue ticker searches RSS by company name ("aapl" → "Apple"), because
 headlines rarely carry tickers. `NewsItem` is `{ title, url, source, published, summary }`.
 
+## FX and REST badges
+
+The FX board (T13c) has two sections, each with its own truth badge: Kraken's 12 live pairs
+(mid of best bid and ask, through the hub) and the ECB's euro reference rates for 29 currencies,
+restated per US dollar (`store/ecb.ts`). The ECB rates come from Frankfurter v1
+(`api.frankfurter.dev/v1/<start>..?base=USD`, keyless, `Access-Control-Allow-Origin: *`), fixed
+once per working day around 16:00 CET and refreshed hourly; a currency's change compares the
+latest fixing with the one before (positive: it strengthened against the dollar).
+
+Sources outside the hub report their freshness to `store/panels.ts`
+(`reportRestFreshness('ecb', { kind: 'eod' })`, or `offline` when a fetch fails).
+`useFreshness(sources)` gives one `Freshness` per source from the hub status or that report;
+panel headers and in-panel badges both use it. A panel with several sources shows the worst:
+offline, then stale, then EOD or delayed, then polled, then the slowest live stream.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to
@@ -386,16 +401,17 @@ The command bar (`command/`) opens on `/` or Ctrl/Cmd+K. `parser.ts` turns text 
 suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.ts`);
 `app/commands.ts` carries the chosen command out on the dock.
 
-| Typed           | Does                                                                         |
-| --------------- | ---------------------------------------------------------------------------- |
-| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)        |
-| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel                |
-| `watch sol`     | Adds SOL/USD to the open watchlist                                           |
-| `news tesla`    | Opens News searching for "tesla"                                             |
-| `settings`      | Opens (or focuses) a widget that takes no input                              |
-| `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`)      |
-| `funding`       | Crypto derivatives board (also `derivatives`, `perps`, `liquidations`, `oi`) |
-| `layout crypto` | Replaces the panels with a workspace preset                                  |
+| Typed           | Does                                                                                |
+| --------------- | ----------------------------------------------------------------------------------- |
+| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)               |
+| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel                       |
+| `watch sol`     | Adds SOL/USD to the open watchlist                                                  |
+| `news tesla`    | Opens News searching for "tesla"                                                    |
+| `settings`      | Opens (or focuses) a widget that takes no input                                     |
+| `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`)             |
+| `funding`       | Crypto derivatives board (also `derivatives`, `perps`, `liquidations`, `oi`)        |
+| `fx`            | FX board: Kraken live pairs and ECB daily rates (also `forex`, `currencies`, `ecb`) |
+| `layout crypto` | Replaces the panels with a workspace preset                                         |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
 

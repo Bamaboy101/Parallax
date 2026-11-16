@@ -23,6 +23,13 @@
       "inactive": true
     },
     {
+      "id": "fx",
+      "component": "fx",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "news",
       "component": "news",
       "params": { "query": "", "link": 1 },

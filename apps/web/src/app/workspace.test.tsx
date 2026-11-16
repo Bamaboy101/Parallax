@@ -74,7 +74,7 @@ describe('share links', () => {
       { replaceState },
     );
 
-    expect(ids(api)).toEqual(['chart', 'macro', 'news', 'sessions', 'watchlist']);
+    expect(ids(api)).toEqual(['chart', 'fx', 'macro', 'news', 'sessions', 'watchlist']);
     expect(replaceState).toHaveBeenCalledWith(null, '', '/');
     expect(useTickStore.getState().cursor).toBeNull();
     expect(useWorkspaceNotice.getState().notice).toMatch(/before this page opened/);
@@ -113,6 +113,6 @@ describe('layout files', () => {
     for (const panel of Object.values(broken.dock.panels)) panel.contentComponent = 'removed';
 
     expect(loadWorkspace(api, broken)).toBe(false);
-    expect(ids(api)).toEqual(['chart', 'derivs', 'markets', 'news', 'sessions', 'watchlist']);
+    expect(ids(api)).toEqual(['chart', 'derivs', 'fx', 'markets', 'news', 'sessions', 'watchlist']);
   });
 });

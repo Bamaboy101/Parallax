@@ -15,6 +15,12 @@
       "width": 320
     },
     {
+      "id": "fx",
+      "component": "fx",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "within" }
+    },
+    {
       "id": "chart",
       "component": "chart",
       "params": { "symbol": "EUR-USD", "interval": "1h", "link": 1 },

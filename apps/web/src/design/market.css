@@ -396,3 +396,50 @@
   color: var(--muted);
   font-size: var(--size-label);
 }
+
+/* FX board: Kraken's live pairs, then the ECB's daily reference rates. */
+.fx-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.fx-columns {
+  grid-template-columns: minmax(96px, 1.4fr) minmax(80px, 1fr) minmax(64px, 0.8fr);
+}
+
+.fx-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.fx-heading .markets-group {
+  flex: 1;
+  border-bottom: 0;
+}
+
+.fx-currency {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The code always shows in full; the name gives way. */
+.fx-currency .market-symbol {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.fx-name {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
