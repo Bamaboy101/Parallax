@@ -9,6 +9,8 @@ export interface Instrument extends SymbolRef {
   decimals: number;
   /** Shown beside the label when the instrument stands in for something else. */
   note?: string;
+  /** SEC Central Index Key, for filings through the edge (`/sec?cik=`). */
+  cik?: number;
 }
 
 const crypto = (
@@ -38,7 +40,11 @@ const fx = (base: string, quote: string, decimals = 5): Instrument => ({
   decimals,
   note: 'exchange FX',
 });
-const equity = (ticker: string, name: string, note?: string): Instrument => ({
+const equity = (
+  ticker: string,
+  name: string,
+  extra: { cik?: number; note?: string } = {},
+): Instrument => ({
   id: ticker,
   kind: 'equity',
   base: ticker,
@@ -46,7 +52,7 @@ const equity = (ticker: string, name: string, note?: string): Instrument => ({
   label: ticker,
   name,
   decimals: 2,
-  ...(note === undefined ? {} : { note }),
+  ...extra,
 });
 
 /** Crypto and FX need no key; US stocks and ETF proxies stream with an Alpaca or Finnhub key. */
@@ -76,23 +82,24 @@ export const INSTRUMENTS: readonly Instrument[] = [
   fx('EUR', 'CAD'),
   fx('EUR', 'AUD'),
   fx('AUD', 'JPY', 3),
-  equity('SPY', 'SPDR S&P 500 ETF', 'S&P 500 proxy'),
-  equity('QQQ', 'Invesco QQQ Trust', 'Nasdaq-100 proxy'),
-  equity('DIA', 'SPDR Dow Jones Industrial Average ETF', 'Dow proxy'),
-  equity('IWM', 'iShares Russell 2000 ETF', 'Russell 2000 proxy'),
-  equity('USO', 'United States Oil Fund', 'oil proxy, US hours'),
-  equity('AAPL', 'Apple'),
-  equity('MSFT', 'Microsoft'),
-  equity('NVDA', 'NVIDIA'),
-  equity('AMZN', 'Amazon'),
-  equity('GOOGL', 'Alphabet'),
-  equity('META', 'Meta Platforms'),
-  equity('TSLA', 'Tesla'),
-  equity('AMD', 'Advanced Micro Devices'),
-  equity('NFLX', 'Netflix'),
-  equity('JPM', 'JPMorgan Chase'),
-  equity('V', 'Visa'),
-  equity('XOM', 'Exxon Mobil'),
+  // CIKs from SEC's company_tickers.json (16 Nov 2026). QQQ and IWM are fund series it omits.
+  equity('SPY', 'SPDR S&P 500 ETF', { cik: 884394, note: 'S&P 500 proxy' }),
+  equity('QQQ', 'Invesco QQQ Trust', { note: 'Nasdaq-100 proxy' }),
+  equity('DIA', 'SPDR Dow Jones Industrial Average ETF', { cik: 1041130, note: 'Dow proxy' }),
+  equity('IWM', 'iShares Russell 2000 ETF', { note: 'Russell 2000 proxy' }),
+  equity('USO', 'United States Oil Fund', { cik: 1327068, note: 'oil proxy, US hours' }),
+  equity('AAPL', 'Apple', { cik: 320193 }),
+  equity('MSFT', 'Microsoft', { cik: 789019 }),
+  equity('NVDA', 'NVIDIA', { cik: 1045810 }),
+  equity('AMZN', 'Amazon', { cik: 1018724 }),
+  equity('GOOGL', 'Alphabet', { cik: 1652044 }),
+  equity('META', 'Meta Platforms', { cik: 1326801 }),
+  equity('TSLA', 'Tesla', { cik: 1318605 }),
+  equity('AMD', 'Advanced Micro Devices', { cik: 2488 }),
+  equity('NFLX', 'Netflix', { cik: 1065280 }),
+  equity('JPM', 'JPMorgan Chase', { cik: 19617 }),
+  equity('V', 'Visa', { cik: 1403161 }),
+  equity('XOM', 'Exxon Mobil', { cik: 2115436 }),
 ];
 
 const byId = new Map(INSTRUMENTS.map((instrument) => [instrument.id, instrument]));

@@ -23,7 +23,7 @@ widgets   (read from the store only)
 ```
 
 Slow keyless public data (news, FRED, SEC) goes through the edge Worker in `apps/edge/`, not
-through the hub.
+through the hub. See "Edge Worker" below.
 
 ## Rules
 
@@ -293,3 +293,27 @@ suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.
 | `layout <name>` | Replaces the panels with a preset (`default` now; four presets in T17) |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
+
+## Edge Worker
+
+`apps/edge` is one Cloudflare Worker (`open-terminal-edge`, deployed by `deploy.yml` after CI).
+Every route is a cached GET; a request needs an `Origin` on `ALLOWED_ORIGINS` (wrangler.toml
+`[vars]`; `https://*.host` entries match subdomains, for Pages previews) or it gets 403.
+
+| Route                     | Upstream                             | Edge cache | Notes                                        |
+| ------------------------- | ------------------------------------ | ---------- | -------------------------------------------- |
+| `/news?q=`                | 8 publisher RSS feeds (`NEWS_FEEDS`) | 2 min      | Fetched once per window, filtered per query  |
+| `/fred?series=A,B&start=` | FRED `series/observations`           | 1 h        | Only the Macro board's series; ≤ 10 per call |
+| `/sec?cik=`               | SEC `data.sec.gov/submissions`       | 10 min     | Latest 20 filings with document links        |
+
+- No user key ever reaches the edge. The Worker holds two project secrets, set with
+  `wrangler secret put`: `FRED_API_KEY`, and `SEC_USER_AGENT` (name and contact email, as SEC
+  requires; kept out of the repo). Without one, its route answers 503 and says so.
+- News is keyless publisher RSS only. Finnhub company news uses the user's own key from their
+  browser (T15), because its free licence is personal and a shared cache would re-broadcast it.
+- `/sec` takes a CIK, not a ticker: the SEC's ticker map is 800 KB and parsing it costs more
+  than the free plan's 10 ms of CPU, so the app's catalogue carries each stock's CIK.
+- Responses carry `X-Edge-Cache: HIT|MISS`. The Cache API works on the workers.dev address
+  (measured: about 80 ms on a hit, against about 1.3 s for a cold `/news`).
+- workerd, the local Worker runtime, does not start on macOS 12, so `wrangler dev` cannot run on
+  the build machine; the Worker is covered by unit tests and checked against the deployed URL.

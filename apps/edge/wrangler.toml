@@ -1,3 +1,13 @@
 name = "open-terminal-edge"
 main = "src/index.ts"
 compatibility_date = "2026-11-01"
+
+[vars]
+# Origins allowed to call the edge. `https://*.host` matches subdomains (Pages previews).
+# Set the real site here once the project name is final.
+ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,https://open-terminal.pages.dev,https://*.open-terminal.pages.dev"
+
+# Secrets, never in this file (set once with `wrangler secret put <NAME>`):
+# - FRED_API_KEY: the project's FRED key.
+# - SEC_USER_AGENT: "<name> <contact email>", which SEC asks every client to declare. Kept out of
+#   the repo because it holds an email address. /sec answers 503 until it is set.

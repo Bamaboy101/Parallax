@@ -44,9 +44,12 @@ importers:
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
       wrangler:
         specifier: ^4.162.0
-        version: 4.162.0(@cloudflare/workers-types@5.20261115.1)
+        version: 4.162.0(@cloudflare/workers-types@5.20261115.1)(@types/node@26.6.6)
 
   apps/web:
     dependencies:
@@ -3159,10 +3162,10 @@ snapshots:
 
   min-indent@1.0.1: {}
 
-  miniflare@5.20261113.0-beta:
+  miniflare@5.20261113.0-beta(@types/node@26.6.6):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      sharp: 0.35.5
+      sharp: 0.35.5(@types/node@26.6.6)
       undici: 7.30.1
       workerd: 1.20261113.1
       ws: 8.21.0
@@ -3296,7 +3299,7 @@ snapshots:
 
   semver@7.8.6: {}
 
-  sharp@0.35.5:
+  sharp@0.35.5(@types/node@26.6.6):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -3327,6 +3330,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.5
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
+      '@types/node': 26.6.6
 
   shebang-command@2.0.0:
     dependencies:
@@ -3482,14 +3486,14 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20261113.1
       '@cloudflare/workerd-windows-64': 1.20261113.1
 
-  wrangler@4.162.0(@cloudflare/workers-types@5.20261115.1):
+  wrangler@4.162.0(@cloudflare/workers-types@5.20261115.1)(@types/node@26.6.6):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261113.1)
       '@cspotcode/source-map-support': 0.8.1
       blake3-wasm: 2.1.5
       esbuild: 0.28.2
-      miniflare: 5.20261113.0-beta
+      miniflare: 5.20261113.0-beta(@types/node@26.6.6)
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.24
       workerd: 1.20261113.1
