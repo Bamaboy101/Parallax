@@ -110,12 +110,20 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - `Badge`: the truth badge. `LIVE 140ms`, `DELAYED 15m`, `POLLED 15s`, `EOD`, `CONNECTING`,
   `RATE LIMITED`, `NO KEY`, `KEY REJECTED` or `OFFLINE`, plus the source. Mint when live; amber
   when stale, delayed, polled, rate limited or the key was rejected; grey when connecting, without
-  a key or offline. Alternative palettes use yellow/ochre warnings.
+  a key or offline. Alternative palettes use yellow/ochre warnings. Each state also has its own
+  static glyph before the label (V4), so states sharing a colour still differ at a glance: a dot
+  when live or delayed, a dashed ring connecting, an open square without a key, a cross for a
+  rejected key, two bars when rate limited, a flat line offline.
 - `PanelNotice`: a panel's empty, no-key, rate-limited or offline state (T18): a title, one line
-  on what happens next, and "Open Settings" when a key would fix it. Its left rule follows the
-  badge tones (mint for setup, amber for limits, grey offline); V4 polishes the look. Rows show a
-  short muted reason (`Needs key`, `Cap full`, `Offline`) where a price is missing. The World
-  markets board, like the tape and the book, has no per-row pulse.
+  on what happens next, and "Open Settings" when a key would fix it. It reads as part of the
+  panel, not an error box (V4): hairlines above and below, no fill, and a small mark in place of a
+  coloured rule: an open circle for setup or waiting (muted), an amber diamond for a limit or a
+  rejected key, a flat grey line offline. No state uses mint or a price colour; the Settings button
+  is a neutral outline. Rows show a short mono reason (`Needs key`, `Cap full`, `Offline`) with the
+  same small mark where a price is missing. The World markets board, like the tape and the book,
+  has no per-row pulse.
+- Narrow screens (under 760 px) keep every panel at a readable width: the dock scrolls
+  sideways, and the top bar says so ("Swipe across panels").
 - `Cell`: a number in mono with tabular figures, optional sign, suffix and up/down tone. Missing
   values render as an em dash. With `pulse`, a change washes the cell in `--up` or `--down` at
   28% and fades over `--motion-pulse` (Web Animations API, so no React render; none under reduced

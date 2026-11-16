@@ -55,10 +55,6 @@
   white-space: nowrap;
 }
 
-.market-columns.tape-columns > :first-child {
-  text-align: right;
-}
-
 .market-row {
   position: relative;
   min-height: var(--row-h);

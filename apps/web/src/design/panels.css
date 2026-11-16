@@ -77,6 +77,7 @@
 .panel-notice-mark {
   grid-column: 1;
   grid-row: 1;
+  align-self: center;
   width: 8px;
   height: 8px;
   border: 1px solid currentColor;
@@ -139,11 +140,6 @@
 .panel-notice-action:hover {
   border-color: var(--muted);
   background: color-mix(in srgb, var(--muted) 8%, transparent);
-}
-
-.panel-notice-action:focus-visible {
-  outline: 1px solid var(--text);
-  outline-offset: 2px;
 }
 
 /* A row's reason in place of its price: needs key, cap full, offline… */
