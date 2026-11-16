@@ -18,6 +18,7 @@ export function buildWorkspace(api: DockviewApi, workspace: Workspace): void {
         : {}),
       ...(panel.width === undefined ? {} : { initialWidth: panel.width }),
       ...(panel.height === undefined ? {} : { initialHeight: panel.height }),
+      ...(panel.inactive === true ? { inactive: true } : {}),
     });
   }
 }

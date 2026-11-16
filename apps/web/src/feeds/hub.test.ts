@@ -593,11 +593,42 @@ describe('FeedHub symbol caps', () => {
     hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'trade' });
     hub.handle({ type: 'subscribe', symbol: stock('MSFT'), channel: 'trade' });
     await advance(FRAME_MS);
-    expect(lastStatus('alpaca')).toMatchObject({ symbols: 1, symbolLimit: 1, waiting: ['MSFT'] });
+    expect(lastStatus('alpaca')).toMatchObject({
+      serving: ['AAPL'],
+      symbolLimit: 1,
+      waiting: ['MSFT'],
+    });
 
     hub.handle({ type: 'unsubscribe', symbol: stock('AAPL'), channel: 'trade' });
     await advance(FRAME_MS);
-    expect(lastStatus('alpaca')).toMatchObject({ symbols: 1, waiting: [] });
+    expect(lastStatus('alpaca')).toMatchObject({ serving: ['MSFT'], waiting: [] });
     expect(alpaca.latest().subscriptions).toEqual(new Set(['MSFT|trade']));
+  });
+
+  it('gives stream slots to visible symbols and polls the background ones on the same key', async () => {
+    const alpaca = cappedFeed('alpaca', 1);
+    const poller = cappedFeed('alpaca-poll');
+    poller.registration.key = 'alpaca';
+    poller.registration.pollMs = 15_000;
+    const hub = startHub([alpaca.registration, poller.registration]);
+    hub.handle({ type: 'keys', keys: { alpaca: 'ID:SECRET' } });
+    hub.handle({ type: 'subscribe', symbol: stock('EWJ'), channel: 'trade', background: true });
+    expect(alpaca.latest().subscriptions).toEqual(new Set(['EWJ|trade']));
+
+    // A visible symbol claims the only stream slot; the background one moves to the poller.
+    hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'trade' });
+    expect(alpaca.latest().subscriptions).toEqual(new Set(['AAPL|trade']));
+    expect(poller.latest().subscriptions).toEqual(new Set(['EWJ|trade']));
+    await advance(FRAME_MS);
+    expect(lastStatus('alpaca-poll')).toMatchObject({ pollMs: 15_000, serving: ['EWJ'] });
+    expect(lastStatus('alpaca')).toMatchObject({ serving: ['AAPL'], waiting: [] });
+
+    // Scrolling swaps them: EWJ comes on screen, AAPL goes off it.
+    hub.handle({ type: 'subscribe', symbol: stock('EWJ'), channel: 'trade' });
+    hub.handle({ type: 'unsubscribe', symbol: stock('EWJ'), channel: 'trade', background: true });
+    hub.handle({ type: 'subscribe', symbol: stock('AAPL'), channel: 'trade', background: true });
+    hub.handle({ type: 'unsubscribe', symbol: stock('AAPL'), channel: 'trade' });
+    expect(alpaca.latest().subscriptions).toEqual(new Set(['EWJ|trade']));
+    expect(poller.latest().subscriptions).toEqual(new Set(['AAPL|trade']));
   });
 });

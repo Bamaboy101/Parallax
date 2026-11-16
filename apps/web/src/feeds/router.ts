@@ -16,6 +16,7 @@ export function routeOrder(symbol: SymbolRef): string[] {
     case 'fx':
       return ['kraken'];
     case 'equity':
-      return ['alpaca', 'finnhub'];
+      // Streams first; the snapshot poller takes what both streams have no room for.
+      return ['alpaca', 'finnhub', 'alpaca-poll'];
   }
 }

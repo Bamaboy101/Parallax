@@ -111,15 +111,22 @@ export function disconnectFeed(): void {
   pendingVerify.clear();
 }
 
-/** Ask the hub for a symbol's channel. Returns the matching release; the hub ref-counts. */
-export function subscribeFeed(symbol: SymbolRef, channel: Channel): () => void {
+/**
+ * Ask the hub for a symbol's channel; `background` marks a subscriber that is off screen.
+ * Returns the matching release; the hub ref-counts. The release is posted a microtask later, so
+ * an effect that re-subscribes in the same commit (say, a row scrolling into view) adds its new
+ * subscription before the old one goes, and the hub never sees the count touch zero.
+ */
+export function subscribeFeed(symbol: SymbolRef, channel: Channel, background = false): () => void {
   const target = connectFeed();
-  target.postMessage({ type: 'subscribe', symbol, channel });
+  target.postMessage({ type: 'subscribe', symbol, channel, background });
   let released = false;
   return () => {
     if (released) return;
     released = true;
-    target.postMessage({ type: 'unsubscribe', symbol, channel });
+    queueMicrotask(() => {
+      target.postMessage({ type: 'unsubscribe', symbol, channel, background });
+    });
   };
 }
 

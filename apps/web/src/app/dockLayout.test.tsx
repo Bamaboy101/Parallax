@@ -6,7 +6,7 @@ import { applyPreset, restoreLayout } from './dockLayout';
 import { DOCK_COMPONENTS } from './widgets';
 
 const stub = Object.fromEntries(Object.keys(DOCK_COMPONENTS).map((id) => [id, () => null]));
-const OVERVIEW_IDS = ['chart', 'news', 'sessions', 'watchlist'];
+const OVERVIEW_IDS = ['chart', 'markets', 'news', 'sessions', 'watchlist'];
 
 function mountDock(): DockviewApi {
   let api: DockviewApi | undefined;
@@ -29,6 +29,8 @@ describe('restoreLayout', () => {
     const api = mountDock();
     expect(restoreLayout(api, null)).toBe('default');
     expect(panelIds(api)).toEqual(OVERVIEW_IDS);
+    // World markets waits as a background tab; a first visit, with no key, sees the watchlist.
+    expect(api.getPanel('markets')?.group.activePanel?.id).toBe('watchlist');
   });
 
   it('restores a saved layout instead of the default', () => {
@@ -39,7 +41,7 @@ describe('restoreLayout', () => {
     api.clear();
 
     expect(restoreLayout(api, saved)).toBe('saved');
-    expect(panelIds(api)).toEqual(['chart', 'news', 'watchlist']);
+    expect(panelIds(api)).toEqual(['chart', 'markets', 'news', 'watchlist']);
   });
 
   it('falls back to the default when the saved layout names a removed component', () => {

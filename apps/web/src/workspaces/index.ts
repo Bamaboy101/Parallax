@@ -11,6 +11,8 @@ export interface PresetPanel {
   /** Initial width or height in px. */
   width?: number;
   height?: number;
+  /** Added as a background tab, leaving its group's current tab in front. */
+  inactive?: boolean;
 }
 
 /** A preset workspace: one JSON file in this folder. */

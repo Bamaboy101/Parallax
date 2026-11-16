@@ -13,13 +13,14 @@ describe('routeOrder', () => {
     ]);
   });
 
-  it('routes FX to Kraken and US stocks to Alpaca then Finnhub', () => {
+  it('routes FX to Kraken and US stocks to the Alpaca and Finnhub streams, then the poller', () => {
     expect(routeOrder({ id: 'EUR-USD', kind: 'fx', base: 'EUR', quote: 'USD' })).toEqual([
       'kraken',
     ]);
     expect(routeOrder({ id: 'AAPL', kind: 'equity', base: 'AAPL', quote: 'USD' })).toEqual([
       'alpaca',
       'finnhub',
+      'alpaca-poll',
     ]);
   });
 });

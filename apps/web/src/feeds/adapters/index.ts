@@ -1,5 +1,6 @@
 import type { AdapterRegistration } from '../types';
 import { ALPACA_SYMBOL_LIMIT, AlpacaAdapter } from './alpaca';
+import { ALPACA_POLL_MS, AlpacaPollAdapter } from './alpacaPoll';
 import { BinanceAdapter } from './binance';
 import { CoinbaseAdapter } from './coinbase';
 import { FINNHUB_SYMBOL_LIMIT, FinnhubAdapter } from './finnhub';
@@ -28,5 +29,12 @@ export const registrations: AdapterRegistration[] = [
     factory: (ctx) => new FinnhubAdapter(ctx),
     stale: EQUITY_STALE,
     symbolLimit: FINNHUB_SYMBOL_LIMIT,
+  },
+  // Uncapped, last in the US stock route: serves what the streams have no room for.
+  {
+    factory: (ctx) => new AlpacaPollAdapter(ctx),
+    stale: { staleAfterMs: 3 * ALPACA_POLL_MS, isActive: usMarketOpen },
+    key: 'alpaca',
+    pollMs: ALPACA_POLL_MS,
   },
 ];

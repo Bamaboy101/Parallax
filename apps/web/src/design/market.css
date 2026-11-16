@@ -287,3 +287,65 @@
   outline: 1px solid var(--live);
   outline-offset: 2px;
 }
+
+/* World markets board: ETF proxies grouped by market. */
+.markets-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.markets-columns {
+  grid-template-columns:
+    minmax(96px, 1.4fr) minmax(72px, 0.9fr) minmax(72px, 1fr) minmax(60px, 0.8fr)
+    44px;
+}
+
+.markets-group {
+  margin: 0;
+  padding: 8px var(--pad) 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 500;
+}
+
+.markets-market {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.markets-proxy {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.markets-tag,
+.markets-feed {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.markets-feed {
+  text-align: right;
+}
+
+@container (max-width: 360px) {
+  .markets-columns {
+    grid-template-columns: minmax(80px, 1.2fr) minmax(56px, 0.8fr) minmax(64px, 1fr) minmax(
+        56px,
+        0.8fr
+      );
+  }
+
+  .markets-columns > :last-child {
+    display: none;
+  }
+}

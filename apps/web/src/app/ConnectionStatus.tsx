@@ -3,6 +3,7 @@ import { useTickStore } from '../store/ticks';
 
 const NAMES: Record<string, string> = {
   alpaca: 'Alpaca',
+  'alpaca-poll': 'Alpaca snapshots',
   finnhub: 'Finnhub',
   binance: 'Binance',
   coinbase: 'Coinbase',

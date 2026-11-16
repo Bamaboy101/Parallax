@@ -56,15 +56,39 @@ function deliver(events: FeedEvent[]) {
 }
 
 describe('useTick', () => {
-  it('subscribes while mounted and releases on unmount', () => {
+  it('subscribes while mounted and releases on unmount', async () => {
     function Price() {
       useTick(BTC, 'trade');
       return null;
     }
     const view = render(<Price />);
-    expect(sent).toEqual([{ type: 'subscribe', symbol: BTC, channel: 'trade' }]);
+    expect(sent).toEqual([{ type: 'subscribe', symbol: BTC, channel: 'trade', background: false }]);
     view.unmount();
-    expect(sent.at(-1)).toEqual({ type: 'unsubscribe', symbol: BTC, channel: 'trade' });
+    await Promise.resolve();
+    expect(sent.at(-1)).toEqual({
+      type: 'unsubscribe',
+      symbol: BTC,
+      channel: 'trade',
+      background: false,
+    });
+  });
+
+  it('takes the new subscription before releasing the old one when visibility changes', async () => {
+    function Price({ background }: { background: boolean }) {
+      useTick(BTC, 'trade', background);
+      return null;
+    }
+    const view = render(<Price background={false} />);
+    view.rerender(<Price background />);
+    await Promise.resolve();
+    // The hub's count never reaches zero, so the stream is not torn down in between.
+    expect(
+      sent.map((message) => [message.type, 'background' in message && message.background]),
+    ).toEqual([
+      ['subscribe', false],
+      ['subscribe', true],
+      ['unsubscribe', false],
+    ]);
   });
 
   it('re-renders only the cell whose value changed', () => {

@@ -16,6 +16,13 @@
       "width": 360
     },
     {
+      "id": "markets",
+      "component": "markets",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "news",
       "component": "news",
       "params": { "query": "", "link": 1 },

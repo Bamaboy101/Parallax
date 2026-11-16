@@ -2,8 +2,12 @@ import type { Bar, BarInterval, Channel, FeedEvent, NewsItem, SymbolRef } from '
 
 /** Messages from the app to the hub worker. */
 export type HubRequest =
-  | { type: 'subscribe'; symbol: SymbolRef; channel: Channel }
-  | { type: 'unsubscribe'; symbol: SymbolRef; channel: Channel }
+  /**
+   * `background`: the subscriber is off screen. Capped streams serve visible subscriptions
+   * first; background ones fall back to a poller. Unsubscribe with the same flag.
+   */
+  | { type: 'subscribe'; symbol: SymbolRef; channel: Channel; background?: boolean }
+  | { type: 'unsubscribe'; symbol: SymbolRef; channel: Channel; background?: boolean }
   /** Full replacement of the user's keys, by provider id. */
   | { type: 'keys'; keys: Record<string, string> }
   | {
@@ -47,12 +51,14 @@ export interface SourceStatus {
   attempt: number;
   /** When the next reconnect attempt is due. */
   retryAt: number | null;
-  /** Distinct symbols this source is serving. */
-  symbols: number;
+  /** Ids of the symbols this source serves now (its count is the stream's used slots). */
+  serving: string[];
   /** The provider's stream symbol cap, or null when it has none. */
   symbolLimit: number | null;
   /** Symbols that wanted this source but found it full and had no other usable feed. */
   waiting: string[];
+  /** A polling source's interval, or null for a stream. */
+  pollMs: number | null;
 }
 
 /** Outcome of a 'verify-key' request. */

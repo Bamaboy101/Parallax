@@ -113,21 +113,21 @@ Callbacks from a disposed instance are ignored, so a late message can never over
 
 The app talks to the worker only through these messages (`feeds/protocol.ts`).
 
-| Direction | Message         | Meaning                                                           |
-| --------- | --------------- | ----------------------------------------------------------------- |
-| app → hub | `subscribe`     | Reference-counted: N subscribers share one upstream subscription  |
-| app → hub | `unsubscribe`   | Releases one reference                                            |
-| app → hub | `keys`          | Full replacement of the user's keys; changed keys restart sources |
-| app → hub | `verify-key`    | Check a typed, unsaved key for one provider                       |
-| app → hub | `history`       | Request bars for a symbol, interval and time range                |
-| app → hub | `news`          | Request company news for a symbol and time range                  |
-| hub → app | `events`        | One batch per frame                                               |
-| hub → app | `status`        | Every source's `SourceStatus`, on change and once a second        |
-| hub → app | `history`       | The bars for a request                                            |
-| hub → app | `history-error` | The request could not be served                                   |
-| hub → app | `news`          | The headlines, and the feed that supplied them                    |
-| hub → app | `news-error`    | No usable feed with news, or the request failed                   |
-| hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason |
+| Direction | Message         | Meaning                                                                                                             |
+| --------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| app → hub | `subscribe`     | Reference-counted: N subscribers share one upstream subscription. `background: true` marks an off-screen subscriber |
+| app → hub | `unsubscribe`   | Releases one reference (with the same `background` flag)                                                            |
+| app → hub | `keys`          | Full replacement of the user's keys; changed keys restart sources                                                   |
+| app → hub | `verify-key`    | Check a typed, unsaved key for one provider                                                                         |
+| app → hub | `history`       | Request bars for a symbol, interval and time range                                                                  |
+| app → hub | `news`          | Request company news for a symbol and time range                                                                    |
+| hub → app | `events`        | One batch per frame                                                                                                 |
+| hub → app | `status`        | Every source's `SourceStatus`, on change and once a second                                                          |
+| hub → app | `history`       | The bars for a request                                                                                              |
+| hub → app | `history-error` | The request could not be served                                                                                     |
+| hub → app | `news`          | The headlines, and the feed that supplied them                                                                      |
+| hub → app | `news-error`    | No usable feed with news, or the request failed                                                                     |
+| hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason                                                   |
 
 **Key vault.** `store/keys.ts` keeps keys by provider id in `localStorage`
 (`open-terminal:keys`), exactly as adapters receive them. Settings edits it; `store/feedClient.ts`
@@ -151,11 +151,12 @@ so a clock running behind the exchange reads as 0 ms.
 `staleAfterMs`. A source can limit this to its active hours with `isActive(now)`, so a closed
 market never reads as stale. Thresholds are set per adapter registration:
 
-| Source                | Stale after                                        |
-| --------------------- | -------------------------------------------------- |
-| Crypto feeds          | 5 s                                                |
-| US stock feeds        | 30 s, during market hours only                     |
-| REST data (edge, T15) | 2 × its refresh interval, tracked by the app layer |
+| Source                 | Stale after                                        |
+| ---------------------- | -------------------------------------------------- |
+| Crypto feeds           | 5 s                                                |
+| US stock feeds         | 30 s, during market hours only                     |
+| REST data (edge, T15)  | 2 × its refresh interval, tracked by the app layer |
+| Alpaca snapshot poller | 45 s (3 polls), during market hours only           |
 
 ## Normalised events
 
@@ -300,19 +301,34 @@ shows "‹Title› stopped working" with Try again, and the rest of the terminal
 that support the symbol, in that order, and serves each subscription from the first usable one
 (not `down`, not `auth-failed`, has its key) that has room under its symbol cap.
 
-| Symbol                 | Order            |
-| ---------------------- | ---------------- |
-| Crypto against USD     | Coinbase, Kraken |
-| Crypto against USDT    | Binance, Kraken  |
-| FX (Kraken's 12 pairs) | Kraken           |
-| US stocks              | Alpaca, Finnhub  |
+| Symbol                 | Order                                   |
+| ---------------------- | --------------------------------------- |
+| Crypto against USD     | Coinbase, Kraken                        |
+| Crypto against USDT    | Binance, Kraken                         |
+| FX (Kraken's 12 pairs) | Kraken                                  |
+| US stocks              | Alpaca, Finnhub, Alpaca snapshot poller |
 
 **Symbol caps.** A registration may set `symbolLimit` (Alpaca 30, Finnhub 50: their free stream
 limits). The hub counts distinct symbols per feed across channels and never routes more. A symbol
 past the cap goes to the next usable feed; with none, it waits with no feed. Each
-`SourceStatus` carries `symbols`, `symbolLimit` and `waiting`; the top bar and Settings show a
-warning naming the waiting symbols. When a capped feed drops a symbol, waiting or overflowed
-symbols move back to it.
+`SourceStatus` carries `serving` (the symbol ids on that feed now), `symbolLimit` and `waiting`;
+the top bar and Settings show a warning naming the waiting symbols. When a capped feed drops a
+symbol, waiting or overflowed symbols move back to it.
+
+**Visible first, poll the rest.** A subscription counts how many of its subscribers are on screen
+(`subscribe` without `background`). Placement puts visible subscriptions first, then the rest in
+subscription order, so on a full stream a symbol coming into view takes the slot of one that went
+off screen, which moves to the next feed. For US stocks that is `alpaca-poll`
+(`adapters/alpacaPoll.ts`): uncapped, it fetches one `/v2/stocks/snapshots` request for all its
+tickers every 15 s (4 of Basic's 200 calls a minute, on the same queue as history), emitting the
+latest IEX trade only when it is new, the latest quote and the last minute bar. Its registration
+sets `key: 'alpaca'` (it uses the Alpaca key) and `pollMs`, so its truth badge reads
+`POLLED 15s` (amber, like `DELAYED`) instead of a latency. Widgets mark rows with
+`widgets/useVisibleRows.ts` (IntersectionObserver; rows in a hidden tab count as off screen) and
+pass `background` through `useTick`, `useLastPrice` and `usePriceLine`. The client posts each
+release a microtask late, so a re-subscription with a new flag lands first and the count never
+touches zero. A row shows its current feed from `useServingSource(id)`, not its last tick, since a
+quiet symbol's last print can predate a move.
 
 USD pairs never route to Binance: Binance quotes USDT, and a USDT price is never shown under a USD
 label. A USDT pair keeps its USDT label on every feed.
@@ -338,14 +354,15 @@ The command bar (`command/`) opens on `/` or Ctrl/Cmd+K. `parser.ts` turns text 
 suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.ts`);
 `app/commands.ts` carries the chosen command out on the dock.
 
-| Typed           | Does                                                                  |
-| --------------- | --------------------------------------------------------------------- |
-| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart) |
-| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel         |
-| `watch sol`     | Adds SOL/USD to the open watchlist                                    |
-| `news tesla`    | Opens News searching for "tesla"                                      |
-| `settings`      | Opens (or focuses) a widget that takes no input                       |
-| `layout crypto` | Replaces the panels with a workspace preset                           |
+| Typed           | Does                                                                    |
+| --------------- | ----------------------------------------------------------------------- |
+| `btc`           | Shows BTC/USD in the active panel (adds to a watchlist; else a chart)   |
+| `btc chart 1h`  | Opens a 1-hour BTC/USD chart as a tab beside the active panel           |
+| `watch sol`     | Adds SOL/USD to the open watchlist                                      |
+| `news tesla`    | Opens News searching for "tesla"                                        |
+| `settings`      | Opens (or focuses) a widget that takes no input                         |
+| `world`         | World markets board (also `markets`, `sectors`, `bonds`, `commodities`) |
+| `layout crypto` | Replaces the panels with a workspace preset                             |
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
 
@@ -353,9 +370,10 @@ Word order is free, and any alias in a widget's `meta.aliases` works as the widg
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`overview`, `crypto`, `equities`,
   `macro`): each lists panels with their widget, params (symbol, interval, query, list, link
-  group), and position relative to an earlier panel. `buildWorkspace` lays one out; titles come
-  from `panelTitle`. Adding a preset is one JSON file (plus its place in `ORDER`). Overview is
-  the first-visit layout and the fallback when a saved layout no longer loads.
+  group), and position relative to an earlier panel; `inactive: true` adds a background tab.
+  `buildWorkspace` lays one out; titles come from `panelTitle`. Adding a preset is one JSON file
+  (plus its place in `ORDER`). Overview is the first-visit layout and the fallback when a saved
+  layout no longer loads.
 - **Switcher**: the top-bar Workspace menu, or `layout <name>` in the command bar.
 - **Files**: Download writes `{ app, kind: 'workspace', v: 1, dock, at? }` (`dock` is
   dockview's own layout JSON). Open accepts that or a bare dockview layout; a file that does not

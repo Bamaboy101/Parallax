@@ -158,4 +158,8 @@ export interface AdapterRegistration {
    * more; extra symbols go to the next feed, or wait and are reported in the source status.
    */
   symbolLimit?: number;
+  /** The provider whose key the source uses, when it is not the adapter id ('alpaca-poll'). */
+  key?: string;
+  /** For a source that polls REST instead of streaming: how often, shown on its truth badge. */
+  pollMs?: number;
 }

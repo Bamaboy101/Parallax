@@ -13,11 +13,11 @@ import {
 } from './ticks';
 
 /** Keep a hub subscription open while the calling component is mounted. */
-function useFeedSubscription(symbol: SymbolRef, channel: Channel): void {
+function useFeedSubscription(symbol: SymbolRef, channel: Channel, background = false): void {
   const { id, kind, base, quote } = symbol;
   useEffect(
-    () => subscribeFeed({ id, kind, base, quote }, channel),
-    [id, kind, base, quote, channel],
+    () => subscribeFeed({ id, kind, base, quote }, channel, background),
+    [id, kind, base, quote, channel, background],
   );
 }
 
@@ -47,10 +47,15 @@ export function usePriceSubscriptions(symbols: readonly SymbolRef[]): void {
 
 /**
  * The value of one symbol's channel, at the Rewind cursor or live. Re-renders only when that
- * value changes, so a ticking cell never re-renders its neighbours.
+ * value changes, so a ticking cell never re-renders its neighbours. `background`: the caller is
+ * off screen, so a capped stream may serve it by polling instead.
  */
-export function useTick<C extends Channel>(symbol: SymbolRef, channel: C): TickOf[C] | undefined {
-  useFeedSubscription(symbol, channel);
+export function useTick<C extends Channel>(
+  symbol: SymbolRef,
+  channel: C,
+  background = false,
+): TickOf[C] | undefined {
+  useFeedSubscription(symbol, channel, background);
   return useTickStore((state) => valueAt(state, channel, symbol.id));
 }
 
@@ -122,6 +127,17 @@ export function useSourceStatus(source: string | undefined): SourceStatus | unde
   return useTickStore((state) => (source === undefined ? undefined : state.status[source]));
 }
 
+/**
+ * The feed the hub has assigned to a symbol right now, or undefined while it waits. A quiet
+ * symbol's last tick may be from a feed it has since moved off; this is where it is now.
+ */
+export function useServingSource(symbolId: string): string | undefined {
+  return useTickStore(
+    (state) =>
+      Object.values(state.status).find((status) => status.serving.includes(symbolId))?.source,
+  );
+}
+
 /** The Rewind cursor (null = live) and its setter. */
 export function useCursor(): [number | null, (time: number | null) => void] {
   return [useTickStore((state) => state.cursor), setCursor];
@@ -137,8 +153,8 @@ export interface LastPrice {
  * The price to show for a symbol: the last trade for crypto, the mid of the best bid and ask for
  * FX (Kraken's FX pairs quote far more often than they trade).
  */
-export function useLastPrice(symbol: SymbolRef): LastPrice | undefined {
-  const tick = useTick(symbol, priceChannel(symbol));
+export function useLastPrice(symbol: SymbolRef, background = false): LastPrice | undefined {
+  const tick = useTick(symbol, priceChannel(symbol), background);
   if (!tick) return undefined;
   const { source, receivedAt } = tick;
   if (tick.channel === 'quote') return { price: (tick.bid + tick.ask) / 2, source, receivedAt };
@@ -168,9 +184,12 @@ export interface PriceLine {
   closes: number[];
 }
 
-/** Price, change and hourly closes; history refreshes every 15 minutes. */
-export function usePriceLine(symbol: SymbolRef): PriceLine {
-  const last = useLastPrice(symbol);
+/**
+ * Price, change and hourly closes; history refreshes every 15 minutes. `background`: the caller
+ * is off screen (see useTick).
+ */
+export function usePriceLine(symbol: SymbolRef, background = false): PriceLine {
+  const last = useLastPrice(symbol, background);
   const equity = symbol.kind === 'equity';
   const history = useHistory(symbol, '1h', equity ? SESSIONS_MS : DAY_MS, DAY_REFRESH_MS);
   const bars = history?.bars ?? [];

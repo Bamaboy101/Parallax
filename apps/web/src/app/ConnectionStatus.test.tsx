@@ -12,9 +12,10 @@ const status = (source: string, patch: Partial<SourceStatus>): SourceStatus => (
   stale: false,
   attempt: 0,
   retryAt: null,
-  symbols: 0,
+  serving: [],
   symbolLimit: null,
   waiting: [],
+  pollMs: null,
   ...patch,
 });
 
@@ -28,7 +29,7 @@ describe('ConnectionStatus', () => {
     act(() => {
       setStatuses([
         status('coinbase', {}),
-        status('alpaca', { symbols: 30, symbolLimit: 30, waiting: ['NFLX', 'XOM'] }),
+        status('alpaca', { symbolLimit: 30, waiting: ['NFLX', 'XOM'] }),
       ]);
     });
 

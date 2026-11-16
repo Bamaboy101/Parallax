@@ -2,6 +2,8 @@
 export type Freshness =
   | { kind: 'live'; ageMs: number; stale?: boolean }
   | { kind: 'delayed'; minutes: number }
+  /** Fetched on a timer instead of streamed (a REST snapshot every `everyMs`). */
+  | { kind: 'polled'; everyMs: number }
   | { kind: 'eod' }
   | { kind: 'offline' };
 
@@ -21,6 +23,8 @@ export function badgeLabel(freshness: Freshness): string {
       return `LIVE ${formatAge(freshness.ageMs)}`;
     case 'delayed':
       return `DELAYED ${String(freshness.minutes)}m`;
+    case 'polled':
+      return `POLLED ${formatAge(freshness.everyMs).replace(/\.0s$/, 's')}`;
     case 'eod':
       return 'EOD';
     case 'offline':
@@ -28,12 +32,13 @@ export function badgeLabel(freshness: Freshness): string {
   }
 }
 
-/** Cyan when live, amber when stale or delayed, grey when offline. */
+/** Cyan when live, amber when stale, delayed or polled, grey when offline. */
 export function badgeTone(freshness: Freshness): BadgeTone {
   switch (freshness.kind) {
     case 'live':
       return freshness.stale ? 'warn' : 'live';
     case 'delayed':
+    case 'polled':
     case 'eod':
       return 'warn';
     case 'offline':

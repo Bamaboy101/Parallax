@@ -10,16 +10,21 @@ import { useTickStore } from '../store/ticks';
 import { retarget } from './links';
 import { widgetMeta } from './widgets';
 
-/** Live feeds show their exchange-to-browser delay; anything not live is offline for now (T18). */
+/**
+ * Live streams show their exchange-to-browser delay, a live poller its interval; anything not
+ * live is offline for now (T18).
+ */
 function freshnessOf(status: SourceStatus | undefined): Freshness {
   if (status?.state === 'live') {
+    if (status.pollMs !== null && !status.stale) return { kind: 'polled', everyMs: status.pollMs };
     return { kind: 'live', ageMs: status.latencyMs ?? 0, stale: status.stale };
   }
   return { kind: 'offline' };
 }
 
-/** Higher is worse: offline, then stale, then the slowest live feed. */
+/** Higher is worse: offline, then stale, then polled, then the slowest live stream. */
 function severity(freshness: Freshness): number {
+  if (freshness.kind === 'polled') return Number.MAX_SAFE_INTEGER / 4;
   if (freshness.kind !== 'live') return Number.MAX_SAFE_INTEGER;
   return freshness.stale ? Number.MAX_SAFE_INTEGER / 2 : freshness.ageMs;
 }

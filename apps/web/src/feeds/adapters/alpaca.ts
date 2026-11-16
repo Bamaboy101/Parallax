@@ -17,11 +17,11 @@ const STREAM = 'wss://stream.data.alpaca.markets/v2/iex';
 /** Always-on test stream for checking a key, even outside market hours. */
 const TEST_STREAM = 'wss://stream.data.alpaca.markets/v2/test';
 const TEST_SYMBOL = 'FAKEPACA';
-const REST = 'https://data.alpaca.markets/v2/stocks';
+export const REST = 'https://data.alpaca.markets/v2/stocks';
 /** Basic plan: 30 symbols on the stream. The hub enforces it through the registration. */
 export const ALPACA_SYMBOL_LIMIT = 30;
-/** Basic plan: 200 history calls a minute. */
-const restQueue = throttle(300);
+/** Basic plan: 200 REST calls a minute, shared by history and the snapshot poller. */
+export const restQueue = throttle(300);
 const BAR_LIMIT = 10_000;
 const MAX_PAGES = 5;
 const CONTROL_GAP_MS = 100;
@@ -48,7 +48,7 @@ const UPSTREAM: Partial<Record<Channel, Upstream>> = {
 };
 
 /** 'KEY_ID:SECRET' from the vault → the two parts, or null when either is missing. */
-function credentials(key: string | undefined): { key: string; secret: string } | null {
+export function credentials(key: string | undefined): { key: string; secret: string } | null {
   const split = key?.indexOf(':') ?? -1;
   if (!key || split <= 0 || split === key.length - 1) return null;
   return { key: key.slice(0, split), secret: key.slice(split + 1) };

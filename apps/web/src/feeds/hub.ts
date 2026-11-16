@@ -77,6 +77,8 @@ interface Subscription {
   /** The feed currently serving it. Events from any other feed are dropped. */
   source: Source | null;
   count: number;
+  /** How many of `count` are on screen. Visible subscriptions get capped stream slots first. */
+  visible: number;
 }
 
 const subscriptionKey = (symbol: SymbolRef, channel: Channel) => `${symbol.id}|${channel}`;
@@ -124,9 +126,10 @@ export class FeedHub {
           stale: false,
           attempt: 0,
           retryAt: null,
-          symbols: 0,
+          serving: [],
           symbolLimit: registration.symbolLimit ?? null,
           waiting: [],
+          pollMs: registration.pollMs ?? null,
         },
       };
       ref.current = source;
@@ -140,10 +143,10 @@ export class FeedHub {
   handle(request: HubRequest): void {
     switch (request.type) {
       case 'subscribe':
-        this.subscribe(request.symbol, request.channel);
+        this.subscribe(request.symbol, request.channel, request.background === true);
         break;
       case 'unsubscribe':
-        this.unsubscribe(request.symbol, request.channel);
+        this.unsubscribe(request.symbol, request.channel, request.background === true);
         break;
       case 'keys':
         this.setKeys(request.keys);
@@ -177,36 +180,45 @@ export class FeedHub {
     }
   }
 
-  private subscribe(symbol: SymbolRef, channel: Channel): void {
+  private subscribe(symbol: SymbolRef, channel: Channel, background: boolean): void {
     const key = subscriptionKey(symbol, channel);
     const existing = this.subscriptions.get(key);
     if (existing) {
       existing.count += 1;
+      if (background) return;
+      existing.visible += 1;
+      // Coming on screen may claim a stream slot from a background subscription.
+      if (existing.visible === 1) this.reassign();
       return;
     }
     const candidates = this.candidatesFor(symbol);
-    const open = candidates.filter((candidate) => this.usable(candidate));
-    // A usable feed with room serves it. If every usable feed is full it waits; with no usable
-    // feed at all it goes to the first, which reports why (no key, down).
-    const source =
-      open.find((candidate) => this.hasRoom(candidate, symbol)) ??
-      (open.length > 0 ? null : (candidates[0] ?? null));
-    this.subscriptions.set(key, { symbol, channel, candidates, source, count: 1 });
+    this.subscriptions.set(key, {
+      symbol,
+      channel,
+      candidates,
+      source: null,
+      count: 1,
+      visible: background ? 0 : 1,
+    });
     this.markStatusDirty();
-    if (!source) {
-      if (candidates.length === 0) this.env.log('warn', `no feed supports ${symbol.id}`);
+    if (candidates.length === 0) {
+      this.env.log('warn', `no feed supports ${symbol.id}`);
       return;
     }
-    source.adapter.subscribe(symbol, channel);
-    this.ensureRunning(source);
+    this.reassign();
   }
 
-  private unsubscribe(symbol: SymbolRef, channel: Channel): void {
+  private unsubscribe(symbol: SymbolRef, channel: Channel, background: boolean): void {
     const key = subscriptionKey(symbol, channel);
     const subscription = this.subscriptions.get(key);
     if (!subscription) return;
     subscription.count -= 1;
-    if (subscription.count > 0) return;
+    if (!background) subscription.visible = Math.max(0, subscription.visible - 1);
+    if (subscription.count > 0) {
+      // Gone off screen: a waiting visible subscription may take its slot.
+      if (!background && subscription.visible === 0) this.reassign();
+      return;
+    }
     this.subscriptions.delete(key);
     this.markStatusDirty();
     const { source } = subscription;
@@ -234,43 +246,63 @@ export class FeedHub {
     return symbols;
   }
 
-  /** Whether a source can take `symbol` without passing its symbol cap. */
-  private hasRoom(source: Source, symbol: SymbolRef): boolean {
-    const limit = source.registration.symbolLimit;
-    if (limit === undefined) return true;
-    const symbols = this.symbolsOn(source);
-    return symbols.has(symbol.id) || symbols.size < limit;
+  /** The provider whose key a source uses: its own id unless the registration names another. */
+  private keyOf(source: Source): string {
+    return source.registration.key ?? source.id;
   }
 
   private canRun(source: Source): boolean {
     if (source.status.state === 'auth-failed') return false;
-    return !source.needsKey || this.keys[source.id] !== undefined;
+    return !source.needsKey || this.keys[this.keyOf(source)] !== undefined;
   }
 
   private usable(source: Source): boolean {
     return this.canRun(source) && source.status.state !== 'down';
   }
 
-  /** Move every subscription to its best usable feed; stop feeds left without subscriptions. */
+  /**
+   * Place every subscription on its first usable feed with room, and move the ones whose place
+   * changed. Visible subscriptions are placed first, so on a capped stream they take the slots
+   * and background ones move on (to a poller, say) or wait. Placement is otherwise in
+   * subscription order, so settled subscriptions do not churn. With no usable feed at all, a
+   * subscription stays where it is, or goes to its first feed, which reports why (no key, down).
+   */
   private reassign(): void {
+    const taken = new Map<Source, Set<string>>();
+    const fits = (source: Source, symbol: string) => {
+      const limit = source.registration.symbolLimit;
+      const symbols = taken.get(source);
+      return limit === undefined || !symbols || symbols.has(symbol) || symbols.size < limit;
+    };
+    const ordered = [...this.subscriptions.values()].sort(
+      (a, b) => Number(b.visible > 0) - Number(a.visible > 0),
+    );
     const vacated = new Set<Source>();
-    for (const subscription of this.subscriptions.values()) {
-      const next = subscription.candidates.find(
-        (candidate) => this.usable(candidate) && this.hasRoom(candidate, subscription.symbol),
-      );
-      const previous = subscription.source;
-      if (!next || next === previous) continue;
-      subscription.source = next;
-      if (previous) {
-        previous.adapter.unsubscribe(subscription.symbol, subscription.channel);
-        vacated.add(previous);
+    for (const subscription of ordered) {
+      const { symbol, channel, candidates } = subscription;
+      const usable = candidates.filter((candidate) => this.usable(candidate));
+      const next =
+        usable.length > 0
+          ? (usable.find((candidate) => fits(candidate, symbol.id)) ?? null)
+          : (subscription.source ?? candidates[0] ?? null);
+      if (next) {
+        const symbols = taken.get(next) ?? new Set<string>();
+        symbols.add(symbol.id);
+        taken.set(next, symbols);
       }
-      this.env.log(
-        'info',
-        `${subscription.symbol.id} ${subscription.channel}: ${previous?.id ?? 'none'} → ${next.id}`,
-      );
-      next.adapter.subscribe(subscription.symbol, subscription.channel);
-      this.ensureRunning(next);
+      const previous = subscription.source;
+      if (next === previous) continue;
+      subscription.source = next;
+      this.markStatusDirty();
+      if (previous) {
+        previous.adapter.unsubscribe(symbol, channel);
+        vacated.add(previous);
+        this.env.log('info', `${symbol.id} ${channel}: ${previous.id} → ${next?.id ?? 'waiting'}`);
+      }
+      if (next) {
+        next.adapter.subscribe(symbol, channel);
+        this.ensureRunning(next);
+      }
     }
     for (const source of vacated) {
       if (!this.hasSubscriptions(source)) this.stop(source);
@@ -322,7 +354,7 @@ export class FeedHub {
     if (this.disposed || source.running || source.retryTimer !== undefined) return;
     if (!this.hasSubscriptions(source)) return;
     if (source.status.state === 'auth-failed' || source.status.state === 'down') return;
-    if (source.needsKey && this.keys[source.id] === undefined) {
+    if (source.needsKey && this.keys[this.keyOf(source)] === undefined) {
       this.setState(source, 'no-key');
       return;
     }
@@ -412,7 +444,8 @@ export class FeedHub {
     const previous = this.keys;
     this.keys = { ...keys };
     for (const source of this.sources) {
-      if (!source.needsKey || previous[source.id] === this.keys[source.id]) continue;
+      const key = this.keyOf(source);
+      if (!source.needsKey || previous[key] === this.keys[key]) continue;
       // New or removed key: drop the current connection and start over with the new key.
       if (source.retryTimer !== undefined) this.env.clearTimeout(source.retryTimer);
       source.retryTimer = undefined;
@@ -593,7 +626,7 @@ export class FeedHub {
     }
   }
 
-  /** A source's status with its symbol count and waiting list filled in. */
+  /** A source's status with the symbols it serves and its waiting list filled in. */
   private statusOf(source: Source): SourceStatus {
     const waiting = new Set<string>();
     for (const subscription of this.subscriptions.values()) {
@@ -602,7 +635,7 @@ export class FeedHub {
         waiting.add(subscription.symbol.id);
       }
     }
-    return { ...source.status, symbols: this.symbolsOn(source).size, waiting: [...waiting] };
+    return { ...source.status, serving: [...this.symbolsOn(source)], waiting: [...waiting] };
   }
 
   private setState(source: Source, state: SourceState): void {

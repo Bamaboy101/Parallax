@@ -49,6 +49,12 @@
       "component": "session-ring",
       "params": {},
       "position": { "referencePanel": "watchlist", "direction": "below" }
+    },
+    {
+      "id": "markets",
+      "component": "markets",
+      "params": {},
+      "position": { "referencePanel": "sessions", "direction": "within" }
     }
   ]
 }
