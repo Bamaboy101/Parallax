@@ -1,0 +1,43 @@
+{
+  "id": "mission-control",
+  "title": "Mission Control",
+  "description": "Spatial market intelligence: a central Constellation surrounded by sessions, breadth, world proxies, derivatives and news.",
+  "panels": [
+    { "id": "constellation", "component": "constellation", "params": { "link": 1 } },
+    {
+      "id": "markets",
+      "component": "markets",
+      "params": {},
+      "position": { "referencePanel": "constellation", "direction": "left" },
+      "width": 310
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "markets", "direction": "above" },
+      "height": 330
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "" },
+      "position": { "referencePanel": "constellation", "direction": "right" },
+      "width": 320
+    },
+    {
+      "id": "derivs",
+      "component": "derivs",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "above" },
+      "height": 370
+    },
+    {
+      "id": "movers",
+      "component": "movers",
+      "params": {},
+      "position": { "referencePanel": "constellation", "direction": "below" },
+      "height": 230
+    }
+  ]
+}

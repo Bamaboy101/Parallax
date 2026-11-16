@@ -21,11 +21,14 @@ const SETTLE_STEPS = 400;
 const MIN_RADIUS = 8;
 const MAX_RADIUS = 26;
 const FX_RADIUS = 12;
-const EDGE_MIN = 0.5;
+const EDGE_MIN = 0.65;
+const LAYOUT_MOTION_MS = 160;
 
 interface Palette {
   text: string;
   muted: string;
+  panel: string;
+  line: string;
   up: string;
   down: string;
   live: string;
@@ -38,6 +41,8 @@ function readPalette(): Palette {
   return {
     text: token('--text'),
     muted: token('--muted'),
+    panel: token('--panel'),
+    line: token('--line'),
     up: token('--up'),
     down: token('--down'),
     live: token('--live'),
@@ -59,6 +64,88 @@ function formatChange(change: number | undefined): string {
   return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
 }
 
+interface Label {
+  index: number;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Place ink, never physics: stable priority, nearest clear rectangle, no clipped labels. */
+function placeLabels(
+  context: CanvasRenderingContext2D,
+  bodies: readonly Body[],
+  items: readonly Instrument[],
+  selected: string | undefined,
+  width: number,
+  height: number,
+): Label[] {
+  const labels: Label[] = [];
+  const margin = 8;
+  const labelHeight = 18;
+  const order = bodies
+    .map((body, index) => ({ body, index }))
+    .sort((a, b) => {
+      if (a.body.id === selected) return -1;
+      if (b.body.id === selected) return 1;
+      return a.body.id < b.body.id ? -1 : a.body.id > b.body.id ? 1 : a.index - b.index;
+    });
+  for (const { body, index } of order) {
+    const text = items[index]?.label ?? body.id;
+    const labelWidth = Math.ceil(context.measureText(text).width) + 12;
+    if (labelWidth + margin * 2 > width || labelHeight + margin * 2 > height) continue;
+    let best: Label | undefined;
+    let bestDistance = Infinity;
+    const consider = (x: number, y: number) => {
+      if (
+        x < margin ||
+        y < margin ||
+        x + labelWidth > width - margin ||
+        y + labelHeight > height - margin
+      )
+        return;
+      const distance = (x + labelWidth / 2 - body.x) ** 2 + (y + labelHeight / 2 - body.y) ** 2;
+      if (distance >= bestDistance) return;
+      if (
+        labels.some(
+          (label) =>
+            x < label.x + label.width + 3 &&
+            x + labelWidth + 3 > label.x &&
+            y < label.y + label.height + 3 &&
+            y + labelHeight + 3 > label.y,
+        )
+      )
+        return;
+      if (
+        bodies.some((other) => {
+          const dx = other.x - Math.max(x, Math.min(other.x, x + labelWidth));
+          const dy = other.y - Math.max(y, Math.min(other.y, y + labelHeight));
+          return dx * dx + dy * dy < (other.r + 6) ** 2;
+        })
+      )
+        return;
+      best = { index, text, x, y, width: labelWidth, height: labelHeight };
+      bestDistance = distance;
+    };
+    const gap = body.r + 8;
+    consider(body.x - labelWidth / 2, body.y + gap);
+    consider(body.x - labelWidth / 2, body.y - gap - labelHeight);
+    consider(body.x + gap, body.y - labelHeight / 2);
+    consider(body.x - gap - labelWidth, body.y - labelHeight / 2);
+    // A bounded, deterministic fallback fills free space when a cluster gets dense.
+    if (!best) {
+      for (let y = margin; y + labelHeight <= height - margin; y += labelHeight + 4) {
+        for (let x = margin; x + labelWidth <= width - margin; x += 8) consider(x, y);
+      }
+    }
+    // A tiny panel may not fit every label. Bodies, hover details and the keyboard list remain.
+    if (best) labels.push(best);
+  }
+  return labels;
+}
+
 function draw(
   canvas: HTMLCanvasElement,
   bodies: readonly Body[],
@@ -71,8 +158,29 @@ function draw(
   if (!context) return;
   const scale = window.devicePixelRatio || 1;
   context.setTransform(scale, 0, 0, scale, 0, 0);
-  context.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
+  const width = canvas.width / scale;
+  const height = canvas.height / scale;
+  context.clearRect(0, 0, width, height);
   const largestMove = Math.max(0.05, ...sky.stars.map((star) => Math.abs(star.change ?? 0)));
+  const largestValue = Math.max(0, ...sky.stars.map((star) => star.value ?? 0));
+
+  // Spatial guides have no price scale: only relative proximity encodes correlation.
+  const radius = Math.min(width, height) * 0.42;
+  context.strokeStyle = palette.line;
+  context.lineWidth = 1;
+  context.globalAlpha = 0.45;
+  for (const fraction of [0.35, 0.7, 1]) {
+    context.beginPath();
+    context.arc(width / 2, height / 2, radius * fraction, 0, Math.PI * 2);
+    context.stroke();
+  }
+  context.setLineDash([2, 6]);
+  context.beginPath();
+  context.moveTo(width / 2, 12);
+  context.lineTo(width / 2, height - 12);
+  context.moveTo(12, height / 2);
+  context.lineTo(width - 12, height / 2);
+  context.stroke();
 
   // Links between strongly co-moving pairs; dashed when they move against each other.
   for (let i = 0; i < bodies.length; i += 1) {
@@ -81,13 +189,17 @@ function draw(
       const a = bodies[i];
       const b = bodies[j];
       if (c === undefined || Math.abs(c) < EDGE_MIN || !a || !b) continue;
-      context.globalAlpha = Math.min(0.6, (Math.abs(c) - EDGE_MIN) * 1.2);
+      context.globalAlpha = 0.12 + (Math.abs(c) - EDGE_MIN) * 0.5;
       context.strokeStyle = palette.muted;
       context.lineWidth = 1;
       context.setLineDash(c < 0 ? [3, 3] : []);
       context.beginPath();
-      context.moveTo(a.x, a.y);
-      context.lineTo(b.x, b.y);
+      const distance = Math.hypot(b.x - a.x, b.y - a.y);
+      if (distance <= a.r + b.r) continue;
+      const dx = (b.x - a.x) / distance;
+      const dy = (b.y - a.y) / distance;
+      context.moveTo(a.x + dx * (a.r + 2), a.y + dy * (a.r + 2));
+      context.lineTo(b.x - dx * (b.r + 2), b.y - dy * (b.r + 2));
       context.stroke();
     }
   }
@@ -98,12 +210,37 @@ function draw(
     const change = star?.change;
     const color =
       change === undefined || change === 0 ? palette.muted : change > 0 ? palette.up : palette.down;
+    const value = star?.value;
+    const activity =
+      value === undefined || largestValue === 0 ? 0 : Math.sqrt(value / largestValue);
+    if (activity > 0) {
+      const glowRadius = body.r * (1.6 + activity);
+      const glow = context.createRadialGradient(
+        body.x,
+        body.y,
+        body.r * 0.5,
+        body.x,
+        body.y,
+        glowRadius,
+      );
+      glow.addColorStop(0, color);
+      glow.addColorStop(1, 'transparent');
+      context.globalAlpha = 0.08 + activity * 0.14;
+      context.fillStyle = glow;
+      context.beginPath();
+      context.arc(body.x, body.y, glowRadius, 0, Math.PI * 2);
+      context.fill();
+    }
     context.globalAlpha =
       change === undefined ? 0.35 : 0.35 + 0.65 * Math.min(1, Math.abs(change) / largestMove);
     context.fillStyle = color;
     context.beginPath();
     context.arc(body.x, body.y, body.r, 0, 2 * Math.PI);
     context.fill();
+    context.globalAlpha = 0.8;
+    context.strokeStyle = color;
+    context.lineWidth = 1;
+    context.stroke();
     context.globalAlpha = 1;
     if (body.id === selected) {
       context.strokeStyle = palette.live;
@@ -112,12 +249,34 @@ function draw(
       context.arc(body.x, body.y, body.r + 4, 0, 2 * Math.PI);
       context.stroke();
     }
-    context.fillStyle = palette.text;
-    context.font = `10px ${palette.font}`;
-    context.textAlign = 'center';
-    context.textBaseline = 'top';
-    context.fillText(items[index]?.label ?? body.id, body.x, body.y + body.r + 3);
   });
+
+  context.font = `10px ${palette.font}`;
+  context.textAlign = 'left';
+  context.textBaseline = 'middle';
+  const labels = placeLabels(context, bodies, items, selected, width, height);
+  for (const label of labels) {
+    const body = bodies[label.index];
+    if (!body) continue;
+    const x = Math.max(label.x, Math.min(body.x, label.x + label.width));
+    const y = Math.max(label.y, Math.min(body.y, label.y + label.height));
+    const distance = Math.hypot(x - body.x, y - body.y);
+    context.globalAlpha = 0.45;
+    context.strokeStyle = palette.muted;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(
+      body.x + ((x - body.x) / distance) * (body.r + 5),
+      body.y + ((y - body.y) / distance) * (body.r + 5),
+    );
+    context.lineTo(x, y);
+    context.stroke();
+    context.globalAlpha = 1;
+    context.fillStyle = palette.panel;
+    context.fillRect(label.x, label.y, label.width, label.height);
+    context.fillStyle = palette.text;
+    context.fillText(label.text, label.x + 6, label.y + label.height / 2);
+  }
 }
 
 /**
@@ -162,32 +321,12 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
     };
   }, [items, cursor]);
 
-  // Keep the canvas at the panel's size, in device pixels.
+  // Resize and theme changes repaint even after the force layout has stopped.
   useEffect(() => {
+    const target = canvas.current;
     const element = frame.current;
-    const target = canvas.current;
-    if (!element || !target) return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (!entry) return;
-      const { width, height } = entry.contentRect;
-      size.current = { width, height };
-      const scale = window.devicePixelRatio || 1;
-      target.width = Math.round(width * scale);
-      target.height = Math.round(height * scale);
-      target.style.width = `${String(width)}px`;
-      target.style.height = `${String(height)}px`;
-    });
-    observer.observe(element);
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  // Run the layout until it settles; with reduced motion, settle at once and draw one frame.
-  useEffect(() => {
-    const target = canvas.current;
-    if (!target) return;
-    const { width, height } = size.current;
+    if (!target || !element) return;
+    const { width, height } = element.getBoundingClientRect();
     const radii = radiiFor(sky);
     const known = new Map(bodies.current.map((body) => [body.id, body]));
     const fresh = placeBodies(
@@ -201,28 +340,60 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
       return previous ? { ...previous, r: radii[index] ?? previous.r } : body;
     });
     const correlationOf = (i: number, j: number) => sky.correlations[i]?.[j];
-    const palette = readPalette();
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let palette = readPalette();
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let handle = 0;
-    const tick = () => {
+    let started = 0;
+    const paint = () => {
+      draw(target, bodies.current, sky, items, selected, palette);
+    };
+    const tick = (now: number) => {
       const { width: w, height: h } = size.current;
-      if (w === 0 || h === 0) {
-        handle = window.requestAnimationFrame(tick);
-        return;
-      }
-      if (reduced) {
+      if (w === 0 || h === 0) return;
+      if (motion.matches || now - started >= LAYOUT_MOTION_MS) {
         for (let step = 0; step < SETTLE_STEPS; step += 1)
           stepBodies(bodies.current, correlationOf, w, h);
-        draw(target, bodies.current, sky, items, selected, palette);
+        paint();
         return;
       }
       const energy = stepBodies(bodies.current, correlationOf, w, h);
-      draw(target, bodies.current, sky, items, selected, palette);
+      paint();
       if (energy > SETTLED) handle = window.requestAnimationFrame(tick);
     };
-    handle = window.requestAnimationFrame(tick);
+    const restart = () => {
+      window.cancelAnimationFrame(handle);
+      started = performance.now();
+      if (motion.matches) tick(started);
+      else handle = window.requestAnimationFrame(tick);
+    };
+    const resize = (w: number, h: number) => {
+      size.current = { width: w, height: h };
+      const scale = window.devicePixelRatio || 1;
+      target.width = Math.round(w * scale);
+      target.height = Math.round(h * scale);
+      target.style.width = `${String(w)}px`;
+      target.style.height = `${String(h)}px`;
+      restart();
+    };
+    resize(width, height);
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) resize(entry.contentRect.width, entry.contentRect.height);
+    });
+    observer.observe(element);
+    const themeObserver = new MutationObserver(() => {
+      palette = readPalette();
+      paint();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-palette', 'data-density'],
+    });
+    motion.addEventListener('change', restart);
     return () => {
       window.cancelAnimationFrame(handle);
+      observer.disconnect();
+      themeObserver.disconnect();
+      motion.removeEventListener('change', restart);
     };
   }, [sky, items, selected]);
 
@@ -242,11 +413,18 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
 
   return (
     <div className="constellation-panel">
+      <div className="constellation-readout">
+        <strong>Correlation field</strong>
+        <span>
+          {String(items.length)} instruments · {String(sky.samples)}/
+          {String(CONSTELLATION_SAMPLES - 1)} returns
+        </span>
+      </div>
       <div ref={frame} className="constellation-sky">
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Constellation of ${String(items.length)} instruments. Bodies near each other have moved together over the last 15 minutes.`}
+          aria-label={`Constellation of ${String(items.length)} instruments. Relative proximity indicates correlation over 15 minutes, not price coordinates. Solid links move together; dashed links move oppositely. Size and glow show traded value; mint rings mark selection. Instrument buttons follow the map.`}
           className={link === undefined ? undefined : 'is-linkable'}
           onPointerMove={(event) => {
             setHover(hit(event));
@@ -278,6 +456,13 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
           <li key={item.id}>
             <button
               type="button"
+              aria-pressed={item.id === selected}
+              onFocus={() => {
+                setHover(index);
+              }}
+              onBlur={() => {
+                setHover(undefined);
+              }}
               onClick={() => {
                 selectLinked(link, item.id);
               }}
@@ -288,8 +473,9 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
         ))}
       </ul>
       <p className="panel-footnote">
-        15-minute window, {String(CONSTELLATION_SAMPLES)} samples · size: traded value · colour:
-        move
+        15m · {String(CONSTELLATION_SAMPLES)} prices at 5s · size / glow: traded value (FX fixed)
+        {' · '}colour: move · links: |r| ≥ {String(EDGE_MIN)} · dashed: inverse
+        {' · '}relative positions, not price axes
         {link === undefined ? ' · link this panel to send clicks to other panels' : ''}
       </p>
     </div>

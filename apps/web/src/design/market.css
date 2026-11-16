@@ -339,10 +339,25 @@
 
 @container (max-width: 360px) {
   .markets-columns {
-    grid-template-columns: minmax(80px, 1.2fr) minmax(56px, 0.8fr) minmax(64px, 1fr) minmax(
-        56px,
+    grid-template-columns: minmax(62px, 1.2fr) minmax(52px, 0.9fr) minmax(54px, 1fr) minmax(
+        48px,
         0.8fr
       );
+    gap: 4px;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+
+  .markets-columns .text-num {
+    font-size: 11px;
+  }
+
+  .markets-proxy .market-symbol {
+    flex-shrink: 0;
+  }
+
+  .markets-tag {
+    font-size: 9px;
   }
 
   .markets-columns > :last-child {
@@ -446,6 +461,7 @@
 
 /* Movers: breadth bar, then gainers, losers and most active. */
 .movers-panel {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -520,4 +536,35 @@
 
 .calendar-columns.is-past {
   opacity: 0.55;
+}
+
+/* The hero's breadth console exposes all three rankings without tab switching. */
+.movers-lists {
+  display: grid;
+}
+
+@container (min-width: 620px) {
+  .movers-lists {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .movers-lists > section + section {
+    border-left: 1px solid var(--line);
+  }
+
+  .movers-lists .movers-columns {
+    grid-template-columns: minmax(58px, 1fr) minmax(54px, 1fr) minmax(52px, 0.8fr);
+    gap: 4px;
+    min-height: 22px;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+
+  .movers-lists .movers-columns .text-num {
+    font-size: 11px;
+  }
+
+  .movers-lists .markets-group {
+    padding-block: 5px;
+  }
 }

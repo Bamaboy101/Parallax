@@ -1,4 +1,5 @@
 import '../../design/panels.css';
+import { useCursor } from '../../store/hooks';
 import { useNow } from '../useNow';
 import { MARKETS, localTime, sessionState, sessionsOnClock } from './markets';
 
@@ -41,9 +42,28 @@ function duration(minutes: number): string {
 const clock = (minute: number) =>
   `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 
-/** A 24-hour ring of which markets are open now, on the viewer's clock, with a hand at now. */
+const DIAL_TICKS = Array.from({ length: DAY / 5 }, (_, index) => {
+  const minute = index * 5;
+  const major = minute % 60 === 0;
+  const [x1, y1] = coords(minute, major ? 89 : 91);
+  const [x2, y2] = coords(minute, 93);
+  return (
+    <line
+      key={minute}
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+      className={major ? 'session-tick is-hour' : 'session-tick'}
+    />
+  );
+});
+
+/** A local 24-hour clock with exchange-zone sessions and five-minute subdivisions. */
 export default function SessionRing() {
-  const now = useNow(TICK_MS);
+  const liveNow = useNow(TICK_MS);
+  const [cursor] = useCursor();
+  const now = cursor ?? liveNow;
   const viewerOffset = -new Date(now).getTimezoneOffset();
   const viewerMinute =
     (((new Date(now).getUTCHours() * 60 + new Date(now).getUTCMinutes() + viewerOffset) % DAY) +
@@ -59,17 +79,19 @@ export default function SessionRing() {
   const [handX, handY] = coords(viewerMinute, 92);
 
   return (
-    <div className="session-panel">
+    <div className={cursor === null ? 'session-panel' : 'session-panel is-rewound'}>
       <svg
         className="session-ring"
-        viewBox="0 0 200 200"
+        viewBox="-8 -8 216 216"
         role="img"
-        aria-label={`Market sessions on your clock, now ${clock(viewerMinute)}: ${markets
+        aria-label={`Market sessions on your local clock${cursor === null ? '' : ', historical time'}, ${clock(viewerMinute)}: ${markets
           .map(({ market, state }) => `${market.name} ${state.open ? 'open' : 'closed'}`)
           .join(', ')}`}
       >
-        {[0, 6, 12, 18].map((hour) => {
-          const [x, y] = coords(hour * 60, 96);
+        <title>Regular exchange sessions · local 24-hour clock · five-minute marks</title>
+        {DIAL_TICKS}
+        {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => {
+          const [x, y] = coords(hour * 60, 101);
           return (
             <text
               key={hour}
@@ -83,33 +105,57 @@ export default function SessionRing() {
             </text>
           );
         })}
-        {markets.map(({ market, radius, state, arcs }) => (
+        {markets.map(({ market, radius, state, arcs }, index) => (
           <g key={market.id} className={state.open ? 'session-market is-open' : 'session-market'}>
+            <title>
+              {`${market.name}: ${
+                market.sessions.length === 0
+                  ? '24/7'
+                  : market.sessions
+                      .map(([open, close]) => `${clock(open)}–${clock(close)}`)
+                      .join(', ')
+              } ${market.timeZone ?? ''}; ${state.open ? 'open' : 'closed'}`}
+            </title>
             <circle cx={CENTER} cy={CENTER} r={radius} className="session-track" />
             {arcs.map(([start, end]) => (
               <path key={start} d={arc(start, end, radius)} className="session-arc" />
             ))}
+            <text x={CENTER + 5} y={CENTER - radius + 2} className="session-ring-index">
+              {String(index + 1).padStart(2, '0')}
+            </text>
           </g>
         ))}
         <line x1={CENTER} y1={CENTER} x2={handX} y2={handY} className="session-hand" />
-        <circle cx={CENTER} cy={CENTER} r={3} className="session-pivot" />
+        <circle cx={handX} cy={handY} r={2} className="session-hand-tip" />
+        <circle cx={CENTER} cy={CENTER} r={31} className="session-core" />
+        <text x={CENTER} y={99} textAnchor="middle" className="session-clock">
+          {clock(viewerMinute)}
+        </text>
+        <text x={CENTER} y={110} textAnchor="middle" className="session-zone">
+          {cursor === null ? 'LOCAL / 24H' : 'PAST / LOCAL'}
+        </text>
       </svg>
       <ul className="session-list">
-        {markets.map(({ market, state, local }) => (
+        {markets.map(({ market, state, local }, index) => (
           <li key={market.id} className={state.open ? 'is-open' : undefined}>
             <span className="session-dot" aria-hidden="true" />
-            <span className="session-name">{market.name}</span>
+            <span className="session-name">
+              <span className="session-index">{String(index + 1).padStart(2, '0')}</span>
+              {market.name}
+            </span>
             <span className="session-status">{state.open ? 'Open' : 'Closed'}</span>
             <span className="session-next">
               {state.minutesToChange === undefined
                 ? 'always on'
                 : `${state.open ? 'closes' : 'opens'} in ${duration(state.minutesToChange)}`}
             </span>
-            <span className="session-local">{local ?? '24/7'}</span>
+            <span className="session-local" title={market.timeZone ?? 'Continuous trading'}>
+              {local ?? '24/7'}
+            </span>
           </li>
         ))}
       </ul>
-      <p className="panel-footnote">Regular sessions; exchange holidays are not shown.</p>
+      <p className="panel-footnote">Regular hours · exchange-local times · holidays not shown</p>
     </div>
   );
 }

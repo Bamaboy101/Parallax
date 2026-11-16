@@ -42,7 +42,10 @@ export function Shell() {
         <div aria-hidden="true" className="shell-mark">
           <span />
         </div>
-        <h1 className="text-ui font-medium tracking-tight text-text">Open Terminal</h1>
+        <div className="shell-identity">
+          <h1>Open Terminal</h1>
+          <div className="shell-micro">Market operations</div>
+        </div>
         <div className="ml-4 min-w-0 flex-1 sm:max-w-80">
           <CommandTrigger />
         </div>

@@ -93,14 +93,14 @@ export default function Movers({ api }: IDockviewPanelProps) {
           <span className="movers-bar-down" style={{ width: share(down) }} />
         </div>
       </div>
-      <MoverList title="Top gainers" movers={view.gainers} empty="Nothing up yet." />
-      <MoverList title="Top losers" movers={view.losers} empty="Nothing down yet." />
-      <MoverList title="Most active" movers={view.active} empty="No trades seen yet." traded />
+      <div className="movers-lists">
+        <MoverList title="Top gainers" movers={view.gainers} empty="Nothing up yet." />
+        <MoverList title="Top losers" movers={view.losers} empty="Nothing down yet." />
+        <MoverList title="Most active" movers={view.active} empty="No trades seen yet." traded />
+      </div>
       <p className="panel-footnote">
-        Across every symbol the terminal is showing right now: open more panels or boards to widen
-        it. Change is against 24 hours ago for crypto and FX and the previous close for stocks. Most
-        active: dollars traded in the last hour this page has seen (USDT as USD; stocks count IEX
-        trades only).
+        Store universe · Δ: 24h crypto/FX, previous close equities · Activity: observed 1h USD (USDT
+        as USD; stocks IEX only).
       </p>
     </div>
   );
