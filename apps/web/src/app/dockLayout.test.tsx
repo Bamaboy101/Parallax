@@ -67,12 +67,13 @@ describe('restoreLayout', () => {
 });
 
 describe('workspace presets', () => {
-  it('ships Overview, Crypto, Equities and Macro, in that order', () => {
+  it('ships the four original presets followed by Mission Control', () => {
     expect(WORKSPACES.map((workspace) => workspace.id)).toEqual([
       'overview',
       'crypto',
       'equities',
       'macro',
+      'mission-control',
     ]);
   });
 

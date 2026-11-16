@@ -15,6 +15,9 @@
   --up: #39b54a;
   --down: #ff6464;
   --warn: #f4bb4f;
+  /* V3 proposal: orchid heat, independent of price direction and stale-data amber. */
+  --weather-warm: #b79ced;
+  --glass-surface: color-mix(in srgb, var(--panel) 88%, transparent);
 
   /* Linked-panel groups: interface only, never price or status. Each dot also shows its number. */
   --link-1: #e1a0fe;
@@ -54,6 +57,8 @@
   --up: #237a12;
   --down: #b42332;
   --warn: #8a5a00;
+  --weather-warm: #705294;
+  --glass-surface: color-mix(in srgb, var(--panel) 90%, transparent);
   --link-1: #791a9a;
   --link-2: #165782;
   --link-3: #a15494;
@@ -236,18 +241,26 @@ body {
 }
 
 /*
- * Market weather: a faint glow behind the panels, cool mint when markets are calm, warming
- * toward amber as the watchlist's short-term volatility rises (--weather 0..1, app/weather.ts).
+ * Market weather: cool mint when markets are calm, orchid as short-term volatility rises.
+ * Orchid carries regime intensity, never direction or stale-data status.
  * It changes every 10 s at most and never animates.
  */
 .weather-glow {
-  --weather-tint: color-mix(in oklab, var(--warn) calc(var(--weather, 0) * 100%), var(--live));
+  --weather-tint: color-mix(
+    in oklab,
+    var(--weather-warm) calc(var(--weather, 0) * 100%),
+    var(--live)
+  );
   background:
     radial-gradient(
-      120% 80% at 50% 0%,
-      color-mix(in oklab, var(--weather-tint) calc(5% + var(--weather, 0) * 9%), transparent),
+      120% 100% at 50% 0%,
+      color-mix(in oklab, var(--weather-tint) calc(8% + var(--weather, 0) * 10%), transparent),
       transparent 70%
     ),
+    linear-gradient(color-mix(in srgb, var(--line) 22%, transparent) 1px, transparent 1px) 0 0 /
+      32px 32px,
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 22%, transparent) 1px, transparent 1px) 0
+      0 / 32px 32px,
     var(--bg);
 }
 
@@ -407,4 +420,155 @@ body {
 .theme-switch:focus-visible {
   outline: 2px solid var(--live);
   outline-offset: 2px;
+}
+
+/* V3 instrument chrome: typography communicates hierarchy, not decorative glow. */
+.shell-topbar {
+  height: calc(var(--row-h) + 24px);
+}
+
+.shell-identity {
+  flex-shrink: 0;
+}
+
+.shell-identity h1 {
+  margin: 0;
+  font-size: var(--size-ui);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shell-micro {
+  color: var(--muted);
+  font: 9px var(--font-num);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.shell-rail {
+  background: var(--panel);
+  min-height: calc(var(--row-h) + 8px);
+}
+
+.panel-caption,
+.market-caption,
+.market-columns,
+.news-meta,
+.truth-badge-source {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 1300px) {
+  .shell-topbar {
+    gap: 6px;
+  }
+
+  .shell-topbar > .ml-4 {
+    margin-left: 4px;
+    max-width: 200px;
+  }
+
+  .shell-topbar > .ml-auto {
+    gap: 8px;
+  }
+}
+
+.rewind {
+  gap: 6px;
+}
+
+.rewind-mode {
+  padding: 3px 5px;
+  border: 1px solid color-mix(in srgb, var(--live) 45%, var(--line));
+  color: var(--live);
+  font: 9px var(--font-num);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rewind.is-rewound .rewind-mode {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.rewind-timeline {
+  position: relative;
+  width: clamp(120px, 14vw, 220px);
+  min-width: 120px;
+}
+
+.rewind-activity {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  height: 28px;
+  pointer-events: none;
+}
+
+.rewind-activity path {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+.rewind-ticks line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.rewind .rewind-track {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  margin: 14px 0 0;
+  background: transparent;
+}
+
+.rewind-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font: 8px var(--font-num);
+}
+
+/* Fine track leaves the observed activity visible; the native input keeps keyboard semantics. */
+.rewind .rewind-track {
+  appearance: none;
+  cursor: ew-resize;
+  color: var(--live);
+}
+
+.rewind.is-rewound .rewind-track {
+  color: var(--warn);
+}
+
+.rewind-track::-webkit-slider-runnable-track {
+  height: 2px;
+  background: currentColor;
+}
+
+.rewind-track::-webkit-slider-thumb {
+  appearance: none;
+  width: 5px;
+  height: 14px;
+  margin-top: -6px;
+  border: 1px solid var(--panel);
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.rewind-track::-moz-range-track {
+  height: 2px;
+  background: currentColor;
+}
+
+.rewind-track::-moz-range-thumb {
+  width: 4px;
+  height: 14px;
+  border: 1px solid var(--panel);
+  border-radius: 1px;
+  background: currentColor;
 }

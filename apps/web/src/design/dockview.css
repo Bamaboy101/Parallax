@@ -178,3 +178,76 @@
   border: 0;
   background: var(--link-4);
 }
+
+/* One composited glass surface per group; widget interiors do not stack blurs.
+   Dense mode and the sustained-frame-budget fallback are deliberately solid. */
+.dock-cockpit {
+  height: 100%;
+  position: relative;
+}
+
+.dock-cockpit .dv-groupview {
+  position: relative;
+  background: var(--panel);
+}
+
+.dockview-theme-cockpit
+  :is(.market-panel, .session-panel, .news-panel, .macro-panel, .constellation-panel) {
+  background: transparent;
+}
+
+@supports (backdrop-filter: blur(6px)) {
+  :root:not([data-density='dense']) .dock-cockpit:not([data-render='solid']) .dv-groupview {
+    background: var(--glass-surface);
+    backdrop-filter: blur(6px);
+  }
+}
+
+.dock-cockpit .dv-groupview.dv-active-group::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: var(--panel-radius);
+  background:
+    linear-gradient(var(--live), var(--live)) left top / 14px 1px,
+    linear-gradient(var(--live), var(--live)) left top / 1px 14px,
+    linear-gradient(var(--live), var(--live)) right top / 14px 1px,
+    linear-gradient(var(--live), var(--live)) right top / 1px 14px,
+    linear-gradient(var(--live), var(--live)) left bottom / 14px 1px,
+    linear-gradient(var(--live), var(--live)) left bottom / 1px 14px,
+    linear-gradient(var(--live), var(--live)) right bottom / 14px 1px,
+    linear-gradient(var(--live), var(--live)) right bottom / 1px 14px;
+  background-repeat: no-repeat;
+}
+
+.cockpit-boot {
+  position: absolute;
+  z-index: 20;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border: 1px solid var(--live);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--live);
+  font: 10px var(--font-num);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+@container dock-group (max-width: 360px) {
+  .panel-badges .truth-badge-label {
+    display: inline;
+    font-size: 9px;
+  }
+
+  .panel-badges .truth-badge {
+    width: auto;
+    height: 16px;
+    padding-inline: 4px;
+    gap: 3px;
+  }
+}

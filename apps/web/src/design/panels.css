@@ -62,7 +62,8 @@
 
 .session-ring {
   display: block;
-  width: min(100%, 260px);
+  width: min(100%, 168px);
+  flex-shrink: 0;
   margin: 0 auto;
 }
 
@@ -354,4 +355,128 @@
   bottom: 8px;
   left: 8px;
   color: var(--muted);
+}
+
+/* Instrument faces retain the same semantic colours as their textual readouts. */
+.constellation-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.constellation-readout strong {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.constellation-readout span {
+  color: var(--muted);
+  font: 10px var(--font-num);
+}
+
+.session-tick {
+  stroke: var(--line);
+  stroke-width: 0.35;
+}
+
+.session-tick.is-hour {
+  stroke: var(--muted);
+  stroke-width: 0.8;
+}
+
+.session-core {
+  fill: var(--panel);
+}
+
+.session-clock {
+  fill: var(--text);
+  font: 12px var(--font-num);
+}
+
+.session-zone {
+  fill: var(--muted);
+  font-size: 5px;
+  letter-spacing: 0.7px;
+}
+
+.session-ring-index {
+  fill: var(--muted);
+  font: 5px var(--font-num);
+}
+
+.session-index {
+  margin-right: 6px;
+  color: var(--muted);
+  font-family: var(--font-num);
+}
+
+.session-hand-tip {
+  fill: var(--text);
+}
+
+.session-panel.is-rewound .session-hand {
+  stroke: var(--warn);
+}
+
+.session-panel.is-rewound .session-hand-tip {
+  fill: var(--warn);
+}
+
+.session-list li {
+  min-height: 24px;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.session-panel .panel-footnote {
+  padding-block: 4px;
+  font-size: 10px;
+}
+
+@media (max-height: 800px) {
+  .session-panel {
+    display: grid;
+    grid-template-columns: minmax(100px, 0.9fr) minmax(0, 1fr);
+    align-content: center;
+    align-items: center;
+    gap: 4px;
+    padding-inline: 6px;
+  }
+
+  .session-ring {
+    width: 100%;
+  }
+
+  .session-list {
+    margin: 0;
+  }
+
+  .session-list li {
+    grid-template-columns: 6px minmax(0, 1fr) auto;
+    padding: 5px 0;
+    gap: 2px 4px;
+  }
+
+  .session-next {
+    grid-column: 2 / -1;
+    font-size: 9px;
+  }
+
+  .session-status {
+    font-size: 9px;
+  }
+
+  .session-local,
+  .session-index {
+    display: none;
+  }
+
+  .session-panel .panel-footnote {
+    grid-column: 1 / -1;
+  }
 }

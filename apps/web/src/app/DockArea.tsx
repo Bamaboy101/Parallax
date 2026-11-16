@@ -4,7 +4,7 @@ import {
   type DockviewReadyEvent,
   type DockviewTheme,
 } from 'dockview-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { setDockApi } from './dockApi';
 import { restoreLayout } from './dockLayout';
@@ -14,6 +14,8 @@ import { DOCK_COMPONENTS } from './widgets';
 import { openSharedWorkspace } from './workspace';
 
 const SAVE_DELAY_MS = 250;
+const BOOT_KEY = 'open-terminal:cockpit-boot';
+let bootShown = false;
 
 const cockpitTheme: DockviewTheme = {
   name: 'cockpit',
@@ -23,6 +25,8 @@ const cockpitTheme: DockviewTheme = {
 
 export function DockArea() {
   const [api, setApi] = useState<DockviewApi | null>(null);
+  const surface = useRef<HTMLDivElement>(null);
+  const bootHint = useRef<HTMLButtonElement>(null);
   useLinkFollower(api);
 
   const onReady = (event: DockviewReadyEvent) => {
@@ -55,13 +59,94 @@ export function DockArea() {
     };
   }, [api]);
 
+  useEffect(() => {
+    const root = surface.current;
+    if (!api || !root) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let seen = bootShown;
+    try {
+      seen ||= sessionStorage.getItem(BOOT_KEY) === '1';
+      sessionStorage.setItem(BOOT_KEY, '1');
+    } catch {
+      // Memory guard still prevents replays when session storage is blocked.
+    }
+    bootShown = true;
+    const animations: Animation[] = [];
+    const finish = () => {
+      for (const animation of animations) animation.cancel();
+      if (bootHint.current) bootHint.current.hidden = true;
+    };
+    if (!seen && !reduced.matches) {
+      const groups = [...root.querySelectorAll<HTMLElement>('.dv-groupview')];
+      groups.forEach((group, index) => {
+        // Actual panels and their actual badges; never imply that a feed is connected.
+        animations.push(
+          group.animate([{ opacity: 0.15 }, { opacity: 1 }], {
+            duration: 160,
+            delay: (index / Math.max(1, groups.length - 1)) * 800,
+            fill: 'backwards',
+            easing: 'ease-out',
+          }),
+        );
+      });
+      if (bootHint.current) bootHint.current.hidden = false;
+    }
+    const timer = window.setTimeout(finish, 980);
+    window.addEventListener('pointerdown', finish, true);
+    window.addEventListener('keydown', finish, true);
+    reduced.addEventListener('change', finish);
+
+    // A sustained missed frame budget disables glass for this dock lifetime.
+    // Ignore background-tab gaps and isolated GC/network scheduling stalls.
+    let frame = 0;
+    let previous = 0;
+    let count = 0;
+    let slow = 0;
+    const measure = (now: number) => {
+      if (document.hidden) {
+        previous = 0;
+        count = 0;
+        slow = 0;
+      } else {
+        if (previous !== 0) {
+          count += 1;
+          if (now - previous > 22) slow += 1;
+        }
+        previous = now;
+        if (count >= 120) {
+          if (slow > 12) {
+            root.dataset.render = 'solid';
+            return;
+          }
+          count = 0;
+          slow = 0;
+        }
+      }
+      frame = requestAnimationFrame(measure);
+    };
+    frame = requestAnimationFrame(measure);
+    return () => {
+      finish();
+      window.clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pointerdown', finish, true);
+      window.removeEventListener('keydown', finish, true);
+      reduced.removeEventListener('change', finish);
+    };
+  }, [api]);
+
   return (
-    <DockviewReact
-      className="h-full"
-      theme={cockpitTheme}
-      components={DOCK_COMPONENTS}
-      rightHeaderActionsComponent={PanelBadges}
-      onReady={onReady}
-    />
+    <div ref={surface} className="dock-cockpit">
+      <DockviewReact
+        className="h-full"
+        theme={cockpitTheme}
+        components={DOCK_COMPONENTS}
+        rightHeaderActionsComponent={PanelBadges}
+        onReady={onReady}
+      />
+      <button ref={bootHint} type="button" className="cockpit-boot" hidden>
+        Initialising panels · click or press any key to skip
+      </button>
+    </div>
   );
 }
