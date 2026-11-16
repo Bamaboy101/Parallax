@@ -26,7 +26,15 @@ export interface Workspace {
 const files = import.meta.glob<Workspace>('./*.json', { eager: true, import: 'default' });
 
 /** Menu order; a preset added without an entry here goes last. */
-const ORDER = ['mission-control', 'overview', 'crypto', 'equities', 'macro'];
+const ORDER = [
+  'mission-control',
+  'overview',
+  'crypto',
+  'equities',
+  'macro',
+  'europe',
+  'asia-pacific',
+];
 const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
 
 export const WORKSPACES: readonly Workspace[] = Object.values(files).sort(

@@ -355,6 +355,19 @@ region, shows each event's leading outcome, 24 h change in points and 24 h volum
 week of odds and every outcome on click. Odds are labelled "market odds, not forecasts"; they are
 not part of Rewind, and the panel says so while rewound.
 
+## Europe and Asia-Pacific boards (M9)
+
+`widgets/regionBoards.ts` defines each board: the region's live Kraken pairs (EUR/USD, GBP/USD,
+USD/CHF; USD/JPY, AUD/USD), its exchanges' sessions, and index rows. Nineteen indices show a
+US-listed ETF proxy labelled "proxy, US hours only" with "official index level needs a licence";
+TAIEX shows its official TWSE close (`store/taiex.ts`), with the licence's attribution in the
+footnote. `regionOpenNotice` uses `store/sessions.ts` (the Session ring's model, which now also
+holds Sydney, Hong Kong, Mumbai and Frankfurt): while any of the region's exchanges trades and
+New York does not, the board says which are open, that the proxies hold their last US close, and
+that the currency rows above are what moves. The Europe and Asia-Pacific workspaces put the same
+pairs in a watchlist at the top left, the board below it, and a chart of the main pair, news,
+event odds and the Session ring beside them.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

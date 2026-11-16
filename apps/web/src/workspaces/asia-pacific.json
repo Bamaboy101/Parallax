@@ -1,0 +1,49 @@
+{
+  "id": "asia-pacific",
+  "title": "Asia-Pacific",
+  "description": "JPY and AUD live first, TAIEX's official close, Asian and Australian indices through US-listed proxies, and the session clock.",
+  "panels": [
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": {
+        "symbols": ["USD-JPY", "AUD-USD", "AUD-JPY", "EUR-JPY"],
+        "link": 1
+      }
+    },
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "USD-JPY", "interval": "1h", "link": 1 },
+      "position": { "referencePanel": "watchlist", "direction": "right" }
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "China" },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 380
+    },
+    {
+      "id": "predictions",
+      "component": "predictions",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
+      "id": "sessions",
+      "component": "session-ring",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "below" },
+      "height": 300
+    },
+    {
+      "id": "asia-pacific",
+      "component": "asia-pacific",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "below" },
+      "height": 560
+    }
+  ]
+}
