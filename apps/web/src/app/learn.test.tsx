@@ -112,3 +112,94 @@ describe('learn mode', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 });
+
+describe('learn mode explanation placement', () => {
+  const TIP = { width: 280, height: 120 };
+  type Rect = { left: number; top: number; right: number; bottom: number };
+  const rect = ({ left, top, right, bottom }: Rect) =>
+    ({
+      left,
+      top,
+      right,
+      bottom,
+      x: left,
+      y: top,
+      width: right - left,
+      height: bottom - top,
+    }) as DOMRect;
+
+  /** Where the hovered term's element currently is; a test may move it. */
+  let anchorAt: Rect = { left: 0, top: 0, right: 0, bottom: 0 };
+
+  const boxNow = (): Rect => {
+    const tip = screen.getByRole('tooltip');
+    const left = Number.parseFloat(tip.style.left);
+    const top = Number.parseFloat(tip.style.top);
+    return { left, top, right: left + TIP.width, bottom: top + TIP.height };
+  };
+
+  /** Hover a term whose element sits at `anchor`; return where the box landed. */
+  function boxFor(anchor: Rect): Rect {
+    anchorAt = anchor;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      return this.classList.contains('learn-tip')
+        ? rect({ left: 0, top: 0, right: TIP.width, bottom: TIP.height })
+        : rect(anchorAt);
+    });
+    usePrefs.setState({ learn: true });
+    render(
+      <>
+        <span data-term="Chg">+1.24%</span>
+        <LearnLayer />
+      </>,
+    );
+    act(() => {
+      fireEvent.pointerOver(screen.getByText('+1.24%'));
+    });
+    return boxNow();
+  }
+
+  const overlaps = (a: Rect, b: Rect) =>
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it('moves with its number when layout shifts under a still pointer', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    const before = boxFor({ left: 100, top: 300, right: 160, bottom: 316 });
+    expect(before.top).toBe(324);
+    // The row slides down to just above where the box was: without following, the box covers it.
+    anchorAt = { left: 100, top: 330, right: 160, bottom: 346 };
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    const after = boxNow();
+    expect(overlaps(after, anchorAt)).toBe(false);
+    expect(after.top).toBe(354);
+  });
+
+  it.each([
+    ['below when there is room', { left: 100, top: 300, right: 160, bottom: 316 }, 'below'],
+    ['above near the bottom edge', { left: 900, top: 700, right: 960, bottom: 716 }, 'above'],
+    [
+      'beside an element too tall for either',
+      { left: 100, top: 40, right: 160, bottom: 740 },
+      'beside',
+    ],
+  ] as const)('goes %s, never over the number and inside the window', (_, anchor, side) => {
+    const box = boxFor(anchor);
+    expect(overlaps(box, anchor)).toBe(false);
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+    expect(box.bottom).toBeLessThanOrEqual(window.innerHeight);
+    if (side === 'below') expect(box.top).toBeGreaterThanOrEqual(anchor.bottom);
+    if (side === 'above') expect(box.bottom).toBeLessThanOrEqual(anchor.top);
+    if (side === 'beside') expect(box.left).toBeGreaterThanOrEqual(anchor.right);
+  });
+});
