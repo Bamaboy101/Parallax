@@ -4,6 +4,7 @@ import { badgeSeverity, formatNumber, type Freshness } from '../design/format';
 import { changeWords, plainName } from '../design/plain';
 import '../design/rundown.css';
 import { requestSettings } from '../design/settingsRequest';
+import { writeBrief, type BriefRef } from '../store/brief';
 import { useCalendar } from '../store/calendar';
 import { usePriceLine, usePriceSubscriptions } from '../store/hooks';
 import { useKeyVault } from '../store/keys';
@@ -32,6 +33,16 @@ import { instrument, instruments, type Instrument } from '../store/symbols';
 import { OGDL_URL, TWSE_ATTRIBUTION, useTaiex } from '../store/taiex';
 import { PROXY_LABEL } from '../widgets/regionBoards';
 import { useNow } from '../widgets/useNow';
+
+/** Where each brief sentence's figures are shown (E4). */
+const BRIEF_SOURCES: Readonly<Record<BriefRef, string>> = {
+  world: 'World markets',
+  moves: 'Biggest moves',
+  crypto: 'Crypto',
+  anchors: 'The dollar, oil and gold',
+  events: 'Events',
+  calendar: 'Calendar',
+};
 
 const ITEMS = instruments([...RUNDOWN_IDS]);
 const HEADLINES = 5;
@@ -108,17 +119,29 @@ function Change({ value, decimals = 2 }: { value: number | undefined; decimals?:
 }
 
 /**
- * One instrument as a big number: its plain name, price and change. Before the first live trade
- * (gold's token trades rarely) it shows the last hourly close, dimmed and said so.
+ * One instrument as a big number: its plain name, price and change. It shows the page's price
+ * snapshot (refreshed with the moves, every 10 s), so the daily brief quotes exactly what is here.
+ * Before the first live trade (gold's token trades rarely) it shows the last hourly close, dimmed
+ * and said so.
  */
-function Figure({ item, note }: { item: Instrument; note?: string }) {
+function Figure({
+  item,
+  mover,
+  note,
+}: {
+  item: Instrument;
+  mover: Mover | undefined;
+  note?: string;
+}) {
   const line = usePriceLine(item);
-  const fromHistory = line.price !== undefined && !line.live;
+  const fromHistory = !mover && line.price !== undefined && !line.live;
   return (
     <div className="rundown-figure" title={item.label} data-history={fromHistory || undefined}>
       <span className="rundown-figure-name">{plainName(item)}</span>
-      <span className="rundown-figure-value">{formatNumber(line.price, decimalsOf(item))}</span>
-      <Change value={line.changePct} />
+      <span className="rundown-figure-value">
+        {formatNumber(mover ? mover.price : line.price, decimalsOf(item))}
+      </span>
+      <Change value={mover ? mover.changePct : line.changePct} />
       {(note ?? fromHistory) && (
         <span className="rundown-figure-note">
           {[note, fromHistory ? 'last hourly close' : undefined].filter(Boolean).join(' · ')}
@@ -287,6 +310,20 @@ export function Rundown() {
       return source ? [source] : [];
     });
   const setView = usePrefs((state) => state.setView);
+  const brief = writeBrief({
+    exchanges: REGIONS.flatMap((region) =>
+      region.markets.flatMap((id) => {
+        const place = market(id);
+        return place ? [{ name: place.name, ...sessionState(place, now) }] : [];
+      }),
+    ),
+    moves,
+    bitcoin: byId.get('BTC-USD'),
+    dollar: dailyStat(fred.series[DOLLAR_SERIES]),
+    oil: dailyStat(fred.series[OIL_SERIES]),
+    events,
+    calendar: day,
+  });
 
   return (
     <div className="rundown" id="rundown">
@@ -308,6 +345,31 @@ export function Rundown() {
           Open the full cockpit
         </button>
       </div>
+
+      <section className="rundown-brief" aria-labelledby="rundown-brief">
+        <header className="rundown-section-head">
+          <h2 id="rundown-brief">Daily brief</h2>
+          <span className="rundown-section-hint">
+            written by rules from the figures below, no AI
+          </span>
+        </header>
+        {brief.length === 0 ? (
+          <p className="rundown-empty">Waiting for the first figures…</p>
+        ) : (
+          <ul className="rundown-brief-list">
+            {brief.map((sentence) => (
+              <li key={sentence.text}>
+                {sentence.text}{' '}
+                {sentence.refs.map((ref) => (
+                  <a key={ref} className="rundown-brief-ref" href={`#rundown-${ref}`}>
+                    {BRIEF_SOURCES[ref]}
+                  </a>
+                ))}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <Section
         id="world"
@@ -360,7 +422,7 @@ export function Rundown() {
       >
         <div className="rundown-figures">
           {instruments([...CRYPTO_IDS]).map((item) => (
-            <Figure key={item.id} item={item} />
+            <Figure key={item.id} item={item} mover={byId.get(item.id)} />
           ))}
         </div>
       </Section>
@@ -388,7 +450,13 @@ export function Rundown() {
             unit="$ a barrel"
             note="US crude (WTI)"
           />
-          {gold && <Figure item={gold} note="$ an ounce, via the PAX Gold token" />}
+          {gold && (
+            <Figure
+              item={gold}
+              mover={byId.get(GOLD_ID)}
+              note="$ an ounce, via the PAX Gold token"
+            />
+          )}
         </div>
       </Section>
 

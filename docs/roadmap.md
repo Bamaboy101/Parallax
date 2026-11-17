@@ -145,6 +145,8 @@ experts lose nothing. Built before Batch D.
   Back, Next, Done and Escape; remembered once seen.
 - **E4 Daily brief without a key:** a rule-based written summary of the Rundown, generated from
   the store with no AI, every sentence traceable to a number on screen.
+  Built 18 Nov: up to six sentences at the top of the Rundown, each with a link to the section
+  whose numbers it quotes; tested for matching figures and for advice wording; checked live.
 - **E5 Phone first:** Rundown and Simple mode work well at 390 px wide.
 - **E6 Installable app:** F11, pulled forward from Batch D.
 

@@ -194,6 +194,9 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - The first-visit tour (E3) rings its target with a 2 px mint line and shows a `--panel` card
   with a mint hairline: step count, title, one or two sentences, and Skip / Back / Next. No
   backdrop, shadow or motion; on narrow screens the card sits at the bottom.
+- The daily brief (E4) is reading text at 15 px in `--text`, one sentence per line, each followed
+  by a small muted pill naming the section its numbers come from; the pill turns mint on hover or
+  focus and the target section's title turns mint while it is the URL target.
 
 ## Visual passes
 

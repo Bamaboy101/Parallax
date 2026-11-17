@@ -750,6 +750,15 @@ the `toured` preference so it never shows again. Each stop rings the element mar
 ones. Skip or Escape ends it; leaving the Rundown after seeing it counts as done. It does not
 trap focus or dim the page.
 
+**Daily brief (E4).** `store/brief.ts` writes up to six plain sentences from the Rundown's own
+figures (`writeBrief`): which exchanges are open or open next, the biggest move and the largest
+one the other way, Bitcoin, the dollar index and oil at the last daily close, the event with the
+most money traded today, and today's US releases. Rules, not AI; no key. Every number is printed
+with the same formatter as the section the sentence links to, and the big figures show the same
+10-second price snapshot as the moves (not each tick), so a sentence never quotes a figure that
+is not on screen. A sentence whose figures have not arrived is left out. It describes, never
+advises: tests check for buy/sell wording.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,
