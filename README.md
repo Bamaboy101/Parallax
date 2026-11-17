@@ -71,6 +71,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Liquidity heatmap.** Turn on "Liquidity" on a crypto or FX chart to see
   where buy and sell orders have been resting, shaded behind the candles,
   for as long as the page has been watching the book.
+- **Smart alerts.** Type `alert BTC above 65000` or `alert ETH down 2% in
+15m` and get a browser notification, with the price, source and time,
+  when it happens. Alerts run while Open Terminal is open in a tab.
 
 ## The honest part: what "free" and "no delay" allow
 
