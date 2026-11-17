@@ -27,7 +27,8 @@ FX, perpetual futures, macro and news work the moment the page loads.
   now?" in plain words and big numbers: world markets by region, the biggest
   moves, crypto, the dollar, oil and gold, the events markets are betting on,
   today's calendar and the latest headlines. No key needed. One button opens
-  the full cockpit.
+  the full cockpit. A short daily brief at the top sums it up in sentences,
+  written by rules from the numbers on the page (no AI, no key).
 - **Simple or Pro.** Simple mode uses plain names ("Bitcoin", "Euro, in
   dollars"), keeps to the essential panels and turns on Learn hints; Pro is
   the full terminal. Each keeps its own layout.
