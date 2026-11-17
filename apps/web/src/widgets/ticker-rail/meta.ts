@@ -7,6 +7,7 @@ export const meta: WidgetMeta = {
   aliases: ['rail', 'ticker'],
   dock: false,
   input: 'none',
+  learn: 'A scrolling strip of headline prices and their change.',
 };
 
 /** Headline instruments that need no key. */

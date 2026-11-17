@@ -59,6 +59,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   your free Alpaca paper account: market and limit orders, open orders,
   positions, profit and loss, cancel. Live trading is not possible in Open
   Terminal: the code can only reach Alpaca's paper environment.
+- **Learn mode.** One switch explains the terminal for students and new
+  traders: what each panel shows, what its badge means right now, and, on
+  hover or focus, every number, column and label in plain words.
 
 ## The honest part: what "free" and "no delay" allow
 

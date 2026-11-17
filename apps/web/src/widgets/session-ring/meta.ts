@@ -7,4 +7,6 @@ export const meta: WidgetMeta = {
   aliases: ['ring', 'sessions', 'session', 'hours'],
   dock: true,
   input: 'none',
+  learn:
+    'A 24-hour clock of when the world’s stock exchanges are open, on your local time. Lit arcs are open now; the hand shows the current time.',
 };

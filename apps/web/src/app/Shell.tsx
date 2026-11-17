@@ -6,6 +6,8 @@ import { Clock } from './Clock';
 import { runCommand } from './commands';
 import { ConnectionStatus } from './ConnectionStatus';
 import { DockArea } from './DockArea';
+import { LearnLayer } from './LearnLayer';
+import { LearnSwitch } from './LearnSwitch';
 import { RewindScrubber } from './RewindScrubber';
 import { useMarketWeather } from './weather';
 import { widgetMeta } from './widgets';
@@ -64,6 +66,7 @@ export function Shell() {
           <RewindScrubber />
           <ConnectionStatus />
           <Clock />
+          <LearnSwitch />
           <button
             type="button"
             className="theme-switch shell-settings"
@@ -133,6 +136,7 @@ export function Shell() {
         </span>
       </footer>
       <CommandPalette />
+      <LearnLayer />
     </div>
   );
 }

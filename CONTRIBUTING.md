@@ -52,8 +52,10 @@ shared file**:
 
 - `meta.ts` exports `meta: WidgetMeta`: a stable `id`, a `title`, an initial
   `defaultSize`, the words the command bar accepts (`aliases`), whether the
-  dock may place it (`dock`) and what the command bar hands it (`input`:
-  `symbol`, `symbols`, `query` or `none`).
+  dock may place it (`dock`), what the command bar hands it (`input`:
+  `symbol`, `symbols`, `query` or `none`) and a plain-language `learn` text
+  that learn mode shows above the panel. Give any new column heading an
+  entry in `GLOSSARY` (`design/learn.ts`); a test checks the boards.
 - `index.tsx` default-exports a component taking dockview's panel props.
   Read data through the stores; report the feeds you show with
   `useReportSources(api.id, …)` so the header badge is truthful.

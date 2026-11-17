@@ -10,8 +10,11 @@ export type Density = 'comfortable' | 'dense';
 interface Prefs {
   palette: Palette;
   density: Density;
+  /** Learn mode (F5): plain-language explanations on every panel, number and badge. */
+  learn: boolean;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
+  setLearn: (learn: boolean) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -19,29 +22,42 @@ export const usePrefs = create<Prefs>()(
     (set) => ({
       palette: 'green-red',
       density: 'comfortable',
+      learn: false,
       setPalette: (palette) => {
         set({ palette });
       },
       setDensity: (density) => {
         set({ density });
       },
+      setLearn: (learn) => {
+        set({ learn });
+      },
     }),
     {
       name: PREFS_STORAGE_KEY,
       version: 1,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ palette: state.palette, density: state.density }),
+      partialize: (state) => ({
+        palette: state.palette,
+        density: state.density,
+        learn: state.learn,
+      }),
     },
   ),
 );
 
-/** The tokens read `data-palette` and `data-density` on <html>; defaults carry no attribute. */
-function apply({ palette, density }: Pick<Prefs, 'palette' | 'density'>): void {
+/**
+ * The tokens read `data-palette` and `data-density` on <html>, and learn mode's hints read
+ * `data-learn`; defaults carry no attribute.
+ */
+function apply({ palette, density, learn }: Pick<Prefs, 'palette' | 'density' | 'learn'>): void {
   const root = document.documentElement;
   if (palette === 'blue-orange') root.dataset.palette = palette;
   else delete root.dataset.palette;
   if (density === 'dense') root.dataset.density = density;
   else delete root.dataset.density;
+  if (learn) root.dataset.learn = 'on';
+  else delete root.dataset.learn;
 }
 
 /** Apply saved preferences now and follow every change. Called once, before the first render. */

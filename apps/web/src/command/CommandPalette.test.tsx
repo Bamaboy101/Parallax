@@ -11,6 +11,7 @@ const chart: WidgetMeta = {
   aliases: ['chart'],
   dock: true,
   input: 'symbol',
+  learn: 'A price chart.',
 };
 
 function setup() {

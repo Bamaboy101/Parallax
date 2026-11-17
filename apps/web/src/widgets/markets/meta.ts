@@ -7,6 +7,8 @@ export const meta: WidgetMeta = {
   aliases: ['markets', 'world', 'indices', 'sectors', 'bonds', 'commodities'],
   dock: true,
   input: 'none',
+  learn:
+    'World markets through US-listed funds: each row is a fund that tracks an index, sector, bond market or commodity. They trade only in New York hours.',
 };
 
 /** One board row: a US-listed ETF and the market it stands in for. */
