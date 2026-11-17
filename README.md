@@ -80,6 +80,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **World globe.** Day and night as they are now, the exchanges that are open
   lit, and arcs from New York to the three markets whose country ETF moved
   most today. Drag to turn it.
+- **Whale radar.** Unusually large trades, and big liquidations on the
+  matching futures, show as a quiet dotted ring on the Constellation and a
+  marked row on the tape, with a 15-minute summary.
 
 ## The honest part: what "free" and "no delay" allow
 

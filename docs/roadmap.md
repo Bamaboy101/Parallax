@@ -90,6 +90,10 @@ be checked against the provider's own docs before building.
   price, source and time. They run while a tab is open (no push server).
 - **F8 Whale radar:** large trades and liquidations as a quiet signal on the Constellation and
   tape.
+  Built 17 Nov: a whale is a trade over both $100,000 and its market's top 0.5% of the last hour,
+  or a liquidation over $100,000 on the coin's perp. A dotted ring on the Constellation body, a
+  marked row and a 15-minute summary line on the tape; neutral colours, no motion, replays under
+  Rewind.
 - **F9 Multi-screen:** pop panels out to a second monitor, still linked.
   Built 17 Nov: a window button on every panel group opens it in its own browser window (drag it
   to the other screen); it shares the page, so links, prices and theme follow, and it comes back

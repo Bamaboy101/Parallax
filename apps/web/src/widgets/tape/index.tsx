@@ -1,12 +1,13 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import { memo } from 'react';
 import { Cell } from '../../design/Cell';
-import { formatNumber } from '../../design/format';
+import { formatCompact, formatNumber } from '../../design/format';
 import '../../design/market.css';
 import type { TradeEvent } from '../../feeds/types';
 import { useTrades } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument, type Instrument } from '../../store/symbols';
+import { notional, perpFor, useRadar, WHALE_FLOOR, type Radar } from '../../store/whales';
 import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_SYMBOL } from './meta';
 
@@ -43,17 +44,22 @@ const Row = memo(function Row({
   direction,
   width,
   item,
+  whale,
 }: {
   trade: TradeEvent;
   direction: Direction;
   /** Bar width in whole percent, so rows only re-render when it visibly changes. */
   width: number;
   item: Instrument;
+  /** F8: the print cleared the whale threshold. A static mark, never a flash. */
+  whale: boolean;
 }) {
+  const value = `${formatNumber(trade.price * trade.size, 2)} ${item.quote}`;
   return (
     <li
       className="market-row tape-columns"
-      title={`${formatNumber(trade.price * trade.size, 2)} ${item.quote}`}
+      data-whale={whale || undefined}
+      title={whale ? `Whale print: ${value}` : value}
     >
       <span
         aria-hidden
@@ -71,12 +77,41 @@ const Row = memo(function Row({
   );
 });
 
+/** F8: what the radar saw in the last 15 minutes, in one quiet line. */
+function RadarLine({ radar, item }: { radar: Radar; item: Instrument }) {
+  const largest = Math.max(0, ...radar.trades.map(notional));
+  const liquidated = radar.liquidations.reduce((sum, event) => sum + notional(event), 0);
+  const perp = perpFor(item);
+  const parts = [
+    radar.trades.length === 0
+      ? 'no whale prints'
+      : `${String(radar.trades.length)} whale ${radar.trades.length === 1 ? 'print' : 'prints'}, largest ${formatCompact(largest)} ${item.quote}`,
+  ];
+  if (perp)
+    parts.push(
+      radar.liquidations.length === 0
+        ? `no liquidations over ${formatCompact(WHALE_FLOOR)} on ${perp.label}`
+        : `${String(radar.liquidations.length)} ${perp.label} ${radar.liquidations.length === 1 ? 'liquidation' : 'liquidations'}, ${formatCompact(liquidated)} USDT`,
+    );
+  return (
+    <p
+      className="tape-radar"
+      data-term="Whale"
+      data-active={radar.trades.length + radar.liquidations.length > 0 || undefined}
+      title={`A whale print is worth at least ${formatCompact(radar.threshold)} ${item.quote}: the larger of ${formatCompact(WHALE_FLOOR)} and this symbol's top 0.5% of trades over the last hour.`}
+    >
+      <span className="tape-radar-label">Whales · 15 min</span> {parts.join(' · ')}
+    </p>
+  );
+}
+
 /** Scrolling prints, newest first. Each row's bar is sized by the trade's value. */
 export default function Tape({ api, params }: IDockviewPanelProps<TapeParams>) {
   const item = instrument(params.symbol ?? DEFAULT_SYMBOL) ?? instrument(DEFAULT_SYMBOL);
   if (!item) throw new Error('default tape symbol missing from the catalog');
   const trades = useTrades(item, ROWS);
   useReportSources(api.id, trades[0] ? [trades[0].source] : []);
+  const radar = useRadar(item);
 
   // Square-root scale so one block trade does not flatten every other bar.
   const largest = Math.sqrt(Math.max(1, ...trades.map((trade) => trade.price * trade.size)));
@@ -87,6 +122,7 @@ export default function Tape({ api, params }: IDockviewPanelProps<TapeParams>) {
         <span className="market-symbol">{item.label}</span>
         <span className="market-caption">Time &amp; sales</span>
       </div>
+      {item.kind !== 'fx' && <RadarLine radar={radar} item={item} />}
       <div className="market-columns tape-columns">
         <span>Time</span>
         <span className="text-right">Price</span>
@@ -111,6 +147,7 @@ export default function Tape({ api, params }: IDockviewPanelProps<TapeParams>) {
                 direction={direction}
                 width={Math.round((Math.sqrt(trade.price * trade.size) / largest) * 100)}
                 item={item}
+                whale={trade.price * trade.size >= radar.threshold}
               />
             );
           })}

@@ -87,6 +87,8 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
     'Stock exchanges in their regular trading hours right now, lit mint on the globe. Holidays are not taken into account.',
   'Biggest moves':
     'The three markets whose US-listed fund (an ETF that tracks the country) moved most since its previous close, drawn as arcs from New York, where those funds trade.',
+  Whale:
+    'An unusually large trade: worth at least $100,000 and among the biggest 0.5% of this market’s trades in the last hour. Large forced closes (liquidations) on the matching futures count too. A whale shows size, not which way the price will go.',
 };
 
 /** What a truth badge means, in plain words. */

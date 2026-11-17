@@ -1,6 +1,7 @@
 import type { SymbolRef } from '../feeds/types';
 import { correlation, logReturns, priceGrid } from './sampling';
 import { recentValues } from './ticks';
+import { radarAt, radarCount } from './whales';
 
 /** Prices every 5 s over the last 15 minutes. */
 export const CONSTELLATION_STEP_MS = 5_000;
@@ -15,6 +16,8 @@ export interface Star {
   change: number | undefined;
   /** Traded value over the window (price × size); undefined for quote-only FX. */
   value: number | undefined;
+  /** F8: whale prints and large liquidations on the coin's perp over the window (0 for FX). */
+  whales: number;
 }
 
 export interface Sky {
@@ -49,6 +52,7 @@ export function skyAt(symbols: readonly SymbolRef[], at: number, cursor: number 
       id: symbol.id,
       change: first && last && prices.length > 1 ? (last / first - 1) * 100 : undefined,
       value,
+      whales: symbol.kind === 'fx' ? 0 : radarCount(radarAt(symbol, at, cursor)),
     };
   });
   const correlations = returns.map((a, i) =>

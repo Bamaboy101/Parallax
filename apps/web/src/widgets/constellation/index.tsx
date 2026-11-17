@@ -1,5 +1,6 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { formatCompact } from '../../design/format';
 import { availabilityNotice } from '../../design/notices';
 import { PanelNotice } from '../../design/PanelNotice';
 import '../../design/panels.css';
@@ -10,8 +11,13 @@ import { useKeyVault } from '../../store/keys';
 import { linkGroupOf, selectLinked, useLinkStore } from '../../store/links';
 import { instruments, type Instrument } from '../../store/symbols';
 import { useTickStore } from '../../store/ticks';
+import { perpFor, useLiquidationFeeds, WHALE_FLOOR } from '../../store/whales';
 import { placeBodies, stepBodies, type Body } from './layout';
 import { DEFAULT_SYMBOLS, EQUITY_SYMBOLS } from './meta';
+
+/** F8: the whale count in words, for the tooltip and the screen-reader list. */
+const whalesText = (count: number): string =>
+  count === 0 ? '' : ` · ${String(count)} whale ${count === 1 ? 'print' : 'prints'} in 15 min`;
 
 interface ConstellationParams {
   symbols?: string[];
@@ -252,6 +258,19 @@ function draw(
       context.arc(body.x, body.y, body.r + 4, 0, 2 * Math.PI);
       context.stroke();
     }
+    // F8: a quiet dotted ring, in the text colour (size, not direction), around a body with
+    // whale prints or large liquidations in the window. Static; it never pulses.
+    if ((star?.whales ?? 0) > 0) {
+      context.strokeStyle = palette.text;
+      context.globalAlpha = 0.7;
+      context.lineWidth = 1;
+      context.setLineDash([2, 3]);
+      context.beginPath();
+      context.arc(body.x, body.y, body.r + 8, 0, 2 * Math.PI);
+      context.stroke();
+      context.setLineDash([]);
+      context.globalAlpha = 1;
+    }
   });
 
   context.font = `10px ${palette.font}`;
@@ -301,6 +320,8 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
   const idsKey = ids.join(',');
   const items = useMemo(() => instruments(idsKey.split(',')), [idsKey]);
   usePriceSubscriptions(items);
+  const perps = useMemo(() => items.flatMap((item) => perpFor(item) ?? []), [items]);
+  useLiquidationFeeds(perps);
   const link = linkGroupOf(params);
   const selected = useLinkStore((state) => (link === undefined ? undefined : state.symbols[link]));
   const cursor = useTickStore((state) => state.cursor);
@@ -446,6 +467,7 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
         {hovered && (
           <p className="constellation-tip">
             <strong>{hovered.label}</strong> {formatChange(hoveredStar?.change)}
+            {whalesText(hoveredStar?.whales ?? 0)}
             <span>{hovered.name}</span>
           </p>
         )}
@@ -479,6 +501,7 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
               }}
             >
               {item.label}: {formatChange(sky.stars[index]?.change)} over 15 minutes
+              {whalesText(sky.stars[index]?.whales ?? 0)}
             </button>
           </li>
         ))}
@@ -486,7 +509,8 @@ export default function Constellation({ params }: IDockviewPanelProps<Constellat
       <p className="panel-footnote">
         15m · {String(CONSTELLATION_SAMPLES)} prices at 5s · size / glow: traded value (FX fixed)
         {' · '}colour: move · links: |r| ≥ {String(EDGE_MIN)} · dashed: inverse
-        {' · '}relative positions, not price axes
+        {' · '}relative positions, not price axes · dotted ring: whale prints or liquidations over{' '}
+        {formatCompact(WHALE_FLOOR)} in 15m
         {link === undefined ? ' · link this panel to send clicks to other panels' : ''}
       </p>
     </div>
