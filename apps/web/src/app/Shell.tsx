@@ -1,3 +1,5 @@
+import type { LayoutSlot } from '../store/layout';
+import { useNarrow } from './useNarrow';
 import { Tour } from './Tour';
 import { useEffect, useState } from 'react';
 import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
@@ -47,6 +49,9 @@ export function Shell() {
   }, []);
   const view = usePrefs((state) => state.view);
   const mode = usePrefs((state) => state.mode);
+  // E5: Simple on a phone is one full-width group of tabs; Pro keeps its wide, swipeable desk.
+  const narrow = useNarrow();
+  const slot: LayoutSlot = mode === 'pro' ? 'pro' : narrow ? 'phone' : 'simple';
   // The Rundown always shows now; Rewind belongs to the cockpit.
   useEffect(() => {
     if (view === 'rundown') setCursor(null);
@@ -90,7 +95,8 @@ export function Shell() {
         <ViewSwitch />
         {view === 'cockpit' && <WorkspaceMenu />}
         <div className="shell-tools">
-          {view === 'cockpit' && <RewindScrubber />}
+          {/* On a phone in Simple, Rewind gives its row back to the panels. */}
+          {view === 'cockpit' && slot !== 'phone' && <RewindScrubber />}
           <ConnectionStatus />
           <Clock />
           <ModeSwitch />
@@ -149,7 +155,7 @@ export function Shell() {
             </svg>
           </button>
         </div>
-        {view === 'cockpit' && (
+        {view === 'cockpit' && slot !== 'phone' && (
           <p className="shell-scroll-hint">Swipe across panels · all panels remain available</p>
         )}
       </header>
@@ -162,8 +168,9 @@ export function Shell() {
           aria-label="Market panels"
           tabIndex={0}
           className="shell-dock weather-glow min-h-0 min-w-0 p-2"
+          data-slot={slot}
         >
-          <DockArea key={mode} mode={mode} />
+          <DockArea key={slot} slot={slot} />
         </main>
       )}
       <footer aria-label="Ticker rail" className="shell-rail">

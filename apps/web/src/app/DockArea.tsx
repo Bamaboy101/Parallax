@@ -5,11 +5,10 @@ import {
   type DockviewTheme,
 } from 'dockview-react';
 import { useEffect, useRef, useState } from 'react';
-import { useLayoutStore } from '../store/layout';
-import type { Mode } from '../store/prefs';
-import { SIMPLE_WORKSPACE } from '../workspaces';
+import { savedDock, useLayoutStore, type LayoutSlot } from '../store/layout';
+import { DEFAULT_WORKSPACE, SIMPLE_WORKSPACE } from '../workspaces';
 import { setDockApi } from './dockApi';
-import { restoreLayout } from './dockLayout';
+import { restoreLayout, setTabbedPresets } from './dockLayout';
 import { useLinkFollower } from './links';
 import { PanelBadges } from './PanelBadges';
 import { DOCK_COMPONENTS } from './widgets';
@@ -26,10 +25,11 @@ const cockpitTheme: DockviewTheme = {
 };
 
 /**
- * The dock. Each mode (E2) has its own layout: Simple starts from the `simple` preset, Pro from
- * Mission Control. The shell remounts it when the mode changes.
+ * The dock. Each layout slot has its own saved layout: Pro starts from Mission Control, Simple
+ * (E2) from the `simple` preset, and Simple on a phone (E5) from the same preset laid out as tabs
+ * in one full-width group. The shell remounts it when the slot changes.
  */
-export function DockArea({ mode }: { mode: Mode }) {
+export function DockArea({ slot }: { slot: LayoutSlot }) {
   const [api, setApi] = useState<DockviewApi | null>(null);
   /** F9: the browser refused to open a window for a panel. */
   const [popoutBlocked, setPopoutBlocked] = useState(false);
@@ -45,9 +45,12 @@ export function DockArea({ mode }: { mode: Mode }) {
   );
 
   const onReady = (event: DockviewReadyEvent) => {
-    const { dock, simpleDock } = useLayoutStore.getState();
-    if (mode === 'simple') restoreLayout(event.api, simpleDock, SIMPLE_WORKSPACE);
-    else restoreLayout(event.api, dock);
+    setTabbedPresets(slot === 'phone');
+    restoreLayout(
+      event.api,
+      savedDock(useLayoutStore.getState(), slot),
+      slot === 'pro' ? DEFAULT_WORKSPACE : SIMPLE_WORKSPACE,
+    );
     setDockApi(event.api);
     setApi(event.api);
     // A share link replaces the restored layout once it has been decoded.
@@ -62,7 +65,7 @@ export function DockArea({ mode }: { mode: Mode }) {
     const flush = () => {
       window.clearTimeout(timer);
       timer = undefined;
-      saveDock(api.toJSON(), mode);
+      saveDock(api.toJSON(), slot);
     };
     const subscription = api.onDidLayoutChange(() => {
       window.clearTimeout(timer);
@@ -74,7 +77,7 @@ export function DockArea({ mode }: { mode: Mode }) {
       window.removeEventListener('pagehide', flush);
       if (timer !== undefined) flush();
     };
-  }, [api, mode]);
+  }, [api, slot]);
 
   useEffect(() => {
     if (!api) return;

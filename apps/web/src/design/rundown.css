@@ -453,16 +453,6 @@
 }
 
 @media (max-width: 760px) {
-  .shell-brand {
-    grid-column: 1;
-  }
-
-  .shell-topbar > .view-switch {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: center;
-  }
-
   .view-switch button {
     min-height: 34px;
   }

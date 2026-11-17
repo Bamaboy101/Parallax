@@ -3,17 +3,39 @@ import { DEFAULT_WORKSPACE, WORKSPACES, type Workspace } from '../workspaces';
 import { popoutsAsFloating } from './popout';
 import { panelTitle, widgetMeta } from './widgets';
 
-/** Lay out a preset workspace on an empty dock. Panels for unknown widgets are skipped. */
-export function buildWorkspace(api: DockviewApi, workspace: Workspace): void {
+/** E5: on a phone, Simple lays presets out as tabs in one full-width group. Set by DockArea. */
+let tabbed = false;
+export function setTabbedPresets(value: boolean): void {
+  tabbed = value;
+}
+
+/**
+ * Lay out a preset workspace on an empty dock. Panels for unknown widgets are skipped. With
+ * `tabs`, every panel joins the first one's group as a tab (the first stays in front).
+ */
+export function buildWorkspace(api: DockviewApi, workspace: Workspace, tabs = false): void {
+  let first: string | undefined;
   for (const panel of workspace.panels) {
     const meta = widgetMeta(panel.component);
     if (!meta) continue;
-    const reference = panel.position && api.getPanel(panel.position.referencePanel);
-    api.addPanel({
+    const base = {
       id: panel.id,
       component: panel.component,
       title: panelTitle(meta, panel.params),
       params: { ...meta.defaultParams, ...panel.params },
+    };
+    if (tabs) {
+      api.addPanel(
+        first === undefined
+          ? base
+          : { ...base, position: { referencePanel: first, direction: 'within' }, inactive: true },
+      );
+      first ??= panel.id;
+      continue;
+    }
+    const reference = panel.position && api.getPanel(panel.position.referencePanel);
+    api.addPanel({
+      ...base,
       ...(reference && panel.position
         ? { position: { referencePanel: reference.id, direction: panel.position.direction } }
         : {}),
@@ -30,7 +52,7 @@ export const LAYOUT_PRESETS: Readonly<Record<string, (api: DockviewApi) => void>
     WORKSPACES.map((workspace) => [
       workspace.id,
       (api: DockviewApi) => {
-        buildWorkspace(api, workspace);
+        buildWorkspace(api, workspace, tabbed);
       },
     ]),
   );

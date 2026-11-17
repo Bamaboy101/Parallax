@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import { DockviewReact, type DockviewApi, type SerializedDockview } from 'dockview-react';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_WORKSPACE, WORKSPACES } from '../workspaces';
-import { applyPreset, restoreLayout } from './dockLayout';
+import { applyPreset, restoreLayout, setTabbedPresets } from './dockLayout';
 import { DOCK_COMPONENTS } from './widgets';
 
 const stub = Object.fromEntries(Object.keys(DOCK_COMPONENTS).map((id) => [id, () => null]));
@@ -104,5 +104,21 @@ describe('workspace presets', () => {
     expect(api.getPanel('chart')?.title).toBe('Chart · EUR/USD');
     expect(api.getPanel('news')?.title).toBe('News · Fed');
     expect(api.getPanel('macro')?.title).toBe('Macro');
+  });
+
+  it('lays a preset out as tabs in one group on a phone, the first panel in front', () => {
+    const api = mountDock();
+    setTabbedPresets(true);
+    try {
+      applyPreset(api, 'simple');
+    } finally {
+      setTabbedPresets(false);
+    }
+    const simple = WORKSPACES.find((workspace) => workspace.id === 'simple');
+    expect(api.groups).toHaveLength(1);
+    expect(api.groups[0]?.panels.map((panel) => panel.id)).toEqual(
+      simple?.panels.map((panel) => panel.id),
+    );
+    expect(api.activePanel?.id).toBe(simple?.panels[0]?.id);
   });
 });
