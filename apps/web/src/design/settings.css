@@ -179,3 +179,23 @@
 .settings-toggle input {
   accent-color: var(--live);
 }
+
+/* F12: volume and the three test buttons, on one wrapping row. */
+.settings-sound {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.settings-sound input[type='range'] {
+  width: 140px;
+  accent-color: var(--live);
+}
+
+.settings-sound .chart-interval {
+  border-color: var(--line);
+}

@@ -10,6 +10,7 @@ import { LearnLayer } from './LearnLayer';
 import { LearnSwitch } from './LearnSwitch';
 import { RewindScrubber } from './RewindScrubber';
 import { useAlertEngine } from '../store/alerts/store';
+import { useSoundLayer } from './sound';
 import { useMarketWeather } from './weather';
 import { widgetMeta } from './widgets';
 import { WorkspaceMenu } from './WorkspaceMenu';
@@ -24,6 +25,8 @@ export function Shell() {
   useMarketWeather();
   // F7: alerts run whatever panels are open.
   useAlertEngine();
+  // F12: cues for fired alerts and a lost network, when sound is switched on.
+  useSoundLayer();
   // Panels ask for Settings (e.g. "Open Settings" on a no-key notice) through a window event.
   useEffect(() => {
     window.addEventListener(OPEN_SETTINGS_EVENT, openSettings);

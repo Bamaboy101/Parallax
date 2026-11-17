@@ -165,6 +165,8 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - The command bar's microphone (F6) is a neutral outlined circle; while listening it turns mint
   (interface state) and the line under the query says "Listening on this device" or "…through
   the browser's speech service" with what has been heard. No pulse or animation.
+- Sound (F12) follows the motion rules' spirit: off by default, every cue under half a second, no
+  sound for ordinary price changes, and bursts collapse into one cue.
 - The liquidity heatmap (F2) shades resting order-book size behind the candles in `--text`, up
   to 55% opacity on a logarithmic scale, so it reads as neutral depth in both themes, never as a
   price direction. It updates once a second and never animates.

@@ -1,10 +1,11 @@
 import { useId, useState } from 'react';
+import { playCue, unlockSound } from '../../app/sound';
+import { recognitionClass } from '../../command/speech';
 import '../../design/settings.css';
 import type { SourceStatus, VerifyOutcome } from '../../feeds/protocol';
 import { verifyKey } from '../../store/feedClient';
 import { useSourceStatus } from '../../store/hooks';
 import { useKeyVault } from '../../store/keys';
-import { recognitionClass } from '../../command/speech';
 import { usePrefs, type Density, type Palette } from '../../store/prefs';
 import { KEY_PROVIDERS, type KeyProvider } from './meta';
 
@@ -210,7 +211,65 @@ const VOICE = [
   ['online', 'Also the browser’s online speech service'],
 ] as const;
 
-/** Key vault with a per-provider key test and signup links, plus display and voice preferences. */
+const SOUND = [
+  ['off', 'Off'],
+  ['on', 'On'],
+] as const;
+
+/** The sound layer (F12): off by default; on, three short cues and a volume. */
+function SoundSettings() {
+  const { sound, soundVolume, setSound, setSoundVolume } = usePrefs();
+  const volumeId = useId();
+  return (
+    <>
+      <h2 className="settings-heading">Sound</h2>
+      <p className="settings-note">
+        Short tones for an alert that fires, a whale print on an open tape, and the network going
+        away. Prices never make a sound by themselves.
+      </p>
+      <Choice
+        legend="Sound cues"
+        value={sound ? 'on' : 'off'}
+        options={SOUND}
+        onChange={(value) => {
+          // The switch is a click, so the browser lets audio start from here on.
+          if (value === 'on') unlockSound();
+          setSound(value === 'on');
+        }}
+      />
+      {sound && (
+        <div className="settings-sound">
+          <label htmlFor={volumeId}>Volume</label>
+          <input
+            id={volumeId}
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={soundVolume}
+            onChange={(event) => {
+              setSoundVolume(Number(event.target.value));
+            }}
+          />
+          {(['alert', 'whale', 'offline'] as const).map((cue) => (
+            <button
+              key={cue}
+              type="button"
+              className="chart-interval"
+              onClick={() => {
+                playCue(cue);
+              }}
+            >
+              Play {cue}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Key vault with a per-provider key test and signup links, plus display, voice and sound. */
 export default function Settings() {
   const { palette, density, voiceOnline, setPalette, setDensity, setVoiceOnline } = usePrefs();
   const voice = recognitionClass() !== undefined;
@@ -249,6 +308,7 @@ export default function Settings() {
       ) : (
         <p className="settings-note">This browser has no speech recognition, so voice is off.</p>
       )}
+      <SoundSettings />
     </div>
   );
 }
