@@ -194,6 +194,19 @@ Prices and Order Books, Get prices history) and tested from a browser on our ori
 - Recorded 17 Nov 2026: `store/predictions/fixtures/gamma-events.json`, 28 real events trimmed to
   the fields M1 reads.
 
+## Waiting for written permission
+
+Four providers' terms bar a public app like this one from showing their data, or attach
+obligations the project has not taken on. Each stays out until its permission arrives; nothing
+else depends on them.
+
+| Provider                  | Would unlock                                                              | Blocking terms                                             | Contact                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Kalshi                    | Kalshi odds beside Polymarket's in Event odds (M1)                        | Developer Agreement v1.1 §3, Data Terms of Use             | Kalshi support messenger at help.kalshi.com (logged in; no data-licensing address is published) |
+| DefiLlama                 | DeFi totals and stablecoin supply across all chains in On-chain (M5)      | Terms of Use §7, §8.4, §8.7, §14                           | support@defillama.com (the address on defillama.com/terms)                                      |
+| GeckoTerminal (CoinGecko) | Trending DEX pools with price, liquidity, volume and change: M6           | CoinGecko API Terms (5 Sept 2025) §4.3, §7.1, §11.3, §12.5 | support.coingecko.com/hc/en-us/requests/new (the API Terms' channel for queries)                |
+| DEX Screener              | Pair lookups for M6, and trending pairs if it ever offers an organic list | API Terms & Conditions (18 Aug 2023) §1, §2                | DEX Screener, Inc., 113 SE 1st Ave #640, Miami, FL 33131 (the only contact its API terms give)  |
+
 ## Kalshi: not used (pending written permission)
 
 Checked 17 Nov 2026. Kalshi's public REST market data needs no key, but its Developer Agreement
@@ -202,6 +215,31 @@ and its Data Terms of Use bar publicly displaying or distributing Kalshi data an
 tools. Its WebSocket requires an API key even for public channels, its REST answers can lag by
 several seconds, and it answers 403 to requests from our origin. It stays out until Kalshi gives
 written permission.
+
+## M6 DEX pairs: GeckoTerminal and DEX Screener not used (pending written permission)
+
+Checked 17 Nov 2026 against each provider's own terms; both APIs are keyless and answer
+`Access-Control-Allow-Origin: *` from our origin, so the block is legal, not technical. M6 is
+skipped until one of them agrees in writing (decided 18 Nov).
+
+- **GeckoTerminal** (`api.geckoterminal.com/api/v2/networks/trending_pools`) is the only free
+  source of an organic trending list (ranked by engagement, activity and pool safety, not paid
+  placement). Its keyless API is governed by the CoinGecko API Terms (5 Sept 2025), which require
+  "Powered by CoinGecko" shown prominently (§4.3) and, for any product offered to others, "a binding
+  user agreement and privacy policy" that names the API as CoinGecko's property, disclaims all its
+  liability and makes the app responsible for data warnings (§7.1). The developer must also
+  indemnify CoinGecko against claims from the app's users (§12.5) and give up any claim against it
+  (§11.3). Open Terminal has no user agreement, and the project owner chose not to take on the
+  indemnity. Written permission, or an agreement that drops §7.1 and §12.5 for a free open-source
+  viewer, would unlock it. Its keyless rate limit is about 5 to 10 calls a minute per IP.
+- **DEX Screener** (`api.dexscreener.com`) has no organic trending endpoint: its "boosts" and
+  "token profiles" are paid promotions, and "trending metas" are categories ranked by a method it
+  does not document. Its API Terms forbid "making the API Services, or any portion thereof,
+  available for third parties" (§2), which reads on a public app showing the data, and any product
+  whose "primary purpose is to compete directly with DEX Screener" (§1). No attribution is required,
+  and its pair lookups allow 300 requests a minute. Written confirmation that displaying pair data
+  in a free viewer is not "making the API Services available for third parties" would unlock pair
+  lookups.
 
 ## Taiwan Stock Exchange open data: TAIEX (`store/taiex.ts`)
 
