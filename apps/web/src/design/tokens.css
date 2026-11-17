@@ -15,8 +15,8 @@
   --up: #39b54a;
   --down: #ff6464;
   --warn: #f4bb4f;
-  /* Simulated money: achromatic, never a feed warning or link-group colour. */
-  --paper: #b8b8b8;
+  /* Simulated money (paper trading): ice blue, never a feed warning, price or link colour. */
+  --paper: #a6d6ee;
   /* V3 proposal: orchid heat, independent of price direction and stale-data amber. */
   --weather-warm: #b79ced;
   --glass-surface: color-mix(in srgb, var(--panel) 88%, transparent);
@@ -59,7 +59,7 @@
   --up: #237a12;
   --down: #b42332;
   --warn: #8a5a00;
-  --paper: #464646;
+  --paper: #1e3946;
   --weather-warm: #705294;
   --glass-surface: color-mix(in srgb, var(--panel) 90%, transparent);
   --link-1: #791a9a;
