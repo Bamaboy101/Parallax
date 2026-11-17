@@ -17,12 +17,13 @@ import {
 import { askCopilot } from './store';
 
 describe('buildContext', () => {
-  it('gives Macro and Calendar the figures their panels show, and skips panels without any', () => {
+  it('gives Macro, Calendar and Options the figures their panels show, and skips panels without any', () => {
     const items = buildContext({
       panels: [
         { component: 'macro', title: 'Macro', params: {} },
         { component: 'calendar', title: 'Calendar', params: {} },
         { component: 'session-ring', title: 'Sessions', params: {} },
+        { component: 'options', title: 'Options · SPY', params: { symbol: 'SPY' } },
       ],
       ticks: useTickStore.getState(),
       barsOf: () => undefined,
@@ -39,12 +40,29 @@ describe('buildContext', () => {
         ],
       },
       releases: [{ date: '2026-11-20', id: 50, name: 'Employment Situation' }],
+      options: {
+        SPY: {
+          expiry: '2026-11-18',
+          spot: 730.76,
+          atmIv: 0.359,
+          putCall: { callVolume: 100, putVolume: 150, ratio: 1.5, day: '2026-11-17' },
+          at: now,
+        },
+      },
       now,
     });
-    expect(items.map((item) => `${item.id}:${item.label}`)).toEqual(['P1:Macro', 'P2:Calendar']);
+    expect(items.map((item) => `${item.id}:${item.label}`)).toEqual([
+      'P1:Macro',
+      'P2:Calendar',
+      'P3:Options · SPY',
+    ]);
     expect(items[0]?.detail).toContain('10Y − 2Y spread +0.50 pp');
     expect(items[0]?.detail).toContain('Payrolls, monthly change +120k jobs (as of 2026-10-01)');
     expect(items[1]?.detail).toContain('2026-11-20 Employment Situation');
+    expect(items[2]?.detail).toContain('indicative feed');
+    expect(items[2]?.detail).toContain(
+      'at-the-money implied volatility 35.9%, put/call ratio 1.50',
+    );
   });
 });
 

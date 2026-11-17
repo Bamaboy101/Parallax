@@ -16,6 +16,7 @@ import {
 } from '../macro';
 import { newsTarget } from '../news';
 import { usePaperStore } from '../paper/store';
+import { useOptionsSummaries } from '../options/store';
 import { usePredictionStore } from '../predictions/store';
 import { INSTRUMENTS } from '../symbols';
 import { useTickStore } from '../ticks';
@@ -160,6 +161,7 @@ export async function askCopilot(
     headlines,
     fred,
     releases,
+    options: useOptionsSummaries.getState(),
     now,
   });
   try {

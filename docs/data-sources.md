@@ -114,6 +114,28 @@ Checked 17 Nov 2026 against Alpaca's docs (Paper Trading; Create an Order) and i
   cancelled at once; nothing filled) and a refused order, ids and account number replaced
   (`store/paper/fixtures/paper-account.json`).
 
+## Alpaca options, indicative feed (`store/options/`)
+
+Checked 17 Nov 2026 against Alpaca's docs (About Market Data API; Historical Option Data; Option
+chain reference) and tested with a paper key from our origin.
+
+- The free **Basic** plan includes options through the **Indicative Pricing Feed** only; the
+  official OPRA feed needs the paid Algo Trader Plus plan. Alpaca: "Indicative Pricing Feed is a
+  free derivative of the original OPRA feed: the quotes are not actual OPRA quotes, they're just
+  indicative derivatives. The trades are also derivatives and they're delayed by 15 minutes."
+  The panel says so in its caption and footnote, and every request asks for `feed=indicative`.
+- `GET https://data.alpaca.markets/v1beta1/options/snapshots/{underlying}` returns, per OCC
+  contract, the latest quote and trade, daily bar, `impliedVolatility` and `greeks`
+  (Black-Scholes), filtered by `type`, `strike_price_gte/lte` and `expiration_date(_gte/_lte)`, up
+  to 1000 per page with `next_page_token`. Same-day contracts come without IV or Greeks, so a
+  panel opens on the first expiry after today. Paper keys work; the spot comes from
+  `GET /v2/stocks/{symbol}/snapshot?feed=iex`.
+- Browser calls are allowed (`Access-Control-Allow-Origin: *`, key headers allowed); the rate
+  limit is 200 requests a minute. A panel reads the expiries every 30 minutes and its chain every
+  30 s.
+- Recorded 17 Nov 2026: 16 SPY contracts expiring 20 Nov, strikes 716–744
+  (`store/options/fixtures/spy-chain.json`; market data only).
+
 ## Polymarket, public market data (`store/predictions/`)
 
 Confirmed against Polymarket's docs on 17 Nov 2026 (docs.polymarket.com: API, Rate Limits,

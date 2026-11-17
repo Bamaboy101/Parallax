@@ -59,6 +59,13 @@
       "inactive": true
     },
     {
+      "id": "options",
+      "component": "options",
+      "params": { "symbol": "SPY", "link": 1 },
+      "position": { "referencePanel": "tape", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "sessions",
       "component": "session-ring",
       "params": {},

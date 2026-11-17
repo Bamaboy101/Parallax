@@ -437,6 +437,20 @@ once the panel is ready) answers plain-word questions from what is on screen:
   two checks in code back it: `asksForAdvice` answers such questions locally without calling the
   AI, and `givesAdvice` withholds an answer that recommends a trade anyway.
 
+## Options (M2)
+
+`store/options/client.ts` builds every request on Alpaca's market data host and refuses any other
+(`dataUrl`), with the user's Alpaca key from the vault. `store/options/store.ts` (`useOptions`)
+reads the spot (IEX last trade) and the expiries of the next three months from calls within 2%
+of the spot, then polls the chosen expiry's chain within 20% of the spot every 30 s, reporting
+`alpaca-options` freshness (`POLLED 30s`, `NO KEY`, `KEY REJECTED`). `parse.ts` holds the pure
+parts: OCC symbols, snapshots, strike rows, the smile (out-of-the-money side only: puts below the
+spot, calls at and above it) and the put/call ratio by contracts traded in the latest session.
+The `options` widget (command `options AAPL`) shows the expiry picker, spot, at-the-money IV,
+put/call ratio and volumes, the smile, and the chain with calls left, puts right, a spot divider
+it opens centred on, and a muted tint on in-the-money halves. Each row is eleven direct cells so
+learn mode explains every number by its column.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to
