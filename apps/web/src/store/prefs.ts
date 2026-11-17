@@ -1,11 +1,26 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { LAYOUT_STORAGE_KEY } from './layout';
 
 export const PREFS_STORAGE_KEY = 'parallax:prefs';
 
 /** Green up / red down, or blue up / orange down for colour-blind users and red-means-up markets. */
 export type Palette = 'green-red' | 'blue-orange';
 export type Density = 'comfortable' | 'dense';
+/** E1: the Rundown home page, or the dock of panels (the cockpit). */
+export type View = 'rundown' | 'cockpit';
+
+/**
+ * First visit opens the Rundown; anyone with a saved dock layout (they have used the cockpit)
+ * keeps landing in it.
+ */
+function firstView(): View {
+  try {
+    return localStorage.getItem(LAYOUT_STORAGE_KEY) === null ? 'rundown' : 'cockpit';
+  } catch {
+    return 'rundown';
+  }
+}
 
 interface Prefs {
   palette: Palette;
@@ -21,12 +36,14 @@ interface Prefs {
   sound: boolean;
   /** Cue volume, 0..1. */
   soundVolume: number;
+  view: View;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
   setLearn: (learn: boolean) => void;
   setVoiceOnline: (voiceOnline: boolean) => void;
   setSound: (sound: boolean) => void;
   setSoundVolume: (soundVolume: number) => void;
+  setView: (view: View) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -38,6 +55,7 @@ export const usePrefs = create<Prefs>()(
       voiceOnline: false,
       sound: false,
       soundVolume: 0.5,
+      view: firstView(),
       setPalette: (palette) => {
         set({ palette });
       },
@@ -56,6 +74,9 @@ export const usePrefs = create<Prefs>()(
       setSoundVolume: (soundVolume) => {
         set({ soundVolume: Math.min(1, Math.max(0, soundVolume)) });
       },
+      setView: (view) => {
+        set({ view });
+      },
     }),
     {
       name: PREFS_STORAGE_KEY,
@@ -68,6 +89,7 @@ export const usePrefs = create<Prefs>()(
         voiceOnline: state.voiceOnline,
         sound: state.sound,
         soundVolume: state.soundVolume,
+        view: state.view,
       }),
     },
   ),

@@ -720,6 +720,19 @@ and `offline` (440 then 330 Hz) when the browser loses the network. Each note is
 1.5 s is dropped, and a whale print seen by two tapes sounds once. Prices never make a sound by
 themselves, and Rewind is silent.
 
+**Rundown (E1).** `app/Rundown.tsx` is the home page, chosen by the `view` preference
+(`rundown` or `cockpit`, switched in the top bar and remembered). A first visit opens it; anyone
+with a saved dock layout keeps landing in the cockpit, and a share link always opens the
+cockpit. The dock is unmounted while the Rundown shows, so `runCommand` from the command bar
+switches to the cockpit and runs the command once `DockArea` has mounted (`whenDockReady`).
+`store/rundown.ts` decides what the page shows (regions with their exchanges, currencies and
+funds, the five biggest moves by size, the three events with the most volume today and their
+leading open outcome, today's US releases or the next day's) so the written brief reads the same
+figures. Prices come from the tick store (`useMovers` for the moves, `usePriceLine` for the big
+figures), the dollar index and oil from FRED through the edge, odds from the shared Polymarket
+store, the calendar and headlines from the edge. Every section carries a truth badge: the worst
+of its feeds, as a panel header does. Rewind returns to live on the Rundown.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,

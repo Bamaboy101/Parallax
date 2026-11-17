@@ -6,10 +6,15 @@ import '@fontsource-variable/jetbrains-mono';
 import { App } from './app/App';
 import { receiveHandoff, withoutHandoff } from './app/rename';
 import './index.css';
-import { applyPrefs } from './store/prefs';
+import { applyPrefs, usePrefs } from './store/prefs';
+import { SHARE_KEY } from './app/workspace';
 
 function render(): void {
   applyPrefs();
+  // A shared workspace link opens in the cockpit, where the dock can load it.
+  if (new URLSearchParams(window.location.hash.slice(1)).has(SHARE_KEY)) {
+    usePrefs.getState().setView('cockpit');
+  }
   const root = document.getElementById('root');
   if (!root) throw new Error('Missing #root element');
   createRoot(root).render(

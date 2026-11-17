@@ -1,0 +1,410 @@
+/* E1 Rundown: one calm page. Tokens only; no shadows; nothing animates. Up/down only on changes;
+   mint only for interface state (open exchanges, the cockpit button, the view switch). */
+
+.shell-rundown {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.rundown {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: 16px var(--pad) 24px;
+}
+
+.rundown-intro {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rundown-intro h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.rundown-date {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--size-ui);
+}
+
+.rundown-cockpit {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--live);
+  border-radius: var(--panel-radius);
+  background: color-mix(in srgb, var(--live) 8%, var(--panel));
+  color: var(--live);
+  font: inherit;
+  font-size: var(--size-ui);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rundown-cockpit:focus-visible,
+.rundown-link:focus-visible,
+.view-switch button:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+.rundown-section {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+}
+
+.rundown-world {
+  grid-column: 1 / -1;
+}
+
+.rundown-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.rundown-section-head h2,
+.rundown-section-head h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--size-ui);
+  font-weight: 600;
+}
+
+.rundown-section-head h2 {
+  color: var(--muted);
+  font-size: var(--size-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rundown-section-hint,
+.rundown-footnote,
+.rundown-row-note,
+.rundown-figure-note,
+.rundown-key-note,
+.rundown-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.rundown-footnote {
+  margin-top: auto;
+}
+
+.rundown-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.rundown-regions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rundown-region {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.rundown-sessions,
+.rundown-rows,
+.rundown-moves,
+.rundown-events,
+.rundown-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rundown-sessions li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.rundown-session-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+
+/* Open is interface state, not a price: mint, as on the Session ring and the globe. */
+.rundown-sessions li[data-open] .rundown-session-dot {
+  border-color: var(--live);
+  background: var(--live);
+}
+
+.rundown-session-state {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.rundown-rows li,
+.rundown-moves li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.rundown-rows li > span:first-child,
+.rundown-event-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rundown-row-value {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rundown-change {
+  min-width: 64px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rundown-change[data-tone='up'] {
+  color: var(--up);
+}
+
+.rundown-change[data-tone='down'] {
+  color: var(--down);
+}
+
+.rundown-change[data-tone='neutral'] {
+  color: var(--text);
+}
+
+.rundown-moves {
+  counter-reset: move;
+}
+
+.rundown-moves li {
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  counter-increment: move;
+}
+
+.rundown-moves li::before {
+  content: counter(move);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+}
+
+.rundown-moves .rundown-change {
+  font-size: 18px;
+}
+
+.rundown-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.rundown-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rundown-figure-name {
+  color: var(--muted);
+  font-size: var(--size-ui);
+}
+
+.rundown-figure-value {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.rundown-figure .rundown-change {
+  min-width: 0;
+  text-align: left;
+  font-size: var(--size-ui);
+}
+
+/* A price from history rather than a live tick: 60% opacity, as everywhere else. */
+.rundown-figure[data-history] .rundown-figure-value {
+  opacity: 0.6;
+}
+
+.rundown-events li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+/* Odds are neither a price move nor interface state: plain text, large. */
+.rundown-event-odds {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.rundown-list li {
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.rundown-headlines a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rundown-headlines a:hover,
+.rundown-headlines a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rundown-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--live);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.rundown-credits {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.rundown-credits p {
+  margin: 0 0 4px;
+}
+
+.rundown-credits a {
+  color: inherit;
+}
+
+@media (max-width: 1100px) {
+  .rundown-section {
+    grid-column: span 6;
+  }
+
+  .rundown-world {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .rundown {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 12px;
+  }
+
+  .rundown-section,
+  .rundown-world {
+    grid-column: 1;
+  }
+
+  .rundown-regions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rundown-cockpit {
+    width: 100%;
+  }
+}
+
+/* The view switch in the top bar: Rundown or Cockpit. The chosen one is interface state. */
+.view-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+}
+
+.view-switch button {
+  min-height: 24px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: calc(var(--panel-radius) - 2px);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--size-label);
+  cursor: pointer;
+}
+
+.view-switch button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--live) 12%, transparent);
+  color: var(--live);
+}
+
+@media (max-width: 760px) {
+  .shell-brand {
+    grid-column: 1;
+  }
+
+  .shell-topbar > .view-switch {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .view-switch button {
+    min-height: 34px;
+  }
+}

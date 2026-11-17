@@ -2,7 +2,8 @@ import type { DockviewApi, IDockviewPanel } from 'dockview-react';
 import type { Command } from '../command/parser';
 import type { Instrument } from '../store/symbols';
 import type { WidgetMeta } from '../widgets/types';
-import { dockApi } from './dockApi';
+import { usePrefs } from '../store/prefs';
+import { dockApi, whenDockReady } from './dockApi';
 import { applyPreset } from './dockLayout';
 import { panelTitle, widgetMeta } from './widgets';
 
@@ -35,10 +36,19 @@ function openWidget(api: DockviewApi, widget: WidgetMeta, params: Params): void 
   });
 }
 
-/** Carry out a command-bar command against the dock. Returns false when it could not run. */
+/**
+ * Carry out a command-bar command against the dock. Returns false when it could not run. From
+ * the Rundown (where the dock is not mounted) it opens the cockpit and runs there.
+ */
 export function runCommand(command: Command): boolean {
   const api = dockApi();
-  if (!api) return false;
+  if (!api) {
+    const prefs = usePrefs.getState();
+    if (prefs.view !== 'rundown') return false;
+    whenDockReady(() => runCommand(command));
+    prefs.setView('cockpit');
+    return true;
+  }
 
   switch (command.kind) {
     case 'layout':

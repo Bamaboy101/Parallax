@@ -117,7 +117,7 @@ export function filterNews(body: NewsBody, query: string): NewsBody {
   };
 }
 
-/** The series the Macro board uses. The key is never spent on anything else. */
+/** The series the Macro board and the Rundown use. The key is never spent on anything else. */
 export const FRED_SERIES = new Set([
   'DGS1MO',
   'DGS3MO',
@@ -135,6 +135,10 @@ export const FRED_SERIES = new Set([
   'UNRATE',
   'FEDFUNDS',
   'DFF',
+  // Rundown (E1): the Fed's broad dollar index (H.10) and WTI crude (EIA), both daily and both
+  // "Public Domain: Citation Requested" on FRED (checked 18 Nov 2026).
+  'DTWEXBGS',
+  'DCOILWTICO',
 ]);
 const MAX_SERIES = 10;
 
