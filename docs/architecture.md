@@ -743,6 +743,13 @@ rearranges the Pro desk. In Simple, `SymbolLabel` and `panelTitle` show plain na
 tooltip; choosing Simple switches Learn hints on (they can be switched off). A first visit starts
 in Simple; a browser with a saved layout keeps Pro.
 
+**Guided first visit (E3).** `app/Tour.tsx` shows four stops (`app/tourSteps.ts`: the Rundown,
+the command bar, the cockpit button, the Settings key) to a first visit on the Rundown, then sets
+the `toured` preference so it never shows again. Each stop rings the element marked
+`data-tour="<stop>"`, with the card beside it on wide screens and docked at the bottom on narrow
+ones. Skip or Escape ends it; leaving the Rundown after seeing it counts as done. It does not
+trap focus or dim the page.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,
@@ -770,12 +777,12 @@ deployed by `deploy.yml` after CI).
 Every route is a cached GET; a request needs an `Origin` on `ALLOWED_ORIGINS` (wrangler.toml
 `[vars]`; `https://*.host` entries match subdomains, for Pages previews) or it gets 403.
 
-| Route                     | Upstream                             | Edge cache | Notes                                        |
-| ------------------------- | ------------------------------------ | ---------- | -------------------------------------------- |
-| `/news?q=`                | 8 publisher RSS feeds (`NEWS_FEEDS`) | 2 min      | Fetched once per window, filtered per query  |
-| `/fred?series=A,B&start=` | FRED `series/observations`           | 1 h        | Only the Macro board's series; ≤ 10 per call |
-| `/sec?cik=`               | SEC `data.sec.gov/submissions`       | 10 min     | Latest 20 filings with document links        |
-| `/calendar`               | FRED `releases/dates`                | 6 h        | Next 30 days, 11 major releases (T13e)       |
+| Route                     | Upstream                             | Edge cache | Notes                                         |
+| ------------------------- | ------------------------------------ | ---------- | --------------------------------------------- |
+| `/news?q=`                | 8 publisher RSS feeds (`NEWS_FEEDS`) | 2 min      | Fetched once per window, filtered per query   |
+| `/fred?series=A,B&start=` | FRED `series/observations`           | 1 h        | Macro board and Rundown series; ≤ 10 per call |
+| `/sec?cik=`               | SEC `data.sec.gov/submissions`       | 10 min     | Latest 20 filings with document links         |
+| `/calendar`               | FRED `releases/dates`                | 6 h        | Next 30 days, 11 major releases (T13e)        |
 
 The calendar asks FRED with `include_release_dates_with_no_data=true` and a future
 `realtime_end` (without them FRED lists only past dates), then keeps an allow-list of major

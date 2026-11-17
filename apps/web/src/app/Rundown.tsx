@@ -289,9 +289,9 @@ export function Rundown() {
   const setView = usePrefs((state) => state.setView);
 
   return (
-    <div className="rundown" id="rundown" data-tour="rundown">
+    <div className="rundown" id="rundown">
       <div className="rundown-intro">
-        <div>
+        <div data-tour="rundown">
           <h1 id="rundown-title">What&apos;s happening in markets right now</h1>
           <p className="rundown-date">
             {dayFormat.format(now)} · {timeFormat.format(now)}

@@ -141,6 +141,8 @@ experts lose nothing. Built before Batch D.
   start in Simple; existing desks stay in Pro.
 - **E3 Guided first visit:** a 4-step tour (Rundown, search, cockpit, keys), skippable, shown
   once.
+  Built 18 Nov: Rundown, search, cockpit and keys, each ringed in mint with a short card; Skip,
+  Back, Next, Done and Escape; remembered once seen.
 - **E4 Daily brief without a key:** a rule-based written summary of the Rundown, generated from
   the store with no AI, every sentence traceable to a number on screen.
 - **E5 Phone first:** Rundown and Simple mode work well at 390 px wide.
