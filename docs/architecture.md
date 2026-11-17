@@ -518,6 +518,24 @@ floating groups in the main window (`popoutsAsFloating`), one click from popping
 Learn mode's hover explanations and the command bar's `/` shortcut work in the main window only:
 their listeners are on its document (learn strips do show in popouts).
 
+## World globe (F3)
+
+`widgets/globe/` draws an orthographic globe on one canvas. `model.ts` is pure: the subsolar
+point (the Astronomical Almanac's low-precision solar position, about 0.01°), the exchange cities
+from the session model, the US-listed country ETFs on the region boards with their capitals or
+main exchanges, the three biggest day moves (`biggestMoves`, by size either way) and the view
+(`openingView` faces wherever exchanges are open, else the viewer's side of the world; `dragged`
+turns it). `draw.ts` is imported only when a globe opens, so d3-geo and Natural Earth's 1:110m
+land (public domain, through world-atlas) stay out of the main bundle; d3-geo clips everything to
+the visible hemisphere. Dark mode lifts the day side and light mode darkens the night side, each
+with a half-strength band for civil twilight. Open exchanges are mint dots (interface state);
+closed ones muted rings. Arcs are great circles from New York, where those ETFs trade, to the
+three biggest movers, in up or down. Labels take the first free spot beside their dot or are left
+out (`placeLabel`); the legend under the globe lists every open exchange and move, and the canvas
+carries the same text as its accessible name. Nothing moves on its own: the globe turns only under
+the pointer or the view buttons, and redraws for the sun once a minute. The view is saved in the
+panel's params.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

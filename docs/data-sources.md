@@ -246,6 +246,15 @@ data is premium; personal use), Tiingo and Nasdaq Data Link (internal use), Mass
 coverage), data.go.kr and BoK ECOS for KOSPI (no third parties). When a licence arrives, its index
 gets an official row like TAIEX's (`official` in `widgets/regionBoards.ts`) and keeps its proxy.
 
+## Natural Earth land outlines (`widgets/globe/`)
+
+Checked 17 Nov 2026 against naturalearthdata.com/about/terms-of-use: "All versions of Natural Earth
+raster + vector map data found on this website are in the public domain", "No permission is
+needed", and crediting is optional; the globe uses their suggested short credit, "Made with
+Natural Earth." The 1:110m land layer comes packaged as TopoJSON by world-atlas (ISC), bundled
+with the app, so no request is made for it. The globe's moves are the region boards' ETF proxies
+and carry the same "proxy, US hours only" label.
+
 ## US market hours
 
 Equity feeds turn stale after 30 s without a message, counted only during the regular session
