@@ -5,6 +5,12 @@
   "panels": [
     { "id": "macro", "component": "macro", "params": {} },
     {
+      "id": "rates",
+      "component": "rates",
+      "params": {},
+      "position": { "referencePanel": "macro", "direction": "within" }
+    },
+    {
       "id": "watchlist",
       "component": "watchlist",
       "params": {

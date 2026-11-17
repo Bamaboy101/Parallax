@@ -69,6 +69,18 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   'Put/call':
     'Puts traded for every call. Above 1 means more puts (bets or hedges on a fall) than calls changed hands.',
   Volume: 'Contracts traded in the latest session, calls and puts.',
+  Tenor: 'How long the government borrows for: one month (1M) up to 30 years (30Y).',
+  Yield:
+    'The yearly return a Treasury pays if held to maturity: what the US government pays to borrow.',
+  '1d': 'Change since the previous business day, in basis points (1 bp is 0.01 percentage point).',
+  '1m': 'Change over the last month, in basis points.',
+  '1y': 'Change over the last year, in basis points.',
+  '2s10s':
+    'The 10-year yield minus the 2-year. Below zero (an inverted curve) has often come before recessions.',
+  '3m10y':
+    'The 10-year yield minus the 3-month bill: another common recession signal when negative.',
+  SOFR: 'The Secured Overnight Financing Rate: what it costs to borrow cash overnight against Treasuries.',
+  EFFR: 'The effective federal funds rate: what banks charge each other overnight, kept inside the Fed’s target range.',
 };
 
 /** What a truth badge means, in plain words. */

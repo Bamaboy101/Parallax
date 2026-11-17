@@ -136,6 +136,36 @@ chain reference) and tested with a paper key from our origin.
 - Recorded 17 Nov 2026: 16 SPY contracts expiring 20 Nov, strikes 716–744
   (`store/options/fixtures/spy-chain.json`; market data only).
 
+## US Treasury daily par yield curve (`store/rates/`)
+
+Checked 17 Nov 2026 from the Treasury's interest-rate data pages and a browser call on our
+origin.
+
+- `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/{year}/all?type=daily_treasury_yield_curve&field_tdr_date_value={year}&page&_format=csv`:
+  one row per business day (`MM/DD/YYYY`), columns `1 Mo` to `30 Yr` (plus `1.5 Month`, recent
+  only, not shown); empty cells where a tenor had no reading. No key; `Access-Control-Allow-Origin: *`.
+- A work of the US government, not subject to copyright in the US (17 U.S.C. §105); the
+  Treasury's site policies list no restriction on reuse. The footnote names the source.
+- Recorded 17 Nov 2026: eight days of the 2026 file (`store/rates/fixtures/treasury-2026.csv`).
+
+## New York Fed reference rates: SOFR and EFFR (`store/rates/`)
+
+Checked 17 Nov 2026 against the Markets Data APIs documentation and the New York Fed's Terms of
+Use (last updated 9 Jun 2023), and called from a browser on our origin.
+
+- `GET https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=…&endDate=…`
+  and `…/unsecured/effr/…` return `refRates`: `effectiveDate`, `percentRate`, percentiles,
+  `volumeInBillions`, and for EFFR `targetRateFrom`/`targetRateTo`. No key; the API allows our
+  origin.
+- Terms: a licence "to use, copy, and distribute Content for your personal or business purposes".
+  Reference rates carry a Use Restriction: whoever presents the data "must include the following
+  notice and disclaimer". The desk's footnote shows it: "The SOFR and EFFR are subject to the
+  Terms of Use posted at newyorkfed.org. The New York Fed is not responsible for publication of
+  the SOFR and EFFR by Open Terminal, does not sanction or endorse any particular republication,
+  and has no liability for your use." The New York Fed's name is never used as an endorsement.
+- Recorded 17 Nov 2026: EFFR samples since 27 Aug 2026 (including the 17 Sep target change) and
+  the last three SOFR days (`store/rates/fixtures/`).
+
 ## Polymarket, public market data (`store/predictions/`)
 
 Confirmed against Polymarket's docs on 17 Nov 2026 (docs.polymarket.com: API, Rate Limits,
