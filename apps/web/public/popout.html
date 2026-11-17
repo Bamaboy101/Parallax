@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Terminal</title>
+    <!--
+      F9: the page dockview opens for a panel popped out to another window. The terminal moves
+      the panel in and mirrors theme, density, palette and learn mode onto this <html>; this
+      script only paints the right background before that, as index.html does.
+    -->
+    <script>
+      (() => {
+        let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        try {
+          const saved = localStorage.getItem('open-terminal:theme');
+          if (saved === 'dark' || saved === 'light') theme = saved;
+        } catch {
+          // Storage may be blocked; the system preference still applies.
+        }
+        const root = document.documentElement;
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+        root.style.backgroundColor = theme === 'dark' ? '#0d0d0d' : '#f0f0f0';
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

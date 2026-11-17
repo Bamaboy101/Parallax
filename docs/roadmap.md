@@ -87,6 +87,9 @@ be checked against the provider's own docs before building.
 - **F8 Whale radar:** large trades and liquidations as a quiet signal on the Constellation and
   tape.
 - **F9 Multi-screen:** pop panels out to a second monitor, still linked.
+  Built 17 Nov: a window button on every panel group opens it in its own browser window (drag it
+  to the other screen); it shares the page, so links, prices and theme follow, and it comes back
+  with one click. Hover explanations stay in the main window.
 - **F10 Session recorder:** record, replay, export as a file.
 - **F11 Installable app** with an offline shell.
 - **F12 Sound layer**, off by default.

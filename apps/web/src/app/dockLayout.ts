@@ -1,5 +1,6 @@
 import type { DockviewApi, SerializedDockview } from 'dockview-react';
 import { DEFAULT_WORKSPACE, WORKSPACES, type Workspace } from '../workspaces';
+import { popoutsAsFloating } from './popout';
 import { panelTitle, widgetMeta } from './widgets';
 
 /** Lay out a preset workspace on an empty dock. Panels for unknown widgets are skipped. */
@@ -44,7 +45,8 @@ export function applyPreset(api: DockviewApi, name: string): boolean {
 
 /**
  * Restore a saved layout, falling back to the default workspace when there is none or it no longer
- * loads (for example, it names a component that was removed).
+ * loads (for example, it names a component that was removed). Panels that were in their own
+ * window come back floating in this one (F9).
  */
 export function restoreLayout(
   api: DockviewApi,
@@ -52,7 +54,7 @@ export function restoreLayout(
 ): 'saved' | 'default' {
   if (saved) {
     try {
-      api.fromJSON(saved);
+      api.fromJSON(popoutsAsFloating(saved));
       if (api.panels.length > 0) return 'saved';
     } catch {
       // Unloadable layout: fall through to the default.

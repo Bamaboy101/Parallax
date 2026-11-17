@@ -501,6 +501,23 @@ the only time browsers allow it. The `alerts` widget (command `alert BTC above 6
 rule before adding it, lists alerts with their state, and offers Re-arm and Remove. Alerts run in
 the page, so they work while a tab is open, not after it is closed; the panel says so.
 
+## Multi-screen (F9)
+
+Every dock group's header has a window button (`PanelBadges`, `app/popout.ts`): it moves the
+group into its own browser window with dockview's `addPopoutGroup`, at `popout.html` (a blank
+same-origin page in `apps/web/public`). The window shares this page's JavaScript, so its panels
+read the same stores: links, Rewind and live prices carry over and nothing is streamed twice.
+`mirrorRoot` copies the `<html>` attributes the design hangs on (theme, palette, density, learn
+mode, render mode, inline style) to the window and follows every change; it reads the window's
+document on each copy and again on `load`, because dockview hands the window over before
+`popout.html` replaces its blank document (found live: the first version styled a document that
+was then discarded). Inside a popout the button reads "Back to the main window". A browser that
+blocks the window gets a notice saying to allow pop-ups. Browsers only open windows on a click,
+so a saved layout's popouts would fail to reopen on load: `restoreLayout` turns them into
+floating groups in the main window (`popoutsAsFloating`), one click from popping out again.
+Learn mode's hover explanations and the command bar's `/` shortcut work in the main window only:
+their listeners are on its document (learn strips do show in popouts).
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to
