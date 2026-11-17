@@ -66,6 +66,9 @@ be checked against the provider's own docs before building.
   event odds and headlines they used; advice questions are refused before any call and answers
   that recommend a trade are withheld.
 - **F2 Liquidity heatmap:** order book over time as a heat field behind price.
+  Built 17 Nov: a "Liquidity" toggle on crypto and FX charts samples the whole book once a second
+  (5 bp price bins) while on and shades resting size behind the candles, for the time the page
+  has been recording (up to the Rewind hour).
 - **F3 World globe:** 3D globe, day/night line, open markets lit, arcs for the biggest moves.
 - **F4 Paper trading:** trade from the chart with fake money via Alpaca's free paper account:
   market and limit orders, open orders, positions, profit and loss, cancel.

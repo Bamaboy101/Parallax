@@ -4,10 +4,13 @@ import type { AssetKind, Bar, Channel, SymbolRef } from '../feeds/types';
 import { subscribeFeed } from './feedClient';
 import { useHistory } from './history';
 import {
+  depthSamples,
   recentValues,
   setCursor,
+  trackDepth,
   useTickStore,
   valueAt,
+  type DepthSample,
   type TickOf,
   type TickState,
 } from './ticks';
@@ -165,6 +168,39 @@ export function useBook(symbol: SymbolRef): TickOf['book'] | undefined {
     [id],
   );
   return useSyncExternalStore(bookStore.subscribe, bookStore.get);
+}
+
+/** The heatmap redraws from the depth history at most this often. */
+export const DEPTH_REFRESH_MS = 1000;
+
+/**
+ * F2: one symbol's whole-book depth samples, oldest first, up to the Rewind cursor, refreshed
+ * once a second. While `enabled`, the book stays subscribed and sampled, so the history grows
+ * from the moment it is switched on.
+ */
+export function useDepthHistory(symbol: SymbolRef, enabled: boolean): readonly DepthSample[] {
+  const { id, kind, base, quote } = symbol;
+  useEffect(() => {
+    if (!enabled) return;
+    const stopTracking = trackDepth(id);
+    const unsubscribe = subscribeFeed({ id, kind, base, quote }, 'book');
+    return () => {
+      unsubscribe();
+      stopTracking();
+    };
+  }, [enabled, id, kind, base, quote]);
+  const versionStore = useMemo(
+    () => throttledValue((state) => state.versions.book[id] ?? 0, DEPTH_REFRESH_MS),
+    [id],
+  );
+  const version = useSyncExternalStore(versionStore.subscribe, versionStore.get);
+  const cursor = useTickStore((state) => state.cursor);
+  return useMemo(
+    () => (enabled ? depthSamples(id, cursor) : []),
+    // `version` invalidates the memo when new samples arrive.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [enabled, id, cursor, version],
+  );
 }
 
 /** One feed's connection status, for truth badges. */

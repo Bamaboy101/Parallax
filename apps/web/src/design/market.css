@@ -206,6 +206,26 @@
   pointer-events: auto;
 }
 
+/* F2: the liquidity legend sits over the top-left of the chart and never takes the pointer. */
+.chart-heat-legend {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  z-index: 2;
+  max-width: calc(100% - 96px);
+  margin: 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  color: var(--muted);
+  font-size: var(--size-label);
+  pointer-events: none;
+}
+
+.chart-heat {
+  margin-left: auto;
+}
+
 .ticker-list {
   display: flex;
   min-width: 0;
