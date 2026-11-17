@@ -17,6 +17,9 @@ const NAMES: Readonly<Record<string, string>> = {
   twse: 'TWSE',
   treasury: 'US Treasury',
   nyfed: 'New York Fed',
+  mempool: 'mempool.space',
+  publicnode: 'PublicNode',
+  'alternative-me': 'alternative.me',
 };
 
 export const sourceName = (id: string): string => NAMES[id] ?? id;
