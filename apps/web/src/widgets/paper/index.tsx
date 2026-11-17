@@ -136,6 +136,7 @@ export default function Paper({ api }: IDockviewPanelProps) {
   return (
     <div className="market-panel paper-panel">
       <div className="panel-toolbar">
+        <span className="paper-mode">PAPER</span>
         <span className="panel-heading">Paper account</span>
         <span className="panel-caption">
           Fake money · Alpaca paper · live trading is not possible here
@@ -205,7 +206,9 @@ export default function Paper({ api }: IDockviewPanelProps) {
       {account && (
         <>
           <section aria-label="Positions">
-            <h3 className="markets-group">Positions</h3>
+            <h3 className="markets-group">
+              Positions <span className="paper-mode">PAPER</span>
+            </h3>
             {paper.positions.length === 0 ? (
               <p className="panel-empty">
                 No positions. Open a stock or ETF chart and press “Paper trade” to place an order.
@@ -228,11 +231,21 @@ export default function Paper({ api }: IDockviewPanelProps) {
             )}
           </section>
           <section aria-label="Open orders">
-            <h3 className="markets-group">Open orders</h3>
+            <h3 className="markets-group">
+              Open orders <span className="paper-mode">PAPER</span>
+            </h3>
             {paper.orders.length === 0 ? (
               <p className="panel-empty">No open orders.</p>
             ) : (
               <ul>
+                <li className="market-columns paper-orders" aria-hidden="true">
+                  <span>Symbol</span>
+                  <span>Side</span>
+                  <span className="text-right">Qty</span>
+                  <span>Type / limit</span>
+                  <span>Status</span>
+                  <span />
+                </li>
                 {paper.orders.map((order) => (
                   <OrderRow key={order.id} order={order} onMessage={setMessage} />
                 ))}

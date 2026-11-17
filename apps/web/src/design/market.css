@@ -348,7 +348,7 @@
 
 /* Regional boards (M9): index | source | last | change. */
 .region-columns {
-  grid-template-columns: minmax(96px, 1.3fr) minmax(96px, 1.1fr) minmax(64px, 0.9fr) 64px;
+  grid-template-columns: minmax(96px, 1.3fr) minmax(108px, 1.1fr) minmax(72px, 0.9fr) 72px;
 }
 
 .region-market,
@@ -367,15 +367,69 @@
 }
 
 .region-note {
-  overflow: hidden;
   color: var(--muted);
   font-size: var(--size-label);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.5;
 }
 
 .market-row.region-columns {
-  min-height: calc(var(--row-h) + 12px);
+  min-height: calc(var(--row-h) + 16px);
+  padding-block: 8px;
+  align-items: center;
+  border-inline-start: 2px solid transparent;
+}
+
+/* The existing source labels remain the authority; shape and tone distinguish their classes. */
+.region-columns:not(:has(.region-market)) > .region-source {
+  color: var(--live);
+  font-family: var(--font-num);
+  text-transform: uppercase;
+}
+
+.region-columns:has(.markets-tag) {
+  border-inline-start-color: var(--line);
+}
+
+.region-columns .region-source:has(.markets-tag) {
+  display: grid;
+  gap: 4px;
+}
+
+.region-columns .markets-tag {
+  width: fit-content;
+  padding: 2px 4px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.region-columns:has(.region-market):not(:has(.markets-tag)) {
+  border-inline-start: 3px double var(--muted);
+  background: color-mix(in srgb, var(--muted) 6%, transparent);
+}
+
+.region-columns:has(.region-market):not(:has(.markets-tag)) .region-note {
+  color: var(--text);
+  font-family: var(--font-num);
+  font-weight: 500;
+}
+
+@container dock-group (max-width: 480px) {
+  .region-columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 4px 12px;
+  }
+
+  .region-columns > :nth-child(2n) {
+    justify-self: end;
+    text-align: right;
+  }
+
+  .region-columns > :nth-child(3) {
+    justify-self: start;
+    text-align: left;
+  }
 }
 
 .region-open {
