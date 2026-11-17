@@ -102,6 +102,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Sound layer.** Off by default. Switched on in Settings, it plays a short
   tone when an alert fires, a whale prints on an open tape, or the network
   goes away.
+- **Install it.** Parallax installs as an app (Settings › App, or your
+  browser's menu) and opens without a connection; market data and keys never
+  go through its offline copy.
 
 ## The honest part: what "free" and "no delay" allow
 

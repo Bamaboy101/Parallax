@@ -765,6 +765,15 @@ out as tabs in one full-width group (`setTabbedPresets`), with no sideways scrol
 Rewind bar. Pro on a phone keeps its wide desk and the "Swipe across panels" hint, so nothing a
 trader set up changes. The Rundown is one column.
 
+**Installable app (E6).** `public/manifest.webmanifest` (standalone, icons 192/512 and a
+maskable 512) makes the site installable; `app/install.ts` keeps Chromium's install prompt for
+Settings › App ("Install Parallax") and tells iPhone users to use Share › Add to Home Screen.
+`public/sw.js`, registered in production builds only, is the offline shell: it handles
+same-origin GETs only, so market data, news, the edge and keys never pass through it. The page
+(`/`) is network first, falling back offline to the last one loaded, where every panel then says
+it is offline. `/assets/*` files are content-hashed and cache first; when a new page links a new
+build of a file (`index-<hash>.js`), the older build is dropped.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,
