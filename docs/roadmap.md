@@ -94,6 +94,9 @@ be checked against the provider's own docs before building.
   explanation) with what its badge means, and plain-language meanings for every number, column,
   label and badge on hover or focus.
 - **F6 Voice commands** via the browser's speech recognition.
+  Built 18 Nov: a microphone in the command bar; on-device recognition where the browser has it
+  (after a one-time model download it asks for), the browser's online service only after the user
+  agrees. What is heard runs as a typed command would; voice cannot place orders.
 - **F7 Smart alerts** in plain words, delivered as browser notifications.
   Built 17 Nov: price levels, moves within up to an hour and moves on the day, written in plain
   words and checked once a second against live prices; each fires once on a fresh crossing, with

@@ -12,9 +12,15 @@ interface Prefs {
   density: Density;
   /** Learn mode (F5): plain-language explanations on every panel, number and badge. */
   learn: boolean;
+  /**
+   * Voice commands (F6) may use the browser's online speech service, which hears the audio. Off
+   * until the user agrees; on-device recognition never needs it.
+   */
+  voiceOnline: boolean;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
   setLearn: (learn: boolean) => void;
+  setVoiceOnline: (voiceOnline: boolean) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -23,6 +29,7 @@ export const usePrefs = create<Prefs>()(
       palette: 'green-red',
       density: 'comfortable',
       learn: false,
+      voiceOnline: false,
       setPalette: (palette) => {
         set({ palette });
       },
@@ -31,6 +38,9 @@ export const usePrefs = create<Prefs>()(
       },
       setLearn: (learn) => {
         set({ learn });
+      },
+      setVoiceOnline: (voiceOnline) => {
+        set({ voiceOnline });
       },
     }),
     {
@@ -41,6 +51,7 @@ export const usePrefs = create<Prefs>()(
         palette: state.palette,
         density: state.density,
         learn: state.learn,
+        voiceOnline: state.voiceOnline,
       }),
     },
   ),

@@ -699,6 +699,18 @@ suggestions; `search.ts` fuzzy-matches the instrument catalogue (`store/symbols.
 
 Word order is free, and any alias in a widget's `meta.aliases` works as the widget word.
 
+**Voice (F6).** The microphone in the command bar (`command/speech.ts`, `command/voice.ts`) uses
+the browser's Web Speech API for one short English utterance. It runs on the device whenever the
+browser offers it (`SpeechRecognition.available({ processLocally: true })`); if the device needs
+a one-time language download it asks first (`install`). Otherwise only the browser's online
+speech service can recognise speech, and that is used only after the user agrees (the
+`voiceOnline` preference, changeable in Settings). `normalizeSpoken` turns the transcript into
+bar words ("Bitcoin chart one hour" → `btc chart 1h`, "$65,000" → `65000`, "2 percent" → `2%`,
+catalogue names to tickers except in news and odds searches), then the best suggestion runs, as
+Enter would. Voice can do only what typing can: open panels, load symbols, switch layouts, fill
+an alert for the user to add. It cannot place a paper order. Firefox has no recognizer, so no
+microphone shows there.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,

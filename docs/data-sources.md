@@ -328,6 +328,17 @@ Natural Earth." The 1:110m land layer comes packaged as TopoJSON by world-atlas 
 with the app, so no request is made for it. The globe's moves are the region boards' ETF proxies
 and carry the same "proxy, US hours only" label.
 
+## Speech recognition for voice commands (F6)
+
+Not a data source, but a place a user's audio can go, so it was checked like one (MDN, 18 Nov
+2026). "On some browsers, speech recognition uses a server-based recognition engine by default.
+Your audio is sent to a web service for recognition processing"; setting `processLocally` makes
+recognition happen on the device, after `SpeechRecognition.available()` reports the language
+`available` (or `install()` downloads it), and "neither the audio nor the transcribed speech is
+sent to a third-party service". The terminal therefore prefers on-device recognition, asks before
+the one-time download, and uses a browser's online service only with the user's consent. Open
+Terminal itself never receives audio or transcripts.
+
 ## US market hours
 
 Equity feeds turn stale after 30 s without a message, counted only during the regular session

@@ -4,6 +4,7 @@ import type { SourceStatus, VerifyOutcome } from '../../feeds/protocol';
 import { verifyKey } from '../../store/feedClient';
 import { useSourceStatus } from '../../store/hooks';
 import { useKeyVault } from '../../store/keys';
+import { recognitionClass } from '../../command/speech';
 import { usePrefs, type Density, type Palette } from '../../store/prefs';
 import { KEY_PROVIDERS, type KeyProvider } from './meta';
 
@@ -204,9 +205,15 @@ const DENSITIES = [
   ['dense', 'Dense'],
 ] as const satisfies readonly (readonly [Density, string])[];
 
-/** Key vault with a per-provider key test and signup links, plus display preferences. */
+const VOICE = [
+  ['local', 'On this device only'],
+  ['online', 'Also the browser’s online speech service'],
+] as const;
+
+/** Key vault with a per-provider key test and signup links, plus display and voice preferences. */
 export default function Settings() {
-  const { palette, density, setPalette, setDensity } = usePrefs();
+  const { palette, density, voiceOnline, setPalette, setDensity, setVoiceOnline } = usePrefs();
+  const voice = recognitionClass() !== undefined;
   return (
     <div className="settings-panel">
       <h2 className="settings-heading">Data keys</h2>
@@ -221,6 +228,27 @@ export default function Settings() {
       <h2 className="settings-heading">Display</h2>
       <Choice legend="Price colours" value={palette} options={PALETTES} onChange={setPalette} />
       <Choice legend="Density" value={density} options={DENSITIES} onChange={setDensity} />
+      <h2 className="settings-heading">Voice commands</h2>
+      {voice ? (
+        <>
+          <p className="settings-note">
+            The microphone in the command bar turns what you say into a command. On-device
+            recognition keeps the audio on this computer. The online service is your browser
+            maker&apos;s: it hears what you say, so it is used only if you allow it here or when
+            first asked. Open Terminal never receives the audio.
+          </p>
+          <Choice
+            legend="Recognise speech"
+            value={voiceOnline ? 'online' : 'local'}
+            options={VOICE}
+            onChange={(value) => {
+              setVoiceOnline(value === 'online');
+            }}
+          />
+        </>
+      ) : (
+        <p className="settings-note">This browser has no speech recognition, so voice is off.</p>
+      )}
     </div>
   );
 }
