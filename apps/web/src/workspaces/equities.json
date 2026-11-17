@@ -52,6 +52,13 @@
       "inactive": true
     },
     {
+      "id": "paper",
+      "component": "paper",
+      "params": {},
+      "position": { "referencePanel": "tape", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "sessions",
       "component": "session-ring",
       "params": {},

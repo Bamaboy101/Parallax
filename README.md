@@ -55,6 +55,10 @@ FX, perpetual futures, macro and news work the moment the page loads.
   supply, shutdowns — grouped by theme and region, each beside the assets it
   moves (Fed odds next to the 2-year yield, gold and the dollar). Labelled
   for what they are: market odds, not forecasts.
+- **Paper trading.** Trade from any stock or ETF chart with fake money on
+  your free Alpaca paper account: market and limit orders, open orders,
+  positions, profit and loss, cancel. Live trading is not possible in Open
+  Terminal: the code can only reach Alpaca's paper environment.
 
 ## The honest part: what "free" and "no delay" allow
 

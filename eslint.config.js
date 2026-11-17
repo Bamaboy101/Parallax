@@ -63,5 +63,23 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Hard rule (F4): live trading must be impossible in the code. Alpaca's live trading host
+    // can never appear in source; paper-api.alpaca.markets and the data hosts do not match.
+    files: ['apps/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/(^|[^-a-z])api\\.alpaca\\.markets/]',
+          message: 'Live trading is not allowed: use the paper client (store/paper/client.ts).',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/(^|[^-a-z])api\\.alpaca\\.markets/]',
+          message: 'Live trading is not allowed: use the paper client (store/paper/client.ts).',
+        },
+      ],
+    },
+  },
   prettier,
 );

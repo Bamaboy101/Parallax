@@ -58,6 +58,8 @@ be checked against the provider's own docs before building.
 - **F3 World globe:** 3D globe, day/night line, open markets lit, arcs for the biggest moves.
 - **F4 Paper trading:** trade from the chart with fake money via Alpaca's free paper account:
   market and limit orders, open orders, positions, profit and loss, cancel.
+  Built 17 Nov: paper endpoint only, enforced by the client (origin check, live keys never sent)
+  and by lint (the live trading host cannot appear in source).
 - **F5 Learn mode:** one switch overlays plain-language explanations on every panel, number and
   badge, for students and new traders.
 - **F6 Voice commands** via the browser's speech recognition.

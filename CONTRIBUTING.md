@@ -26,6 +26,9 @@ change can be tested by opening the page.
 - **A widget never opens a socket or calls a provider.** It asks the store
   (`store/hooks.ts`) for a symbol and channel; the feed hub owns every
   connection.
+- **No live trading, ever.** Paper trading goes through `store/paper/client.ts`,
+  which only reaches Alpaca's paper environment; lint rejects the live
+  trading host anywhere in the source. Do not add a way around either.
 - **Every number shows its source and its age.** New data paths end in a
   truth badge (`LIVE`, `POLLED`, `EOD`, `DELAYED`, `OFFLINE`, …), and an
   empty panel says why it is empty (`design/notices.ts`).

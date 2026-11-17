@@ -368,6 +368,25 @@ that the currency rows above are what moves. The Europe and Asia-Pacific workspa
 pairs in a watchlist at the top left, the board below it, and a chart of the main pair, news,
 event odds and the Session ring beside them.
 
+## Paper trading (F4)
+
+`store/paper/client.ts` is the only code that talks to Alpaca's trading API, and it can only reach
+`https://paper-api.alpaca.markets`: `paperUrl` builds every request URL and throws
+`PaperOnlyError` unless its origin is exactly that one, and a key that looks like a live-trading
+key (Alpaca's live keys start with AK, paper keys with PK) is refused before any network call.
+Lint (`no-restricted-syntax` in `eslint.config.js`) fails the build if Alpaca's live trading host
+appears in any string or template literal under `apps/`, so a live path cannot be added quietly.
+
+`store/paper/store.ts` keeps the account, positions and open orders in one store, polled every
+5 s while a panel or ticket uses it (badge `POLLED 5s · alpaca-paper`), and sends orders
+(`placePaperOrder`: whole shares, `day` orders, market or limit with tick-sized prices, built and
+checked by `orderBody`) and cancels. The key is the user's Alpaca key from the vault (the same
+paper key that streams US stocks). A stock or ETF chart has a "Paper trade" button that opens the
+ticket (`widgets/PaperTicket.tsx`); it says when a day order will wait for New York's open. The
+`paper` widget shows equity, today's profit and loss (equity minus last close's), buying power,
+positions with unrealised profit and loss and a Close button (a market order the other way), and
+open orders with Cancel. Every view says fake money and that live trading is not possible.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

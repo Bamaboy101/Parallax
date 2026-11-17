@@ -1,0 +1,129 @@
+/* Paper trading (F4). Tokens only; no shadows. Buy and sell are labels, not price moves, so they
+   stay neutral; only profit and loss take the up/down tones. */
+
+.paper-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.paper-account {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.paper-account dt {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.paper-account dd {
+  margin: 0;
+}
+
+.paper-positions {
+  grid-template-columns: minmax(48px, 1fr) 48px 64px 64px 64px minmax(88px, 1.2fr) 56px;
+}
+
+.paper-orders {
+  grid-template-columns: minmax(48px, 1fr) 40px 40px minmax(64px, 1fr) minmax(64px, 1fr) 64px;
+}
+
+.paper-pl {
+  display: grid;
+  justify-items: end;
+}
+
+.paper-side,
+.paper-type,
+.paper-status {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.paper-side {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.paper-ticket {
+  position: absolute;
+  top: calc(var(--row-h) + 12px);
+  right: 8px;
+  z-index: 10;
+  display: grid;
+  gap: 8px;
+  width: min(320px, calc(100% - 16px));
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+  font-size: var(--size-label);
+}
+
+.paper-ticket-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.paper-ticket-tag {
+  color: var(--muted);
+}
+
+.paper-ticket-close {
+  margin-left: auto;
+  padding: 0 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--size-ui);
+  cursor: pointer;
+}
+
+.paper-ticket-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 4px 8px;
+}
+
+.paper-ticket label {
+  display: grid;
+  gap: 2px;
+  color: var(--muted);
+}
+
+.paper-ticket input {
+  width: 88px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-num);
+  font-size: var(--size-num);
+}
+
+.paper-ticket-note {
+  margin: 0;
+  padding: 4px var(--pad);
+  color: var(--muted);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.paper-ticket .paper-ticket-note {
+  padding: 0;
+}
+
+.paper-ticket-note[data-tone='warn'] {
+  color: var(--warn);
+}
+
+.chart-trade {
+  margin-left: auto;
+}

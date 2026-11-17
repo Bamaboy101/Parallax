@@ -2,6 +2,7 @@
 const NAMES: Readonly<Record<string, string>> = {
   alpaca: 'Alpaca',
   'alpaca-poll': 'Alpaca snapshots',
+  'alpaca-paper': 'Alpaca paper',
   finnhub: 'Finnhub',
   binance: 'Binance',
   'binance-futures': 'Binance futures',
