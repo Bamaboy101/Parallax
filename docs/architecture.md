@@ -348,7 +348,7 @@ only in major economies. Outcomes read most likely first, except "by…?" date l
 in date order with passed rungs hidden.
 
 `worker.ts` runs the Gamma tag queries off the main thread every 10 minutes; `store.ts` holds the
-events in one Zustand store for every panel (and the co-pilot later), polls midpoints every 15 s
+events in one Zustand store for every panel and the co-pilot, polls midpoints every 15 s
 while a panel is mounted, and reports `polymarket` freshness (`POLLED 15s`). A failed refresh keeps
 what is shown. The `predictions` widget ("Event odds", command `odds fed`) groups by theme and
 region, shows each event's leading outcome, 24 h change in points and 24 h volume, and opens a
@@ -403,6 +403,39 @@ density, and marked as `data-learn="on"` on <html>) explains the terminal in pla
   heading has an entry.
 - **Every badge.** `badgeExplanation` says what each state means (live with its delay, polled,
   delayed, end of day, connecting, rate limited, no key, key rejected, offline).
+
+## Co-pilot (F1)
+
+The `copilot` widget (command `ask why is BTC down`; a question typed in the command bar is asked
+once the panel is ready) answers plain-word questions from what is on screen:
+
+- **Context.** `store/copilot/context.ts` turns every other panel in the dock into a citable item
+  (`P1`, `P2`…) with its latest figures: prices and 24 h or since-close change for watchlists,
+  charts, books, tapes and the boards (the widget passes each board's fixed rows), movers and
+  breadth, perp funding and open interest, the paper account, and, when those panels are open,
+  the Macro panel's FRED rows and the Calendar's next releases (fetched through the same cached
+  edge requests the panels use, with the same calculations). With an Event odds panel open, the
+  top eight events' odds are added (`O1`…, labelled market odds, not forecasts); up to twelve
+  headlines from the edge `/news` route (about the first catalogue asset the question names) are
+  `N1`…. Panels without figures (Session ring, Settings) are left out.
+- **Keys.** `store/copilot/keys.ts` is its own vault (`open-terminal:ai-keys` in local storage),
+  separate from the data keys because data keys are handed to the feed hub and AI keys never are.
+  `store/copilot/providers.ts` builds every URL from the provider's own origin
+  (`https://api.anthropic.com`, `https://api.openai.com`) and refuses any other, so a key reaches
+  only its provider. Models come from the provider's own `GET /v1/models` with the user's key,
+  which is also the key check; nothing is hard-coded to a model name.
+- **Calls.** Anthropic: `POST /v1/messages`, `anthropic-version: 2026-10-21` (which rejects
+  `temperature`, so none is sent) and `anthropic-dangerous-direct-browser-access: true`, the header
+  Anthropic requires for browser calls. Anthropic organisations with zero data retention, the
+  Compliance API or an Enterprise parent cannot call from a browser; that 401 is explained, not
+  reported as a bad key. OpenAI: `POST /v1/responses` with `store: false`.
+- **Citations.** The system prompt (`store/copilot/guard.ts`) has the model answer only from the
+  context and cite ids in brackets. The panel draws them as chips, lists every cited panel, event
+  and headline (with its link) under Sources, warns when an answer cites nothing, and shows all
+  it was given under "What it saw".
+- **No advice.** The prompt forbids buy, sell, hold, sizing, timing, targets and forecasts, and
+  two checks in code back it: `asksForAdvice` answers such questions locally without calling the
+  AI, and `givesAdvice` withholds an answer that recommends a trade anyway.
 
 ## Tick store and Rewind
 

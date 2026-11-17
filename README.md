@@ -62,6 +62,12 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Learn mode.** One switch explains the terminal for students and new
   traders: what each panel shows, what its badge means right now, and, on
   hover or focus, every number, column and label in plain words.
+- **Co-pilot.** Ask in plain words — "why is BTC down?", "brief me on
+  today" — and get an answer from the panels on your screen and recent
+  headlines, with the panels and headlines it used listed beside it. It
+  explains; it never tells you to buy or sell. It runs on your own
+  Anthropic or OpenAI key, which stays in your browser and goes only to that
+  provider.
 
 ## The honest part: what "free" and "no delay" allow
 
