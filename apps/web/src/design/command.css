@@ -174,6 +174,76 @@
   font-size: var(--size-label);
 }
 
+/* F6 voice: the microphone is interface state, so it is mint while listening and nowhere else.
+   No pulse: the "Listening" line says it is on. */
+.command-mic {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: calc(var(--grid) * 7);
+  height: calc(var(--grid) * 7);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.command-mic svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.command-mic:hover {
+  color: var(--text);
+}
+
+.command-mic[aria-pressed='true'] {
+  border-color: var(--live);
+  background: color-mix(in srgb, var(--live) 12%, transparent);
+  color: var(--live);
+}
+
+.command-mic:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 2px;
+}
+
+.command-voice {
+  margin: 0;
+  padding: calc(var(--grid) * 2) calc(var(--grid) * 4);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.command-voice p {
+  margin: 0;
+}
+
+.command-voice[data-state='listening'] {
+  color: var(--text);
+}
+
+.command-voice[data-state='error'] {
+  color: var(--text);
+}
+
+.command-voice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--grid) * 2);
+  margin-top: calc(var(--grid) * 2);
+}
+
+.command-voice-actions .chart-interval {
+  border-color: var(--line);
+}
+
 .command-result-enter {
   visibility: hidden;
 }

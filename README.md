@@ -86,6 +86,10 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **On-chain.** Bitcoin fees, mempool and the latest blocks, Ethereum gas,
   stablecoin supply on Ethereum and the daily Fear & Greed Index, read by
   your browser with no key.
+- **Voice commands.** Press the microphone in the command bar and say
+  "Bitcoin chart one hour" or "alert Ether below 1,800". Recognition runs on
+  your device where the browser can; its online speech service is used only
+  if you allow it.
 
 ## The honest part: what "free" and "no delay" allow
 
