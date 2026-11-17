@@ -53,6 +53,9 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   Today: 'How much the paper account gained or lost since the last close.',
   'Buying power': 'How much the paper account can still spend, including margin (borrowing).',
   Cash: 'Paper cash not tied up in positions.',
+  Side: 'Buy or sell: which way the paper order trades.',
+  'Type / limit': 'Market fills at the next price; limit fills only at the price shown or better.',
+  Status: 'Where the paper order stands: accepted and waiting, partly filled, filled or cancelled.',
   Odds: 'What traders pay for this outcome on a prediction market, as a percentage. Market odds, not a forecast.',
 };
 

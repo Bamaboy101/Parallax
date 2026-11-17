@@ -75,21 +75,27 @@
   position: fixed;
   z-index: 1000;
   display: grid;
-  gap: 4px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--muted);
+  border-top: 2px solid var(--live);
   border-radius: var(--panel-radius);
   background: var(--panel);
   color: var(--text);
   font-size: var(--size-label);
-  line-height: 1.5;
+  line-height: 1.6;
   pointer-events: none;
 }
 
 .learn-tip strong {
-  font-weight: 500;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--live);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .learn-tip span {
-  color: var(--muted);
+  color: var(--text);
 }

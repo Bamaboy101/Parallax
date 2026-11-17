@@ -150,10 +150,12 @@ const EventRow = memo(function EventRow({
           className="odds-lead"
           title={multi ? 'Most likely outcome, by market odds' : undefined}
         >
+          <span className="odds-metric-label">Market odds</span>
           {multi && lead ? <span className="odds-outcome">{lead.label}</span> : null}
           <Cell value={odds === undefined ? undefined : odds * 100} decimals={0} suffix="%" />
         </span>
         <span className="odds-change" title="Change in the last 24 hours, in percentage points">
+          <span className="odds-metric-label">24 h change</span>
           <Cell
             value={change === null ? undefined : change * 100}
             decimals={1}
@@ -163,7 +165,7 @@ const EventRow = memo(function EventRow({
           />
         </span>
         <span className="odds-volume" title="Traded in the last 24 hours">
-          ${formatCompact(event.volume24h)}
+          <span className="odds-metric-label">24 h volume</span>${formatCompact(event.volume24h)}
         </span>
       </button>
       <div className="odds-assets" aria-label="Linked assets">
@@ -256,7 +258,16 @@ function EventDetail({ event, now }: { event: PredictionEvent; now: number }) {
   const charted = useMemo(() => open.slice(0, DETAIL_OUTCOMES), [open]);
   return (
     <div className="odds-detail">
+      <div className="odds-detail-heading">
+        <span>Outcome history</span>
+        <span>1 week · market odds</span>
+      </div>
       <OddsChart outcomes={charted} />
+      <div className="odds-outcome-row odds-outcome-head" aria-hidden="true">
+        <span>Outcome</span>
+        <span>Odds</span>
+        <span>24 h · pt</span>
+      </div>
       <ul className="odds-outcomes">
         {open.map((outcome) => (
           <OutcomeLine key={outcome.tokenId} outcome={outcome} />
