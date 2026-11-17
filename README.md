@@ -68,6 +68,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   explains; it never tells you to buy or sell. It runs on your own
   Anthropic or OpenAI key, which stays in your browser and goes only to that
   provider.
+- **Liquidity heatmap.** Turn on "Liquidity" on a crypto or FX chart to see
+  where buy and sell orders have been resting, shaded behind the candles,
+  for as long as the page has been watching the book.
 
 ## The honest part: what "free" and "no delay" allow
 

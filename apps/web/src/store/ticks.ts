@@ -9,7 +9,7 @@ import type {
   QuoteEvent,
   TradeEvent,
 } from '../feeds/types';
-import { OrderBook, type BookView } from './orderBook';
+import { BOOK_KEEP, OrderBook, type BookView } from './orderBook';
 import { RingBuffer } from './ringBuffer';
 
 /** How far back Rewind can go. */
@@ -106,6 +106,73 @@ function record<C extends Channel>(channel: C, symbol: string, value: TickOf[C])
   buffer.evictBefore(value.receivedAt - REWIND_MS);
 }
 
+/**
+ * F2: the whole book (up to BOOK_KEEP levels a side), bucketed into price bins once a second,
+ * for the liquidity heatmap. Only symbols a chart is tracking are sampled.
+ */
+export interface DepthSample {
+  receivedAt: number;
+  /** Bin width in price units. */
+  bin: number;
+  /** [bin centre price, resting value (size × price)], bids and asks together. */
+  levels: [number, number][];
+}
+
+const depthUsers = new Map<string, number>();
+const depthHistory = new Map<string, RingBuffer<DepthSample>>();
+
+/** A round bin about 5 basis points of the price: 1, 2 or 5 times a power of ten. */
+export function depthBin(price: number): number {
+  const target = price * 0.0005;
+  const power = 10 ** Math.floor(Math.log10(target));
+  return [1, 2, 5, 10].map((step) => step * power).find((step) => step >= target) ?? power * 10;
+}
+
+function sampleDepth(book: OrderBook, receivedAt: number): void {
+  const buffer = depthHistory.get(book.symbol);
+  if (!buffer) return;
+  const last = buffer.last();
+  if (last && Math.floor(last.receivedAt / 1000) === Math.floor(receivedAt / 1000)) return;
+  const view = book.view(BOOK_KEEP);
+  const bestBid = view?.bids[0]?.[0];
+  const bestAsk = view?.asks[0]?.[0];
+  if (!view || bestBid === undefined || bestAsk === undefined) return;
+  const bin = last?.bin ?? depthBin((bestBid + bestAsk) / 2);
+  const bins = new Map<number, number>();
+  for (const [price, size] of [...view.bids, ...view.asks]) {
+    const index = Math.floor(price / bin);
+    bins.set(index, (bins.get(index) ?? 0) + size * price);
+  }
+  buffer.push({
+    receivedAt,
+    bin,
+    levels: [...bins].map(([index, value]): [number, number] => [(index + 0.5) * bin, value]),
+  });
+  buffer.evictBefore(receivedAt - REWIND_MS);
+}
+
+/** Start sampling a symbol's whole book; the returned function stops when its last user does. */
+export function trackDepth(symbol: string): () => void {
+  depthUsers.set(symbol, (depthUsers.get(symbol) ?? 0) + 1);
+  if (!depthHistory.has(symbol)) {
+    depthHistory.set(symbol, new RingBuffer<DepthSample>(RETENTION.book.capacity));
+  }
+  return () => {
+    const users = (depthUsers.get(symbol) ?? 1) - 1;
+    if (users > 0) {
+      depthUsers.set(symbol, users);
+      return;
+    }
+    depthUsers.delete(symbol);
+    depthHistory.delete(symbol);
+  };
+}
+
+/** A tracked symbol's depth samples up to the cursor, oldest first. */
+export function depthSamples(symbol: string, cursor: number | null): DepthSample[] {
+  return (depthHistory.get(symbol)?.latest(RETENTION.book.capacity, cursor) ?? []).reverse();
+}
+
 /** Apply one batch from the hub. One store update per batch, so React renders once per frame. */
 export function ingest(events: FeedEvent[]): void {
   if (events.length === 0) return;
@@ -153,6 +220,7 @@ export function ingest(events: FeedEvent[]): void {
     if (!view) continue;
     latest.book[view.symbol] = view;
     record('book', view.symbol, view);
+    sampleDepth(book, view.receivedAt);
   }
 
   useTickStore.setState((state) => {
@@ -231,6 +299,8 @@ export function sampleAt<C extends Channel>(
 export function resetTicks(): void {
   for (const buffers of Object.values(history)) buffers.clear();
   books.clear();
+  depthHistory.clear();
+  depthUsers.clear();
   useTickStore.setState({
     latest: emptyChannels<TickOf>(),
     versions: emptyChannels<{ [C in Channel]: number }>(),

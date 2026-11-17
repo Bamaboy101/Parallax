@@ -467,6 +467,22 @@ a month and a year ago, a tenor table with 1-day, 1-month and 1-year changes in 
 as a band with EFFR inside, its recent moves, and the next three Fed decisions from Polymarket,
 labelled market odds, not forecasts. The footnote carries the New York Fed's required notice.
 
+## Liquidity heatmap (F2)
+
+A chart of a symbol with an order-book feed (crypto and FX; the free US stock feeds carry no
+depth) has a "Liquidity" toggle, saved as the panel's `heat` parameter. While it is on,
+`useDepthHistory` keeps the book subscribed and `trackDepth` (in `store/ticks.ts`, reference
+counted) samples the whole book, up to `BOOK_KEEP` levels a side, once a second into price bins
+about 5 basis points wide (`depthBin`: a round 1, 2 or 5 step; $50 for BTC near $64,000), kept for
+the Rewind hour. `store/heatmap.ts` turns samples into screen cells (`heatGrid`: each sample spans
+the time to the next, each bin its whole price span; a cell keeps the most any sample put there)
+and opacity (`heatAlpha`: logarithmic, capped at 55% so candles stay readable).
+`widgets/chart/heat.ts` is a Lightweight Charts series primitive drawn in the background layer,
+behind the candles: it rebuilds a one-pixel-per-cell image only when the samples or the view
+change and scales it up without smoothing, reusing its buffers, so panning costs about the same
+as with the field off. The colour is `--text`, so it reads as neutral shading in both themes,
+never as a price direction. The legend says how far back the field goes ("since 20:29").
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

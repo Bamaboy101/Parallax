@@ -14,20 +14,23 @@ import { useEffect, useRef, useState } from 'react';
 import '../../design/market.css';
 import { failureNotice } from '../../design/notices';
 import { PanelNotice } from '../../design/PanelNotice';
-import type { Bar, BarInterval } from '../../feeds/types';
+import { INTERVAL_MS, type Bar, type BarInterval } from '../../feeds/types';
 import { INTERVALS, useCandles } from '../../store/candles';
-import { useTick } from '../../store/hooks';
+import { useDepthHistory, useTick } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument } from '../../store/symbols';
+import { useTickStore } from '../../store/ticks';
 import { PaperTicket } from '../PaperTicket';
 import { SymbolNotice } from '../SymbolNotice';
+import { LiquidityHeat } from './heat';
 import { DEFAULT_INTERVAL, DEFAULT_SYMBOL } from './meta';
 
 interface ChartParams {
   symbol?: string;
   interval?: string;
+  /** F2: the order-book liquidity heatmap behind the candles. */
+  heat?: boolean;
 }
-
 const isInterval = (value: unknown): value is BarInterval =>
   typeof value === 'string' && (INTERVALS as readonly string[]).includes(value);
 
@@ -42,6 +45,7 @@ function palette() {
     up: token('--up'),
     down: token('--down'),
     live: token('--live'),
+    text: token('--text'),
   };
 }
 
@@ -77,6 +81,7 @@ interface Handles {
   chart: IChartApi;
   candles: ISeriesApi<'Candlestick'>;
   volume: ISeriesApi<'Histogram'>;
+  heat: LiquidityHeat;
 }
 
 function applyTheme({ chart, candles, volume }: Handles): void {
@@ -147,13 +152,28 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
   const interval = isInterval(params.interval) ? params.interval : DEFAULT_INTERVAL;
   const candles = useCandles(item, interval);
   const source = useTick(item, 'bar')?.source;
-  useReportSources(api.id, source ? [source] : []);
+  // F2: only symbols with an order-book feed (not the free US stock feeds) can show liquidity.
+  const hasBook = item.kind !== 'equity';
+  const heatOn = hasBook && params.heat === true;
+  const book = useDepthHistory(item, heatOn);
+  const bookSource = useTickStore((state) =>
+    heatOn ? state.latest.book[item.id]?.source : undefined,
+  );
+  useReportSources(
+    api.id,
+    [source, heatOn ? bookSource : undefined].filter((id) => id !== undefined),
+  );
   // US stocks and ETFs can be paper traded from the chart (F4).
   const [ticket, setTicket] = useState(false);
   const tradable = item.kind === 'equity';
 
   const container = useRef<HTMLDivElement>(null);
   const handles = useRef<Handles | null>(null);
+  /** What the heat layer last drew, so a theme switch can repaint it in the new colour. */
+  const heatInput = useRef<{ views: typeof book; intervalMs: number }>({
+    views: [],
+    intervalMs: 0,
+  });
 
   // Create the chart once; follow theme and palette switches.
   useEffect(() => {
@@ -171,13 +191,17 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
         priceScaleId: '',
         priceFormat: { type: 'volume' },
       }),
+      heat: new LiquidityHeat(),
     };
+    created.candles.attachPrimitive(created.heat);
     created.volume.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
     created.candles.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.25 } });
     applyTheme(created);
     handles.current = created;
     const observer = new MutationObserver(() => {
       applyTheme(created);
+      const { views, intervalMs } = heatInput.current;
+      created.heat.update(views, intervalMs, palette().text);
     });
     observer.observe(document.documentElement, {
       attributes: true,
@@ -224,6 +248,13 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
     }
   }, [tail]);
 
+  // The heat field follows the book history (once a second) and the bar interval.
+  useEffect(() => {
+    const intervalMs = INTERVAL_MS[interval];
+    heatInput.current = { views: book, intervalMs };
+    handles.current?.heat.update(book, intervalMs, palette().text);
+  }, [book, interval]);
+
   return (
     <div className="market-panel chart-panel">
       <div className="market-toolbar chart-toolbar">
@@ -263,6 +294,19 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
             Paper trade
           </button>
         )}
+        {hasBook && (
+          <button
+            type="button"
+            className="chart-interval chart-heat"
+            aria-pressed={heatOn}
+            title="Order-book liquidity behind price: stronger shading means more resting size"
+            onClick={() => {
+              api.updateParameters({ ...params, heat: !heatOn });
+            }}
+          >
+            Liquidity
+          </button>
+        )}
       </div>
       {tradable && ticket && (
         <PaperTicket
@@ -274,6 +318,13 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
       )}
       <div className="relative min-h-0 flex-1">
         <div ref={container} className="absolute inset-0" />
+        {heatOn && (
+          <p className="chart-heat-legend" data-term="Liquidity">
+            {book.length > 0
+              ? `Order-book liquidity since ${timeOfDay.format(book[0]?.receivedAt ?? 0)} · stronger shading = more resting size`
+              : 'Collecting the order book…'}
+          </p>
+        )}
         {candles.state === 'loading' && history.length === 0 && (
           <p className="market-empty chart-empty">Loading history…</p>
         )}

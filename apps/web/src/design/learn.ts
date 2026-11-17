@@ -81,6 +81,8 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
     'The 10-year yield minus the 3-month bill: another common recession signal when negative.',
   SOFR: 'The Secured Overnight Financing Rate: what it costs to borrow cash overnight against Treasuries.',
   EFFR: 'The effective federal funds rate: what banks charge each other overnight, kept inside the Fed’s target range.',
+  Liquidity:
+    'The order book over time, drawn behind price: each band is where buy and sell orders were waiting, shaded more strongly where more size sat. Only since this page started recording the book.',
 };
 
 /** What a truth badge means, in plain words. */

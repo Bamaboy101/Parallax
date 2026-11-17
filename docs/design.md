@@ -150,6 +150,9 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   (`--warn`), the colour already used for data that is not live, with "Back to live" in mint.
 - Market weather tints a glow behind the panels from mint (calm) toward orchid
   (`--weather-warm`, stormy), at 8–18% strength. It changes at most every 10 s and never animates.
+- The liquidity heatmap (F2) shades resting order-book size behind the candles in `--text`, up
+  to 55% opacity on a logarithmic scale, so it reads as neutral depth in both themes, never as a
+  price direction. It updates once a second and never animates.
 - The Session ring is a 24-hour dial on the viewer's clock: five-minute ticks, hour labels every
   3 h, one arc per market (Tokyo, London, New York, crypto always on), open arcs in mint
   (interface state, not price), closed ones in muted grey, and a hand at now.
