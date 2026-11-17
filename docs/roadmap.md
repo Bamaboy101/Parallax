@@ -56,6 +56,11 @@ be checked against the provider's own docs before building.
   and stablecoin supply covers Ethereum only.
 - **M6 DEX pairs:** prices and liquidity of trending on-chain pairs. Source: GeckoTerminal or
   DexScreener public APIs (confirm).
+  **Pending written permission (decided 18 Nov).** GeckoTerminal's keyless API falls under
+  CoinGecko's API Terms, which require a user agreement and privacy policy for the app, an
+  indemnity and a waiver of claims (§7.1, §11.3, §12.5); DEX Screener has no organic trending list
+  and its terms bar making the API "available for third parties" (§2). Details and contacts in
+  data-sources.md, "Waiting for written permission".
 - **M7 Corporate events:** earnings calendar, insider trades, large-holder filings. Source:
   Finnhub earnings calendar (user's key), SEC EDGAR Form 4 and 13F.
 - **M8 Global macro:** GDP, inflation, debt for 50 countries on a map. Source: World Bank and IMF
@@ -106,6 +111,16 @@ be checked against the provider's own docs before building.
 - **F10 Session recorder:** record, replay, export as a file.
 - **F11 Installable app** with an offline shell.
 - **F12 Sound layer**, off by default.
+
+## Waiting for written permission
+
+Sources whose terms keep them out of a public app until the provider agrees in writing. Contacts
+and the exact clauses are in data-sources.md.
+
+- **Kalshi** (M1): Kalshi odds beside Polymarket's.
+- **DefiLlama** (M5): DeFi totals and stablecoin supply across all chains.
+- **GeckoTerminal / CoinGecko** (M6): trending DEX pools.
+- **DEX Screener** (M6): DEX pair lookups.
 
 ## Batches
 
