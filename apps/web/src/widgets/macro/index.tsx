@@ -4,9 +4,13 @@ import { failureNotice } from '../../design/notices';
 import { PanelNotice } from '../../design/PanelNotice';
 import {
   CURVE,
+  CURVE_DAYS,
+  CURVE_IDS,
   daysBefore,
   latest,
   monthlyChange,
+  STAT_DAYS,
+  STAT_IDS,
   useFred,
   valueOn,
   yearOnYear,
@@ -14,8 +18,6 @@ import {
   type Stat,
 } from '../../store/macro';
 
-const CURVE_IDS = CURVE.map(([, id]) => id);
-const STAT_IDS = ['DFF', 'UNRATE', 'CPIAUCSL', 'PAYEMS'];
 const WIDTH = 300;
 const HEIGHT = 120;
 const PAD = 16;
@@ -115,8 +117,8 @@ function StatRow({
 /** Yield curve, policy rate, inflation and jobs from FRED, through the edge. */
 export default function Macro() {
   const today = new Date().toISOString().slice(0, 10);
-  const curve = useFred(CURVE_IDS, daysBefore(today, 45));
-  const stats = useFred(STAT_IDS, daysBefore(today, 800));
+  const curve = useFred(CURVE_IDS, daysBefore(today, CURVE_DAYS));
+  const stats = useFred(STAT_IDS, daysBefore(today, STAT_DAYS));
   const ten = latest(curve.series.DGS10);
   const two = latest(curve.series.DGS2);
   const spread: Stat | undefined =

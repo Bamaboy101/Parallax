@@ -33,6 +33,13 @@
       "inactive": true
     },
     {
+      "id": "copilot",
+      "component": "copilot",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "derivs",
       "component": "derivs",
       "params": {},

@@ -32,6 +32,13 @@ export const CURVE: readonly (readonly [label: string, series: string])[] = [
   ['30Y', 'DGS30'],
 ];
 
+export const CURVE_IDS: readonly string[] = CURVE.map(([, id]) => id);
+/** Fed funds, unemployment, CPI and payrolls: the Macro panel's indicator rows. */
+export const STAT_IDS: readonly string[] = ['DFF', 'UNRATE', 'CPIAUCSL', 'PAYEMS'];
+/** How far back each request reaches: a month's curve change; two years of CPI for year-on-year. */
+export const CURVE_DAYS = 45;
+export const STAT_DAYS = 800;
+
 /** The last observation on or before `date`. Observations are oldest first. */
 export function valueOn(
   observations: readonly Observation[],
@@ -106,6 +113,13 @@ function isSeriesMap(value: unknown): value is { series: SeriesMap } {
   );
 }
 
+/** FRED series through the edge (cached there for an hour). */
+export async function fetchFred(series: readonly string[], start: string): Promise<SeriesMap> {
+  const body = await edgeJson(`/fred?series=${series.join(',')}&start=${start}`);
+  if (!isSeriesMap(body)) throw new Error('unexpected FRED answer');
+  return body.series;
+}
+
 const LOADING: FredState = { state: 'loading', series: {}, failure: undefined };
 
 /** FRED series through the edge, refreshed hourly. `start` is 'YYYY-MM-DD'. */
@@ -118,10 +132,9 @@ export function useFred(series: readonly string[], start: string): FredState {
     const [ids = '', from = ''] = key.split('|');
     const load = async () => {
       try {
-        const body = await edgeJson(`/fred?series=${ids}&start=${from}`);
+        const series = await fetchFred(ids.split(','), from);
         if (cancelled) return;
-        if (!isSeriesMap(body)) throw new Error('unexpected FRED answer');
-        setFred({ key, state: 'ready', series: body.series, failure: undefined });
+        setFred({ key, state: 'ready', series, failure: undefined });
       } catch (error) {
         if (cancelled) return;
         const failure = failureOf(error);

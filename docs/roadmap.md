@@ -54,6 +54,10 @@ be checked against the provider's own docs before building.
 - **F1 Co-pilot:** plain-word questions ("why is BTC down?", "brief me on today"), answered from
   on-screen data plus news, with sources. Runs on the user's own AI key, stored in their browser.
   Support Anthropic and OpenAI keys first.
+  Built 17 Nov: a Co-pilot panel on the user's own Anthropic or OpenAI key (its own browser vault,
+  never passed to the feed hub; each client can only reach its provider). Answers cite the panels,
+  event odds and headlines they used; advice questions are refused before any call and answers
+  that recommend a trade are withheld.
 - **F2 Liquidity heatmap:** order book over time as a heat field behind price.
 - **F3 World globe:** 3D globe, day/night line, open markets lit, arcs for the biggest moves.
 - **F4 Paper trading:** trade from the chart with fake money via Alpaca's free paper account:

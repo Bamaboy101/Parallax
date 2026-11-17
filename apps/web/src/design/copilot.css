@@ -1,0 +1,164 @@
+/* Co-pilot (F1). Tokens only; no shadows, no motion beyond the shared button transitions. */
+
+.copilot-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
+  font-size: var(--size-ui);
+}
+
+.copilot-keys,
+.copilot-model,
+.copilot-ask,
+.copilot-starters,
+.copilot-answer {
+  padding: 8px var(--pad);
+}
+
+.copilot-keys {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.copilot-providers {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.copilot-providers legend,
+.copilot-key-field span,
+.copilot-model span {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.copilot-key-field,
+.copilot-model {
+  display: grid;
+  gap: 4px;
+}
+
+.copilot-model {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.copilot-keys input[type='password'],
+.copilot-ask input,
+.copilot-model select {
+  min-height: var(--row-h);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.copilot-key-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--size-label);
+}
+
+.copilot-key-actions a,
+.copilot-source a {
+  color: var(--text);
+}
+
+.copilot-key-toggle {
+  margin-left: 8px;
+}
+
+.copilot-ask {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.copilot-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 0;
+}
+
+.copilot-starters .chart-interval {
+  border-color: var(--line);
+  font-family: var(--font-ui);
+}
+
+.copilot-answer {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.copilot-question {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 500;
+}
+
+.copilot-answer-text {
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.copilot-cite {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+  line-height: 1.4;
+  text-decoration: none;
+  vertical-align: 1px;
+}
+
+.copilot-cite.is-unknown {
+  border-style: dashed;
+}
+
+.copilot-source {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: var(--size-label);
+}
+
+.copilot-source-kind,
+.copilot-stamp {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.copilot-stamp {
+  margin: 0;
+}
+
+.copilot-error {
+  margin: 0;
+  color: var(--warn);
+  font-size: var(--size-label);
+}
+
+.copilot-saw summary {
+  color: var(--muted);
+  font-size: var(--size-label);
+  cursor: pointer;
+}

@@ -55,7 +55,9 @@ shared file**:
   dock may place it (`dock`), what the command bar hands it (`input`:
   `symbol`, `symbols`, `query` or `none`) and a plain-language `learn` text
   that learn mode shows above the panel. Give any new column heading an
-  entry in `GLOSSARY` (`design/learn.ts`); a test checks the boards.
+  entry in `GLOSSARY` (`design/learn.ts`); a test checks the boards. If the
+  panel shows figures, add a case to `panelDetail`
+  (`store/copilot/context.ts`) so the co-pilot can see and cite them.
 - `index.tsx` default-exports a component taking dockview's panel props.
   Read data through the stores; report the feeds you show with
   `useReportSources(api.id, …)` so the header badge is truthful.
