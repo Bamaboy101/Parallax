@@ -77,6 +77,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Multi-screen.** The window button on any panel moves it into its own
   browser window for a second monitor. It stays linked and live, and follows
   your theme; one click brings it back.
+- **World globe.** Day and night as they are now, the exchanges that are open
+  lit, and arcs from New York to the three markets whose country ETF moved
+  most today. Drag to turn it.
 
 ## The honest part: what "free" and "no delay" allow
 

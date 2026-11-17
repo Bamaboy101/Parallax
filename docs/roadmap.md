@@ -70,6 +70,10 @@ be checked against the provider's own docs before building.
   (5 bp price bins) while on and shades resting size behind the candles, for the time the page
   has been recording (up to the Rewind hour).
 - **F3 World globe:** 3D globe, day/night line, open markets lit, arcs for the biggest moves.
+  Built 17 Nov: an orthographic globe with day, night and twilight from the sun's position, open
+  exchanges lit from the session model, and arcs from New York to the three country ETFs (the
+  region boards' proxies) that moved most since the previous close. Land: Natural Earth, public
+  domain. It turns only when dragged; no idle spin, per the motion rules.
 - **F4 Paper trading:** trade from the chart with fake money via Alpaca's free paper account:
   market and limit orders, open orders, positions, profit and loss, cancel.
   Built 17 Nov: paper endpoint only, enforced by the client (origin check, live keys never sent)

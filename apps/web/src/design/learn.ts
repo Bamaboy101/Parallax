@@ -83,6 +83,10 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   EFFR: 'The effective federal funds rate: what banks charge each other overnight, kept inside the Fed’s target range.',
   Liquidity:
     'The order book over time, drawn behind price: each band is where buy and sell orders were waiting, shaded more strongly where more size sat. Only since this page started recording the book.',
+  'Open now':
+    'Stock exchanges in their regular trading hours right now, lit mint on the globe. Holidays are not taken into account.',
+  'Biggest moves':
+    'The three markets whose US-listed fund (an ETF that tracks the country) moved most since its previous close, drawn as arcs from New York, where those funds trade.',
 };
 
 /** What a truth badge means, in plain words. */
