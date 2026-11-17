@@ -43,3 +43,5 @@ export const WORKSPACES: readonly Workspace[] = Object.values(files).sort(
 
 /** What a first visit shows; a saved layout always wins (restoreLayout). */
 export const DEFAULT_WORKSPACE = 'mission-control';
+/** E2: where Simple mode starts: plain panels only. */
+export const SIMPLE_WORKSPACE = 'simple';

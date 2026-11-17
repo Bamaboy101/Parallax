@@ -9,18 +9,23 @@ export type Palette = 'green-red' | 'blue-orange';
 export type Density = 'comfortable' | 'dense';
 /** E1: the Rundown home page, or the dock of panels (the cockpit). */
 export type View = 'rundown' | 'cockpit';
+/** E2: plain labels and beginner panels with Learn hints, or the full terminal. */
+export type Mode = 'simple' | 'pro';
 
-/**
- * First visit opens the Rundown; anyone with a saved dock layout (they have used the cockpit)
- * keeps landing in it.
- */
-function firstView(): View {
+/** No saved dock layout: nobody has used the cockpit in this browser yet. */
+function firstVisit(): boolean {
   try {
-    return localStorage.getItem(LAYOUT_STORAGE_KEY) === null ? 'rundown' : 'cockpit';
+    return localStorage.getItem(LAYOUT_STORAGE_KEY) === null;
   } catch {
-    return 'rundown';
+    return true;
   }
 }
+
+/**
+ * A first visit opens the Rundown in Simple mode with Learn hints on; anyone with a saved dock
+ * layout (they have used the cockpit) keeps landing in it, in Pro.
+ */
+const FIRST_VISIT = firstVisit();
 
 interface Prefs {
   palette: Palette;
@@ -37,6 +42,7 @@ interface Prefs {
   /** Cue volume, 0..1. */
   soundVolume: number;
   view: View;
+  mode: Mode;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
   setLearn: (learn: boolean) => void;
@@ -44,6 +50,8 @@ interface Prefs {
   setSound: (sound: boolean) => void;
   setSoundVolume: (soundVolume: number) => void;
   setView: (view: View) => void;
+  /** Simple also switches Learn hints on; they can be switched off again. */
+  setMode: (mode: Mode) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -51,11 +59,12 @@ export const usePrefs = create<Prefs>()(
     (set) => ({
       palette: 'green-red',
       density: 'comfortable',
-      learn: false,
+      learn: FIRST_VISIT,
       voiceOnline: false,
       sound: false,
       soundVolume: 0.5,
-      view: firstView(),
+      view: FIRST_VISIT ? 'rundown' : 'cockpit',
+      mode: FIRST_VISIT ? 'simple' : 'pro',
       setPalette: (palette) => {
         set({ palette });
       },
@@ -77,6 +86,9 @@ export const usePrefs = create<Prefs>()(
       setView: (view) => {
         set({ view });
       },
+      setMode: (mode) => {
+        set(mode === 'simple' ? { mode, learn: true } : { mode });
+      },
     }),
     {
       name: PREFS_STORAGE_KEY,
@@ -90,6 +102,7 @@ export const usePrefs = create<Prefs>()(
         sound: state.sound,
         soundVolume: state.soundVolume,
         view: state.view,
+        mode: state.mode,
       }),
     },
   ),

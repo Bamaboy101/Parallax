@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import {
   CandlestickSeries,
@@ -258,7 +259,9 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
   return (
     <div className="market-panel chart-panel">
       <div className="market-toolbar chart-toolbar">
-        <span className="market-symbol">{item.label}</span>
+        <span className="market-symbol">
+          <SymbolLabel item={item} />
+        </span>
         <div className="chart-intervals" role="group" aria-label="Chart interval">
           {INTERVALS.map((option) => (
             <button

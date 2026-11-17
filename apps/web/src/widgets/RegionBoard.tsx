@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Cell } from '../design/Cell';
@@ -40,7 +41,9 @@ const FxRow = memo(function FxRow({
   }, [item.id, source, onSource]);
   return (
     <li className="market-row region-columns" title={item.name}>
-      <span className="market-symbol">{item.label}</span>
+      <span className="market-symbol">
+        <SymbolLabel item={item} />
+      </span>
       <span className="region-source">live · Kraken</span>
       {line.price === undefined ? (
         <RowReason symbol={item} label={item.label} />

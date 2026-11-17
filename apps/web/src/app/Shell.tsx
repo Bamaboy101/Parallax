@@ -8,6 +8,7 @@ import { ConnectionStatus } from './ConnectionStatus';
 import { DockArea } from './DockArea';
 import { LearnLayer } from './LearnLayer';
 import { LearnSwitch } from './LearnSwitch';
+import { ModeSwitch } from './ModeSwitch';
 import { RenameBanner } from './RenameBanner';
 import { isOldAddress } from './rename';
 import { RewindScrubber } from './RewindScrubber';
@@ -44,6 +45,7 @@ export function Shell() {
     };
   }, []);
   const view = usePrefs((state) => state.view);
+  const mode = usePrefs((state) => state.mode);
   // The Rundown always shows now; Rewind belongs to the cockpit.
   useEffect(() => {
     if (view === 'rundown') setCursor(null);
@@ -90,6 +92,7 @@ export function Shell() {
           {view === 'cockpit' && <RewindScrubber />}
           <ConnectionStatus />
           <Clock />
+          <ModeSwitch />
           <LearnSwitch />
           <button
             type="button"
@@ -158,7 +161,7 @@ export function Shell() {
           tabIndex={0}
           className="shell-dock weather-glow min-h-0 min-w-0 p-2"
         >
-          <DockArea />
+          <DockArea key={mode} mode={mode} />
         </main>
       )}
       <footer aria-label="Ticker rail" className="shell-rail">

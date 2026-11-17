@@ -5,21 +5,20 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 export const LAYOUT_STORAGE_KEY = 'parallax:layout';
 
 interface LayoutState {
-  /** Last saved dock layout, or null for the default layout. */
+  /** Last saved Pro dock layout, or null for the default layout. */
   dock: SerializedDockview | null;
-  saveDock: (dock: SerializedDockview) => void;
-  resetDock: () => void;
+  /** E2: Simple mode's own layout, so switching modes never rearranges the Pro desk. */
+  simpleDock: SerializedDockview | null;
+  saveDock: (dock: SerializedDockview, mode: 'simple' | 'pro') => void;
 }
 
 export const useLayoutStore = create<LayoutState>()(
   persist(
     (set) => ({
       dock: null,
-      saveDock: (dock) => {
-        set({ dock });
-      },
-      resetDock: () => {
-        set({ dock: null });
+      simpleDock: null,
+      saveDock: (dock, mode) => {
+        set(mode === 'simple' ? { simpleDock: dock } : { dock });
       },
     }),
     {
@@ -28,7 +27,7 @@ export const useLayoutStore = create<LayoutState>()(
       // v2: watchlist and tape. v3: chart. v4: order book.
       version: 4,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ dock: state.dock }),
+      partialize: (state) => ({ dock: state.dock, simpleDock: state.simpleDock }),
     },
   ),
 );

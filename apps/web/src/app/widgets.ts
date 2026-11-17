@@ -1,5 +1,7 @@
 import type { IDockviewPanelProps } from 'dockview-react';
 import { createElement, type FunctionComponent } from 'react';
+import { plainName } from '../design/plain';
+import { usePrefs } from '../store/prefs';
 import { instrument } from '../store/symbols';
 import type { WidgetMeta } from '../widgets/types';
 import { LearnFrame } from './LearnStrip';
@@ -50,14 +52,23 @@ export const DOCK_COMPONENTS: Record<string, WidgetView> = Object.fromEntries(
   WIDGETS.filter((widget) => widget.meta.dock).map((widget) => [widget.meta.id, contained(widget)]),
 );
 
-/** A panel's tab title: the widget, plus the symbol or query it shows ('Chart · ETH/USD'). */
+/**
+ * A panel's tab title: the widget, plus the symbol or query it shows ('Chart · ETH/USD', or
+ * 'Chart · Ether' in Simple mode).
+ */
 export function panelTitle(meta: WidgetMeta, params: Readonly<Record<string, unknown>>): string {
-  const detail =
+  const item =
     meta.input === 'symbol' && typeof params.symbol === 'string'
-      ? instrument(params.symbol)?.label
-      : meta.input === 'query' && typeof params.query === 'string' && params.query !== ''
-        ? params.query
-        : undefined;
+      ? instrument(params.symbol)
+      : undefined;
+  const simple = usePrefs.getState().mode === 'simple';
+  const detail = item
+    ? simple
+      ? plainName(item)
+      : item.label
+    : meta.input === 'query' && typeof params.query === 'string' && params.query !== ''
+      ? params.query
+      : undefined;
   return detail ? `${meta.title} · ${detail}` : meta.title;
 }
 

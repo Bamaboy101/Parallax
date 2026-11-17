@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import { Cell } from '../../design/Cell';
 import { formatCompact } from '../../design/format';
@@ -39,7 +40,9 @@ function MoverList({
               className="market-row movers-columns"
               title={`${mover.item.name}${mover.item.note ? ` · ${mover.item.note}` : ''} · ${mover.source}`}
             >
-              <span className="market-symbol">{mover.item.label}</span>
+              <span className="market-symbol">
+                <SymbolLabel item={mover.item} />
+              </span>
               {traded ? (
                 <span className="text-right font-mono text-num">
                   ${formatCompact(mover.tradedUsd)}

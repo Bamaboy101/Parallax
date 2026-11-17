@@ -6,6 +6,7 @@ export const meta: WidgetMeta = {
   defaultSize: { width: 300, height: 420 },
   aliases: ['tape', 'trades', 'prints', 'ts'],
   dock: true,
+  pro: true,
   input: 'symbol',
   learn:
     'Time and sales: every trade as it happens, newest at the top, with its price and size. Green traded higher than the one before, red lower.',

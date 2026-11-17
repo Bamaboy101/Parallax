@@ -733,6 +733,16 @@ figures), the dollar index and oil from FRED through the edge, odds from the sha
 store, the calendar and headlines from the edge. Every section carries a truth badge: the worst
 of its feeds, as a panel header does. Rewind returns to live on the Rundown.
 
+**Simple and Pro (E2).** The `mode` preference (`simple` or `pro`, top-bar switch, remembered)
+sets what the cockpit offers. Widgets flagged `pro` in their meta (order book, tape,
+derivatives, options, rates, Constellation, on-chain) leave the command bar and the workspace
+menu in Simple (`app/modes.ts`), and each mode keeps its own saved layout (`dock` and
+`simpleDock` in `store/layout.ts`): Simple starts from the `simple` preset, so switching never
+rearranges the Pro desk. In Simple, `SymbolLabel` and `panelTitle` show plain names
+(`design/plain.ts`: "Bitcoin", "Euro, in dollars", "Gold"), with the trading label in the
+tooltip; choosing Simple switches Learn hints on (they can be switched off). A first visit starts
+in Simple; a browser with a saved layout keeps Pro.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,

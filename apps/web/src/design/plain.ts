@@ -19,12 +19,14 @@ const units = (code: string): string =>
  * dollars". The trading label (BTC/USD) stays available as a tooltip.
  */
 export function plainName(item: Instrument): string {
-  if (item.base === 'PAXG') return 'Gold';
+  // The same coin also trades against USDT (a dollar token); say so, or the list shows it twice.
+  const tether = item.quote === 'USDT' ? ', in USDT' : '';
+  if (item.base === 'PAXG') return `Gold${tether}`;
   if (item.kind === 'fx') {
     const name = CURRENCY[item.base]?.[0] ?? item.base;
     return `${name}, in ${units(item.quote)}`;
   }
-  return item.name;
+  return `${item.name}${tether}`;
 }
 
 /** "+2.10%" with the sign spelled out for screen readers: "up 2.10%". */

@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import { Cell } from '../../design/Cell';
 import '../../design/market.css';
 import { usePriceLine } from '../../store/hooks';
@@ -16,7 +17,9 @@ function Item({ item }: { item: Instrument }) {
         : 'down';
   return (
     <li className="ticker-item" title={line.source ? `${item.name} · ${line.source}` : item.name}>
-      <span className="ticker-symbol">{item.label}</span>
+      <span className="ticker-symbol">
+        <SymbolLabel item={item} />
+      </span>
       {line.price === undefined ? (
         <RowReason symbol={item} label={item.label} />
       ) : (

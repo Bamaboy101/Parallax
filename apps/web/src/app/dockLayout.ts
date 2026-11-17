@@ -44,13 +44,14 @@ export function applyPreset(api: DockviewApi, name: string): boolean {
 }
 
 /**
- * Restore a saved layout, falling back to the default workspace when there is none or it no longer
- * loads (for example, it names a component that was removed). Panels that were in their own
- * window come back floating in this one (F9).
+ * Restore a saved layout, falling back to a preset (the default workspace unless given) when there
+ * is none or it no longer loads (for example, it names a component that was removed). Panels that
+ * were in their own window come back floating in this one (F9).
  */
 export function restoreLayout(
   api: DockviewApi,
   saved: SerializedDockview | null,
+  preset: string = DEFAULT_WORKSPACE,
 ): 'saved' | 'default' {
   if (saved) {
     try {
@@ -61,6 +62,6 @@ export function restoreLayout(
     }
     api.clear();
   }
-  applyPreset(api, DEFAULT_WORKSPACE);
+  applyPreset(api, preset);
   return 'default';
 }
