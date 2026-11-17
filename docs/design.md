@@ -171,4 +171,7 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - The Constellation draws a soft glow per body scaled by traded value, faint lines between pairs
   with |r| ≥ 0.65 (dashed when inverse), a mint ring on the selected body, and labels placed so
   they never overlap bodies or each other. Layout motion lasts at most 160 ms, then settles; under
-  reduced motion it settles without animating.
+  reduced motion it settles without animating. Whale activity (F8) is a dotted ring in the text
+  colour around a body, and on the tape a 2 px text-colour bar and bold weight on the row, with a
+  muted summary line that turns text colour (and gains a ◆) while there is any. Neutral, never up
+  or down, and static: nothing flashes or pulses when a whale prints.

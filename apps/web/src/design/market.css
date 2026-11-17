@@ -146,6 +146,46 @@
   background: color-mix(in srgb, var(--muted) 8%, transparent);
 }
 
+/* F8 whale radar: a quiet, static signal. Neutral text colour (a whale is size, not direction);
+   no flash, no per-row motion. */
+.tape-columns[data-whale] {
+  font-weight: 600;
+}
+
+.tape-columns[data-whale]::before {
+  content: '';
+  position: absolute;
+  inset-block: 4px;
+  left: 0;
+  width: 2px;
+  background: var(--text);
+}
+
+.tape-radar {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 4px var(--pad);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.tape-radar-label {
+  color: var(--muted);
+  font-family: var(--font-ui);
+}
+
+.tape-radar[data-active] {
+  color: var(--text);
+}
+
+.tape-radar[data-active] .tape-radar-label::before {
+  content: '◆ ';
+}
+
 .market-empty {
   padding: var(--pad);
   color: var(--muted);

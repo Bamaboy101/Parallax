@@ -587,6 +587,16 @@ moments by binary search in the ring buffers, so statistics never copy an hour o
   last 5 minutes of 10-second return volatility over its hour's; the median ratio sets
   `data-weather` (calm < 0.8, steady < 1.25, active < 2, stormy) and `--weather` 0..1 on <html>,
   which tints the glow behind the panels. Nothing is set until there are 10 minutes of returns.
+- **Whale radar (F8)** (`store/whales.ts`): a trade is a whale when its value clears both
+  $100,000 (`WHALE_FLOOR`, in the quote currency) and the symbol's own 99.5th percentile over the
+  last hour (`whaleThreshold`; the floor alone below 200 trades), so a busy market needs a bigger
+  print and a quiet one never calls ordinary trades whales. Liquidations on the coin's USDT perp
+  (`perpFor`) count when over the floor. `radarAt` reads the tick store at a moment, so Rewind
+  replays it. The Constellation's sky carries a whale count per star (15-minute window) and
+  draws a dotted ring in the text colour around bodies with any; the tape marks whale rows with a
+  static bar and bold weight and adds one line under its toolbar (`useRadar`, every 5 s): the
+  count and largest print, and the perp's large liquidations. Both panels keep the perps'
+  liquidation feeds open (`useLiquidationFeeds`). Whale marks are neutral: size, not direction.
 
 ## Linked panels
 
