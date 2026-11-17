@@ -37,7 +37,7 @@ describe('Rates desk', () => {
     // The New York Fed's required notice for reference-rate data.
     expect(
       screen.getByText(
-        /The New York Fed is not responsible for publication of the SOFR and EFFR by Open Terminal/,
+        /The New York Fed is not responsible for publication of the SOFR and EFFR by Parallax/,
       ),
     ).toBeInTheDocument();
     // Learn mode can explain every heading and figure label.

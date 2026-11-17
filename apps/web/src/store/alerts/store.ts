@@ -16,7 +16,7 @@ import { instrument, type Instrument } from '../symbols';
 import { sampleAt, useTickStore } from '../ticks';
 import { describeRule, type AlertRule } from './parse';
 
-export const ALERTS_STORAGE_KEY = 'open-terminal:alerts';
+export const ALERTS_STORAGE_KEY = 'parallax:alerts';
 /** Rules are checked this often against the latest prices. */
 export const ALERT_CHECK_MS = 1000;
 
@@ -149,7 +149,7 @@ export function firedDetail(
 /** A browser notification, when the user allowed them; the Alerts panel shows every alert anyway. */
 function notify(alert: Alert, detail: string): void {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  new Notification(`Open Terminal: ${describeRule(alert.rule)}`, { body: detail, tag: alert.id });
+  new Notification(`Parallax: ${describeRule(alert.rule)}`, { body: detail, tag: alert.id });
 }
 
 /** Check every unfired alert against the latest prices. Live only: Rewind does not fire alerts. */

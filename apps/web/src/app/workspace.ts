@@ -5,7 +5,7 @@ import { HISTORY_SINCE, setCursor } from '../store/ticks';
 
 /** A saved or shared workspace: the dock, and the Rewind moment it was looking at, if any. */
 export interface WorkspaceFile {
-  app: 'open-terminal';
+  app: 'parallax';
   kind: 'workspace';
   v: 1;
   dock: SerializedDockview;
@@ -18,7 +18,7 @@ export const SHARE_KEY = 'w';
 
 export function workspaceFile(api: DockviewApi, at: number | null): WorkspaceFile {
   return {
-    app: 'open-terminal',
+    app: 'parallax',
     kind: 'workspace',
     v: 1,
     dock: api.toJSON(),
@@ -31,14 +31,17 @@ function isDock(value: unknown): value is SerializedDockview {
   return isObject(value) && isObject(value.grid) && isObject(value.panels);
 }
 
+/** Files and share links made before the rename (18 Nov 2026) say 'open-terminal'. */
+const APPS = new Set<unknown>(['parallax', 'open-terminal']);
+
 /** Read a workspace file, or a bare dockview layout; null for anything else. */
 export function parseWorkspace(value: unknown): WorkspaceFile | null {
-  if (isDock(value)) return { app: 'open-terminal', kind: 'workspace', v: 1, dock: value };
-  if (!isObject(value) || value.app !== 'open-terminal' || value.kind !== 'workspace') return null;
+  if (isDock(value)) return { app: 'parallax', kind: 'workspace', v: 1, dock: value };
+  if (!isObject(value) || !APPS.has(value.app) || value.kind !== 'workspace') return null;
   if (!isDock(value.dock)) return null;
   const at = typeof value.at === 'number' && Number.isFinite(value.at) ? value.at : undefined;
   return {
-    app: 'open-terminal',
+    app: 'parallax',
     kind: 'workspace',
     v: 1,
     dock: value.dock,

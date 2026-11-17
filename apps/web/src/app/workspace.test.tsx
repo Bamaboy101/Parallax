@@ -55,7 +55,7 @@ describe('share links', () => {
     expect(token).toMatch(/^[A-Za-z0-9_-]+$/);
     // Small enough for chat apps and browsers to keep whole.
     expect(
-      shareUrl({ origin: 'https://open-terminal.pages.dev', pathname: '/' }, token).length,
+      shareUrl({ origin: 'https://parallax-markets.pages.dev', pathname: '/' }, token).length,
     ).toBeLessThan(4000);
     expect(await decodeShare(token)).toEqual(file);
     expect(shareToken(`#w=${token}`)).toBe(token);

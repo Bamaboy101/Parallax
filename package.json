@@ -1,5 +1,5 @@
 {
-  "name": "open-terminal",
+  "name": "parallax",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --filter @open-terminal/web dev",
+    "dev": "pnpm --filter @parallax/web dev",
     "build": "pnpm -r --if-present build",
     "lint": "eslint . && prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",

@@ -146,9 +146,9 @@ export default function Alerts({ params }: IDockviewPanelProps<AlertsParams>) {
       )}
       <p className="panel-footnote">
         Alerts are checked once a second against the same live prices as the panels, in this tab:
-        they work while Open Terminal is open (in the background is fine), not after it is closed.
-        Each fires once on a fresh crossing; re-arm it to watch again. Move alerts reach back at
-        most an hour.
+        they work while Parallax is open (in the background is fine), not after it is closed. Each
+        fires once on a fresh crossing; re-arm it to watch again. Move alerts reach back at most an
+        hour.
       </p>
     </div>
   );

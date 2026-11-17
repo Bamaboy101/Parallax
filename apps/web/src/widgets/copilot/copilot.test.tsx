@@ -74,7 +74,7 @@ describe('Co-pilot panel', () => {
   it('asks for the user’s own key first and says where it goes', () => {
     render(<Copilot {...props()} />);
     expect(screen.getByLabelText('Anthropic API key')).toBeInTheDocument();
-    expect(screen.getByText(/goes only to Anthropic, never to Open Terminal/)).toBeInTheDocument();
+    expect(screen.getByText(/goes only to Anthropic, never to Parallax/)).toBeInTheDocument();
   });
 
   it('asks a command-bar question and lists the panels and headlines it cites', async () => {

@@ -1,14 +1,14 @@
-# Open Terminal
+# Parallax
 
 A free, open-source market terminal that runs entirely in your browser:
 live crypto, FX, US stocks on your own key, rates and macro, news and
 filings — in one dockable cockpit where every number shows its source and
 its age.
 
-**Live:** <https://open-terminal.pages.dev> — no account, no install. Crypto,
+**Live:** <https://parallax-markets.pages.dev> — no account, no install. Crypto,
 FX, perpetual futures, macro and news work the moment the page loads.
 
-> Open Terminal shows market data as delivered by its public sources. It is
+> Parallax shows market data as delivered by its public sources. It is
 > not investment advice, and nothing here is guaranteed to be correct,
 > complete or timely.
 
@@ -73,7 +73,7 @@ FX, perpetual futures, macro and news work the moment the page loads.
   for as long as the page has been watching the book.
 - **Smart alerts.** Type `alert BTC above 65000` or `alert ETH down 2% in
 15m` and get a browser notification, with the price, source and time,
-  when it happens. Alerts run while Open Terminal is open in a tab.
+  when it happens. Alerts run while Parallax is open in a tab.
 - **Multi-screen.** The window button on any panel moves it into its own
   browser window for a second monitor. It stays linked and live, and follows
   your theme; one click brings it back.
@@ -127,7 +127,7 @@ Two limits, stated plainly:
 
 ## Using it
 
-1. Open <https://open-terminal.pages.dev>. The Mission Control workspace
+1. Open <https://parallax-markets.pages.dev>. The Mission Control workspace
    loads; crypto, FX, perps, macro, calendar and news are already live.
 2. For US stocks, open **Settings** (the key icon) and paste a free
    [Alpaca](https://alpaca.markets) or [Finnhub](https://finnhub.io) key.
@@ -183,5 +183,6 @@ their licences (TradingView's chart library, the Inter and JetBrains Mono
 fonts, React, dockview, zustand) are listed in [NOTICE](NOTICE); the chart
 panel carries the required "Charting by TradingView" attribution.
 
-"Open Terminal" is a working name for v0.1. This project is not affiliated
+Parallax was called Open Terminal until 18 November 2026; the old address,
+open-terminal.pages.dev, points here until 18 December 2026. This project is not affiliated
 with Bloomberg LP or any data provider it displays.

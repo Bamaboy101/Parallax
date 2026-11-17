@@ -19,7 +19,7 @@ export const CACHE_SECONDS = { news: 120, fred: 3600, sec: 600, calendar: 21_600
 type Route = keyof typeof CACHE_SECONDS;
 
 const DEFAULT_ORIGINS =
-  'http://localhost:5173,http://127.0.0.1:5173,https://open-terminal.pages.dev,https://*.open-terminal.pages.dev';
+  'http://localhost:5173,http://127.0.0.1:5173,https://parallax-markets.pages.dev,https://*.parallax-markets.pages.dev,https://open-terminal.pages.dev,https://*.open-terminal.pages.dev';
 
 /** Whether `origin` is on the list; `https://*.host` allows any subdomain (Pages previews). */
 export function originAllowed(origin: string, list: string | undefined): boolean {

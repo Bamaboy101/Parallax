@@ -102,7 +102,7 @@ Checked 17 Nov 2026 against Alpaca's docs (Paper Trading; Create an Order) and i
 
 - Paper accounts are free to anyone worldwide, start with $100,000 and have their own API keys,
   separate from live keys; the API is the same as live at `https://paper-api.alpaca.markets`.
-  Live trading is on another host, which Open Terminal never calls (see architecture.md).
+  Live trading is on another host, which Parallax never calls (see architecture.md).
 - The paper API allows browser calls (`Access-Control-Allow-Origin: *`, with the `APCA-API-KEY-ID`
   and `APCA-API-SECRET-KEY` headers allowed).
 - Orders: `POST /v2/orders` with `symbol`, `qty`, `side`, `type` (`market` or `limit`),
@@ -161,7 +161,7 @@ Use (last updated 9 Jun 2023), and called from a browser on our origin.
   Reference rates carry a Use Restriction: whoever presents the data "must include the following
   notice and disclaimer". The desk's footnote shows it: "The SOFR and EFFR are subject to the
   Terms of Use posted at newyorkfed.org. The New York Fed is not responsible for publication of
-  the SOFR and EFFR by Open Terminal, does not sanction or endorse any particular republication,
+  the SOFR and EFFR by Parallax, does not sanction or endorse any particular republication,
   and has no liability for your use." The New York Fed's name is never used as an endorsement.
 - Recorded 17 Nov 2026: EFFR samples since 27 Aug 2026 (including the 17 Sep target change) and
   the last three SOFR days (`store/rates/fixtures/`).
@@ -229,7 +229,7 @@ skipped until one of them agrees in writing (decided 18 Nov).
   user agreement and privacy policy" that names the API as CoinGecko's property, disclaims all its
   liability and makes the app responsible for data warnings (§7.1). The developer must also
   indemnify CoinGecko against claims from the app's users (§12.5) and give up any claim against it
-  (§11.3). Open Terminal has no user agreement, and the project owner chose not to take on the
+  (§11.3). Parallax has no user agreement, and the project owner chose not to take on the
   indemnity. Written permission, or an agreement that drops §7.1 and §12.5 for a free open-source
   viewer, would unlock it. Its keyless rate limit is about 5 to 10 calls a minute per IP.
 - **DEX Screener** (`api.dexscreener.com`) has no organic trending endpoint: its "boosts" and

@@ -2,7 +2,7 @@ import type { SerializedDockview } from 'dockview-react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export const LAYOUT_STORAGE_KEY = 'open-terminal:layout';
+export const LAYOUT_STORAGE_KEY = 'parallax:layout';
 
 interface LayoutState {
   /** Last saved dock layout, or null for the default layout. */

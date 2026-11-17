@@ -80,7 +80,7 @@ export async function allNews(env: Env): Promise<RouteResult> {
       try {
         const response = await fetch(feed.url, {
           headers: {
-            'User-Agent': env.SEC_USER_AGENT ?? 'Open Terminal (+https://open-terminal.pages.dev)',
+            'User-Agent': env.SEC_USER_AGENT ?? 'Parallax (+https://parallax-markets.pages.dev)',
             Accept: 'application/rss+xml, application/xml',
           },
         });

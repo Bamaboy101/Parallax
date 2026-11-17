@@ -8,12 +8,17 @@ import { ConnectionStatus } from './ConnectionStatus';
 import { DockArea } from './DockArea';
 import { LearnLayer } from './LearnLayer';
 import { LearnSwitch } from './LearnSwitch';
+import { RenameBanner } from './RenameBanner';
+import { isOldAddress } from './rename';
 import { RewindScrubber } from './RewindScrubber';
 import { useAlertEngine } from '../store/alerts/store';
 import { useSoundLayer } from './sound';
 import { useMarketWeather } from './weather';
 import { widgetMeta } from './widgets';
 import { WorkspaceMenu } from './WorkspaceMenu';
+
+/** At the pre-rename address (until it closes), a banner row sits above the top bar. */
+const OLD_ADDRESS = isOldAddress(window.location.origin);
 
 function openSettings(): void {
   const settings = widgetMeta('settings');
@@ -46,21 +51,24 @@ export function Shell() {
     root.style.removeProperty('background-color');
     setTheme(next);
     try {
-      localStorage.setItem('open-terminal:theme', next);
+      localStorage.setItem('parallax:theme', next);
     } catch {
       // The switch still works for this visit when storage is unavailable.
     }
   };
 
   return (
-    <div className="shell grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto] bg-bg">
+    <div
+      className={`shell grid h-dvh bg-bg ${OLD_ADDRESS ? 'grid-rows-[auto_auto_minmax(0,1fr)_auto]' : 'grid-rows-[auto_minmax(0,1fr)_auto]'}`}
+    >
+      {OLD_ADDRESS && <RenameBanner />}
       <header className="shell-topbar">
         <div className="shell-brand">
           <div aria-hidden="true" className="shell-mark">
             <span />
           </div>
           <div className="shell-identity">
-            <h1>Open Terminal</h1>
+            <h1>Parallax</h1>
             <div className="shell-micro">Market operations</div>
           </div>
         </div>

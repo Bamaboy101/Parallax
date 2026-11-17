@@ -1,6 +1,6 @@
 # Architecture
 
-This is the contract of record for how market data moves through Open Terminal. Code in
+This is the contract of record for how market data moves through Parallax. Code in
 `apps/web/src/feeds/` must match it. If you change the contract, change this file in the same commit.
 
 ## Data flow
@@ -130,7 +130,7 @@ The app talks to the worker only through these messages (`feeds/protocol.ts`).
 | hub → app | `verify-result` | `accepted`, `rejected` (FeedAuthError) or `failed`, with a reason                                                   |
 
 **Key vault.** `store/keys.ts` keeps keys by provider id in `localStorage`
-(`open-terminal:keys`), exactly as adapters receive them. Settings edits it; `store/feedClient.ts`
+(`parallax:keys`), exactly as adapters receive them. Settings edits it; `store/feedClient.ts`
 gives a newly started hub the stored keys and forwards every change. For
 `verify-key` the hub builds a throwaway instance of that provider's adapter whose context returns
 only the typed key, runs `verifyKey()` with a 15 s limit and disposes it. The live source keeps
@@ -418,7 +418,7 @@ once the panel is ready) answers plain-word questions from what is on screen:
   top eight events' odds are added (`O1`…, labelled market odds, not forecasts); up to twelve
   headlines from the edge `/news` route (about the first catalogue asset the question names) are
   `N1`…. Panels without figures (Session ring, Settings) are left out.
-- **Keys.** `store/copilot/keys.ts` is its own vault (`open-terminal:ai-keys` in local storage),
+- **Keys.** `store/copilot/keys.ts` is its own vault (`parallax:ai-keys` in local storage),
   separate from the data keys because data keys are handed to the feed hub and AI keys never are.
   `store/copilot/providers.ts` builds every URL from the provider's own origin
   (`https://api.anthropic.com`, `https://api.openai.com`) and refuses any other, so a key reaches
@@ -491,7 +491,7 @@ in 15m`, `SOL moves 3% within an hour`; the tick store keeps an hour) or a chang
 (`BTC up 5% today`: 24 hours for crypto and FX, since the previous close for stocks, as in the
 watchlist). Symbols resolve only by exact ticker, pair or label (`resolveSymbol`), never fuzzily;
 anything it cannot read gets a reason, not a guess. `describeRule` says the rule back in words.
-`store/alerts/store.ts` keeps the alerts (`open-terminal:alerts` in local storage) and
+`store/alerts/store.ts` keeps the alerts (`parallax:alerts` in local storage) and
 `useAlertEngine`, mounted once in the shell, keeps their symbols streaming, loads hourly history
 for day alerts and checks every alert once a second against live prices (Rewind never fires
 one). An alert fires only on a fresh crossing: one already true when added waits for it to stop
@@ -742,7 +742,8 @@ themselves, and Rewind is silent.
 
 ## Edge Worker
 
-`apps/edge` is one Cloudflare Worker (`open-terminal-edge`, deployed by `deploy.yml` after CI).
+`apps/edge` is one Cloudflare Worker (`open-terminal-edge`, a name kept from before the rename;
+deployed by `deploy.yml` after CI).
 Every route is a cached GET; a request needs an `Origin` on `ALLOWED_ORIGINS` (wrangler.toml
 `[vars]`; `https://*.host` entries match subdomains, for Pages previews) or it gets 403.
 
@@ -772,3 +773,24 @@ meetings are not FRED releases and are not listed.
   (measured: about 80 ms on a hit, against about 1.3 s for a cold `/news`).
 - workerd, the local Worker runtime, does not start on macOS 12, so `wrangler dev` cannot run on
   the build machine; the Worker is covered by unit tests and checked against the deployed URL.
+
+## Addresses and the rename
+
+Open Terminal became Parallax on 18 Nov 2026, at `https://parallax-markets.pages.dev`
+(`parallax.pages.dev` was taken). `deploy.yml` deploys the same build to two Pages projects,
+`parallax-markets` and the old `open-terminal`, until 18 Dec 2026; the Worker allows both origins
+until then. `app/rename.ts` holds the addresses and the two moves:
+
+- **Same address.** `app/storageMigration.ts` is the first import of `main.tsx`, so before any
+  store reads its saved state, every `open-terminal:*` entry in local storage becomes
+  `parallax:*` (an entry already under the new name wins). The theme script in `index.html`
+  reads the old theme key too, for the first paint. Workspace files and share links made before
+  the rename (`app: 'open-terminal'`) still load.
+- **New address.** Storage belongs to one address, so the new site starts empty. At the old
+  address a banner above the top bar links to the new one and offers "Move my layout and keys":
+  it opens `parallax-markets.pages.dev/?handoff=1`, which (before rendering, so before anything
+  saves) posts "ready" to its opener at the old origin. The old page answers that window only, at
+  the new origin exactly, with its `parallax:*` entries; the new page accepts them only from its
+  opener at the old origin, only `parallax:*` keys with string values, saves them and reloads.
+  After 5 s without an answer it opens as usual. Keys move window to window inside the same
+  browser and never cross the network.

@@ -14,7 +14,7 @@ import { DOCK_COMPONENTS } from './widgets';
 import { openSharedWorkspace } from './workspace';
 
 const SAVE_DELAY_MS = 250;
-const BOOT_KEY = 'open-terminal:cockpit-boot';
+const BOOT_KEY = 'parallax:cockpit-boot';
 let bootShown = false;
 
 const cockpitTheme: DockviewTheme = {

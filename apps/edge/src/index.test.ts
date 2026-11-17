@@ -5,11 +5,11 @@ import fed from './fixtures/fed.xml?raw';
 import { handle, originAllowed } from './index';
 import { filterNews, type Env } from './routes';
 
-const SITE = 'https://open-terminal.pages.dev';
+const SITE = 'https://parallax-markets.pages.dev';
 const ENV: Env = {
-  ALLOWED_ORIGINS: `http://localhost:5173,${SITE},https://*.open-terminal.pages.dev`,
+  ALLOWED_ORIGINS: `http://localhost:5173,${SITE},https://*.parallax-markets.pages.dev`,
   FRED_API_KEY: 'fred-secret-key',
-  SEC_USER_AGENT: 'Open Terminal admin@example.com',
+  SEC_USER_AGENT: 'Parallax admin@example.com',
 };
 
 /** An in-memory stand-in for the edge cache. */
@@ -45,11 +45,13 @@ const get = (path: string, origin: string | null = SITE) =>
 describe('origin check', () => {
   it('allows the listed origins and their preview subdomains only', () => {
     expect(originAllowed(SITE, ENV.ALLOWED_ORIGINS)).toBe(true);
-    expect(originAllowed('https://v2-visual.open-terminal.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
+    expect(originAllowed('https://v2-visual.parallax-markets.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
       true,
     );
-    expect(originAllowed('https://evil-open-terminal.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(false);
-    expect(originAllowed('https://open-terminal.pages.dev.evil.com', ENV.ALLOWED_ORIGINS)).toBe(
+    expect(originAllowed('https://evil-parallax-markets.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
+      false,
+    );
+    expect(originAllowed('https://parallax-markets.pages.dev.evil.com', ENV.ALLOWED_ORIGINS)).toBe(
       false,
     );
   });
@@ -218,7 +220,7 @@ describe('/sec', () => {
     });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe('https://data.sec.gov/submissions/CIK0000320193.json');
-    expect(init.headers).toMatchObject({ 'User-Agent': 'Open Terminal admin@example.com' });
+    expect(init.headers).toMatchObject({ 'User-Agent': 'Parallax admin@example.com' });
   });
 
   it('refuses to call SEC without a declared contact', async () => {

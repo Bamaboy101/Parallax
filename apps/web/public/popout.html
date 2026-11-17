@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Open Terminal</title>
+    <title>Parallax</title>
     <!--
       F9: the page dockview opens for a panel popped out to another window. The terminal moves
       the panel in and mirrors theme, density, palette and learn mode onto this <html>; this
@@ -13,7 +13,7 @@
       (() => {
         let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         try {
-          const saved = localStorage.getItem('open-terminal:theme');
+          const saved = localStorage.getItem('parallax:theme');
           if (saved === 'dark' || saved === 'light') theme = saved;
         } catch {
           // Storage may be blocked; the system preference still applies.

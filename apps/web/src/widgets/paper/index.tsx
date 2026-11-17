@@ -123,7 +123,7 @@ function OrderRow({ order, onMessage }: { order: PaperOrder; onMessage: (text: s
 
 /**
  * The user's Alpaca paper account (F4): equity, today's profit and loss, positions and open
- * orders, with cancel and close. Fake money only; Open Terminal has no live trading path.
+ * orders, with cancel and close. Fake money only; Parallax has no live trading path.
  */
 export default function Paper({ api }: IDockviewPanelProps) {
   usePaperFeed();

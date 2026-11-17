@@ -343,8 +343,8 @@ export default function Rates({ api }: IDockviewPanelProps) {
       <p className="panel-footnote">
         Treasury: Daily Treasury Par Yield Curve Rates, U.S. Department of the Treasury. The SOFR
         and EFFR are subject to the Terms of Use posted at newyorkfed.org. The New York Fed is not
-        responsible for publication of the SOFR and EFFR by Open Terminal, does not sanction or
-        endorse any particular republication, and has no liability for your use.
+        responsible for publication of the SOFR and EFFR by Parallax, does not sanction or endorse
+        any particular republication, and has no liability for your use.
       </p>
     </div>
   );
