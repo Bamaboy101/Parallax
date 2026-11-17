@@ -3,6 +3,7 @@ const NAMES: Readonly<Record<string, string>> = {
   alpaca: 'Alpaca',
   'alpaca-poll': 'Alpaca snapshots',
   'alpaca-paper': 'Alpaca paper',
+  'alpaca-options': 'Alpaca options (indicative)',
   finnhub: 'Finnhub',
   binance: 'Binance',
   'binance-futures': 'Binance futures',

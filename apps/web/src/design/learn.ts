@@ -57,6 +57,18 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   'Type / limit': 'Market fills at the next price; limit fills only at the price shown or better.',
   Status: 'Where the paper order stands: accepted and waiting, partly filled, filled or cancelled.',
   Odds: 'What traders pay for this outcome on a prediction market, as a percentage. Market odds, not a forecast.',
+  Bid: 'The highest price someone is offering to pay right now.',
+  Ask: 'The lowest price someone is offering to sell at right now.',
+  IV: 'Implied volatility: how much movement the option price assumes, as a yearly percentage. Higher means traders expect bigger swings.',
+  Delta:
+    'Roughly how much the option price moves when the stock moves one dollar; also a rough chance it ends in the money.',
+  Vol: 'Contracts traded in the latest session.',
+  Strike: 'The price the option lets you buy (call) or sell (put) the stock at.',
+  Spot: 'The stock’s latest trade price.',
+  'ATM IV': 'Implied volatility of the option nearest the current price (at the money).',
+  'Put/call':
+    'Puts traded for every call. Above 1 means more puts (bets or hedges on a fall) than calls changed hands.',
+  Volume: 'Contracts traded in the latest session, calls and puts.',
 };
 
 /** What a truth badge means, in plain words. */

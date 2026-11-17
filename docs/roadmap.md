@@ -35,6 +35,9 @@ be checked against the provider's own docs before building.
   would unlock official levels are listed in data-sources.md.
 - **M2 Options:** chain, implied-volatility smile, put/call ratio for US stocks and ETFs. Source:
   Alpaca indicative options feed (confirm on the free plan). User's Alpaca key.
+  Confirmed and built 17 Nov: the free plan includes only the indicative feed (quotes adjusted
+  from OPRA, trades 15 minutes late), labelled as such on the panel. Same-day expiries carry no
+  IV, so the panel opens on the first later expiry.
 - **M3 Rates desk:** full Treasury yield curve with history, SOFR, Fed funds path. Source: US
   Treasury daily yields, New York Fed API. No key.
 - **M4 Energy:** oil and gas inventories, production, storage surprises. Source: EIA open data.

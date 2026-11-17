@@ -1,0 +1,218 @@
+/* Options (M2). Tokens only; no shadows; no per-row motion. In-the-money halves take a quiet
+   muted tint (a position, not a price move); only nothing here uses up/down except signed cells. */
+
+.options-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.options-expiries {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.options-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.options-expiry select {
+  min-height: var(--row-h);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.options-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.options-summary dt {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.options-summary dd {
+  margin: 0;
+}
+
+.options-volumes {
+  display: flex;
+  gap: 8px;
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.options-smile {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.options-smile svg {
+  display: block;
+  width: 100%;
+  height: calc(var(--row-h) * 4);
+}
+
+.options-smile-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.options-smile-line.is-put {
+  stroke: var(--muted);
+  stroke-dasharray: 4 3;
+}
+
+.options-spot-line {
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.options-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.options-key::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  margin-right: 4px;
+  border-top: 2px solid var(--text);
+  vertical-align: middle;
+}
+
+.options-key.is-put::before {
+  border-top: 2px dashed var(--muted);
+}
+
+.options-axis {
+  margin-left: auto;
+  font-family: var(--font-num);
+}
+
+/* Eleven columns: five for the call, the strike, five for the put. */
+.options-row,
+.options-sides {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr)) repeat(2, minmax(0, 0.9fr)) 72px repeat(3, minmax(0, 1fr))
+    repeat(2, minmax(0, 0.9fr));
+  gap: 0;
+}
+
+.options-sides {
+  display: grid;
+  padding: 4px var(--pad) 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.options-sides > :first-child {
+  grid-column: 1 / 6;
+}
+
+.options-sides > :last-child {
+  grid-column: 7 / 12;
+  text-align: right;
+}
+
+.options-cell {
+  min-width: 0;
+  padding-inline: 4px;
+  text-align: right;
+}
+
+.options-cell.is-itm {
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+}
+
+.options-strike {
+  border-inline: 1px solid var(--line);
+  text-align: center;
+}
+
+.market-columns .options-strike {
+  border-inline-color: transparent;
+}
+
+.options-list {
+  /* The offset parent of its rows, so the spot divider can be centred. */
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.options-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.options-spot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px var(--pad);
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.options-spot::before,
+.options-spot::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--muted);
+}
+
+@container (max-width: 520px) {
+  .options-delta,
+  .options-volume {
+    display: none;
+  }
+
+  .options-row,
+  .options-sides {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 64px repeat(3, minmax(0, 1fr));
+  }
+
+  .options-sides > :first-child {
+    grid-column: 1 / 4;
+  }
+
+  .options-sides > :last-child {
+    grid-column: 5 / 8;
+  }
+}

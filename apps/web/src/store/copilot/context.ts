@@ -5,6 +5,7 @@ import type { Release } from '../calendar';
 import { lastPriceOf, priceChannel, priceLine } from '../hooks';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
 import type { PaperState } from '../paper/store';
+import type { OptionsSummary } from '../options/store';
 import { dayChangeOf, oddsOf, openOutcomes, type PredictionEvent } from '../predictions/classify';
 import { PERPS } from '../perps';
 import { instrument, type Instrument } from '../symbols';
@@ -43,6 +44,8 @@ export interface ContextInput {
   fred: SeriesMap | null;
   /** Upcoming releases the Calendar panel shows, when it is open. */
   releases: readonly Release[] | null;
+  /** What each open options panel last showed, by underlying. */
+  options: Readonly<Record<string, OptionsSummary>>;
   now: number;
 }
 
@@ -122,6 +125,13 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
         )
         .join('; ');
       return `Simulated (fake money) paper account: equity ${formatNumber(account.equity, 2)} USD, today ${formatNumber(account.equity - account.lastEquity, 2, true)} USD. ${held === '' ? 'No positions.' : `Positions: ${held}.`}`;
+    }
+    case 'options': {
+      const underlying = symbol ?? 'SPY';
+      const summary = input.options[underlying];
+      if (!summary) return null;
+      const pc = summary.putCall;
+      return `${underlying} options expiring ${summary.expiry} (Alpaca indicative feed: quotes adjusted, trades 15 min delayed): spot ${formatNumber(summary.spot, 2)}, at-the-money implied volatility ${summary.atmIv === null ? 'unknown' : `${formatNumber(summary.atmIv * 100, 1)}%`}, put/call ratio ${pc.ratio === null ? 'unknown' : formatNumber(pc.ratio, 2)} by contracts traded (${formatCompact(pc.callVolume)} calls, ${formatCompact(pc.putVolume)} puts)`;
     }
     case 'macro':
       return input.fred ? macroDetail(input.fred) : null;
