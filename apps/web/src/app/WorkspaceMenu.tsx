@@ -64,7 +64,7 @@ export function WorkspaceMenu() {
     const blob = new Blob([JSON.stringify(workspace, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'open-terminal-workspace.json';
+    link.download = 'parallax-workspace.json';
     link.click();
     URL.revokeObjectURL(link.href);
   };
@@ -82,7 +82,7 @@ export function WorkspaceMenu() {
     }
     const workspace = parseWorkspace(parsed);
     if (!workspace) {
-      notify(`${chosen.name} is not an Open Terminal layout.`);
+      notify(`${chosen.name} is not a Parallax layout.`);
       return;
     }
     notify(

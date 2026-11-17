@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export const PREFS_STORAGE_KEY = 'open-terminal:prefs';
+export const PREFS_STORAGE_KEY = 'parallax:prefs';
 
 /** Green up / red down, or blue up / orange down for colour-blind users and red-means-up markets. */
 export type Palette = 'green-red' | 'blue-orange';

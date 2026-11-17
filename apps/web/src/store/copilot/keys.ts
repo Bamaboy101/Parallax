@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export const AI_KEYS_STORAGE_KEY = 'open-terminal:ai-keys';
+export const AI_KEYS_STORAGE_KEY = 'parallax:ai-keys';
 
 export type AiProvider = 'anthropic' | 'openai';
 

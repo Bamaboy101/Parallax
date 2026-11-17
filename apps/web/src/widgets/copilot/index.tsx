@@ -174,9 +174,9 @@ function KeySetup({ provider, onDone }: { provider: AiProvider; onDone: () => vo
       </div>
       {modelsError && <p className="copilot-error">{modelsError}</p>}
       <p className="panel-footnote">
-        Your key stays in this browser and goes only to {info.name}, never to Open Terminal or a
-        data provider. Each question sends the figures on your screen and recent headlines to{' '}
-        {info.name} under your key, and {info.name} bills your account.
+        Your key stays in this browser and goes only to {info.name}, never to Parallax or a data
+        provider. Each question sends the figures on your screen and recent headlines to {info.name}{' '}
+        under your key, and {info.name} bills your account.
       </p>
     </form>
   );

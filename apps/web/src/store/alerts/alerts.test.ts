@@ -129,7 +129,7 @@ describe('checkAlerts', () => {
     expect(alert?.status).toBe('fired');
     expect(alert?.fired).toMatchObject({ price: 65_010, source: 'coinbase' });
     expect(notifications).toHaveLength(1);
-    expect(notifications[0]?.title).toBe('Open Terminal: BTC/USD trades above 65,000.00');
+    expect(notifications[0]?.title).toBe('Parallax: BTC/USD trades above 65,000.00');
     expect(notifications[0]?.body).toMatch(/^BTC\/USD at 65,010\.00 on Coinbase, /);
   });
 });

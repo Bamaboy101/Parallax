@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export const KEYS_STORAGE_KEY = 'open-terminal:keys';
+export const KEYS_STORAGE_KEY = 'parallax:keys';
 
 interface KeyVault {
   /**

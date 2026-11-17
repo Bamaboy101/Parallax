@@ -69,7 +69,7 @@ marks stale data, so the glow cannot be read as either.
 
 The alternative palette is selected with `<html data-palette="blue-orange">` and composes with
 either theme. Settings › Display sets it, together with density; `store/prefs.ts` saves both under
-`open-terminal:prefs` and applies them before the first render:
+`parallax:prefs` and applies them before the first render:
 
 | Token    | Dark alternative | Light alternative |
 | -------- | ---------------- | ----------------- |
@@ -89,7 +89,7 @@ It sets `data-theme` and the browser colour scheme before React or the styleshee
 the matching background to prevent a wrong-theme flash. Its two fallback background literals must
 stay in sync with `--bg` above.
 
-A click saves `dark` or `light` under `open-terminal:theme`. Storage reads and writes are guarded:
+A click saves `dark` or `light` under `parallax:theme`. Storage reads and writes are guarded:
 blocked storage still allows switching for the current visit. Invalid saved values fall back to the
 system preference. Without a saved choice, each new page load follows the system.
 
@@ -114,7 +114,7 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   the system asks for reduced motion. The one exception is the boot sequence: on the first load
   of a browser session, dock groups fade in one by one (160 ms each, staggered over 800 ms, under
   1 s in all). A click or key skips it; it never repeats in the session
-  (`open-terminal:cockpit-boot` in session storage) and does not run under reduced motion.
+  (`parallax:cockpit-boot` in session storage) and does not run under reduced motion.
 
 ## Primitives
 
@@ -180,3 +180,13 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   colour around a body, and on the tape a 2 px text-colour bar and bold weight on the row, with a
   muted summary line that turns text colour (and gains a ◆) while there is any. Neutral, never up
   or down, and static: nothing flashes or pulses when a whale prints.
+- At the pre-rename address only, a banner row above the top bar names the new address and
+  offers "Move my layout and keys": a 6% mint tint over the panel (interface information), mint
+  link and outlined button, no shadow or motion.
+
+## Visual passes
+
+A visual pass changes markup and style only: `apps/web/src/design/*`, `widgets/*/index.tsx` and
+the UI components in `app/`. One exception, approved 18 Nov: it may change how
+`widgets/globe/draw.ts` draws (colours, line widths, glow, twilight-band styling, arc styling),
+but not the sun and session maths, the projection, the data or dragging.

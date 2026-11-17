@@ -294,7 +294,7 @@ export default function Settings() {
             The microphone in the command bar turns what you say into a command. On-device
             recognition keeps the audio on this computer. The online service is your browser
             maker&apos;s: it hears what you say, so it is used only if you allow it here or when
-            first asked. Open Terminal never receives the audio.
+            first asked. Parallax never receives the audio.
           </p>
           <Choice
             legend="Recognise speech"

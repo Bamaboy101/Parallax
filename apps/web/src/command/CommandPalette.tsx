@@ -116,7 +116,7 @@ function VoiceLine({
         <div className="command-voice" data-state="ask">
           <p>
             This browser cannot recognise speech on the device. To use voice, it sends what you say
-            to its maker&apos;s online speech service, which turns it into text. Open Terminal never
+            to its maker&apos;s online speech service, which turns it into text. Parallax never
             receives the audio. You can switch this off in Settings.
           </p>
           <div className="command-voice-actions">

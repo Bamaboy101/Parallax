@@ -16,7 +16,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PAGES_PROJECT: open-terminal
+  PAGES_PROJECT: parallax-markets
+  # The pre-rename address keeps serving the same build, with a banner pointing to the new one,
+  # until 18 Dec 2026. Remove this line (and its loop entry below) after that date.
+  LEGACY_PAGES_PROJECT: open-terminal
 
 jobs:
   pages:
@@ -39,20 +42,25 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @open-terminal/web build
-      - name: Ensure Pages project exists
+      - run: pnpm --filter @parallax/web build
+      - name: Ensure Pages projects exist
         working-directory: apps/edge
         run: |
-          if ! pnpm exec wrangler pages project list --json | grep -Fq "\"$PAGES_PROJECT\""; then
-            pnpm exec wrangler pages project create "$PAGES_PROJECT" --production-branch main
-          fi
+          projects=$(pnpm exec wrangler pages project list --json)
+          for project in "$PAGES_PROJECT" "$LEGACY_PAGES_PROJECT"; do
+            if ! grep -Fq "\"$project\"" <<<"$projects"; then
+              pnpm exec wrangler pages project create "$project" --production-branch main
+            fi
+          done
       - name: Deploy to Cloudflare Pages
         working-directory: apps/edge
-        run: >-
-          pnpm exec wrangler pages deploy ../web/dist
-          --project-name "$PAGES_PROJECT"
-          --branch main
-          --commit-hash "$DEPLOY_SHA"
+        run: |
+          for project in "$PAGES_PROJECT" "$LEGACY_PAGES_PROJECT"; do
+            pnpm exec wrangler pages deploy ../web/dist \
+              --project-name "$project" \
+              --branch main \
+              --commit-hash "$DEPLOY_SHA"
+          done
 
   # The edge Worker (apps/edge). Its secrets (FRED_API_KEY, SEC_USER_AGENT) live in Cloudflare
   # and survive deploys; this job only uploads code and the [vars] in wrangler.toml.

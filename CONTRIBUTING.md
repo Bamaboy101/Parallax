@@ -1,6 +1,6 @@
-# Contributing to Open Terminal
+# Contributing to Parallax
 
-Thanks for reading this. Open Terminal is a static web app plus one small
+Thanks for reading this. Parallax is a static web app plus one small
 edge Worker: there is no backend that holds market data, so almost every
 change can be tested by opening the page.
 
@@ -93,7 +93,7 @@ shared file**:
 
 ## Not investment advice
 
-Open Terminal shows market data as delivered by its public sources, for
+Parallax shows market data as delivered by its public sources, for
 information and for study of a free, honest terminal. Nothing in it is
 investment advice, and nothing in it is guaranteed to be correct, complete
 or timely.
