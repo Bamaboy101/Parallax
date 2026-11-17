@@ -81,6 +81,9 @@ be checked against the provider's own docs before building.
   label and badge on hover or focus.
 - **F6 Voice commands** via the browser's speech recognition.
 - **F7 Smart alerts** in plain words, delivered as browser notifications.
+  Built 17 Nov: price levels, moves within up to an hour and moves on the day, written in plain
+  words and checked once a second against live prices; each fires once on a fresh crossing, with
+  price, source and time. They run while a tab is open (no push server).
 - **F8 Whale radar:** large trades and liquidations as a quiet signal on the Constellation and
   tape.
 - **F9 Multi-screen:** pop panels out to a second monitor, still linked.

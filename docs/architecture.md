@@ -483,6 +483,24 @@ change and scales it up without smoothing, reusing its buffers, so panning costs
 as with the field off. The colour is `--text`, so it reads as neutral shading in both themes,
 never as a price direction. The legend says how far back the field goes ("since 20:29").
 
+## Smart alerts (F7)
+
+`store/alerts/parse.ts` reads plain words into one of three rules: a price level (`BTC above
+65000`, `eth > 2k`, `AAPL below $180.50`), a move within a window of up to an hour (`ETH down 2%
+in 15m`, `SOL moves 3% within an hour`; the tick store keeps an hour) or a change on the day
+(`BTC up 5% today`: 24 hours for crypto and FX, since the previous close for stocks, as in the
+watchlist). Symbols resolve only by exact ticker, pair or label (`resolveSymbol`), never fuzzily;
+anything it cannot read gets a reason, not a guess. `describeRule` says the rule back in words.
+`store/alerts/store.ts` keeps the alerts (`open-terminal:alerts` in local storage) and
+`useAlertEngine`, mounted once in the shell, keeps their symbols streaming, loads hourly history
+for day alerts and checks every alert once a second against live prices (Rewind never fires
+one). An alert fires only on a fresh crossing: one already true when added waits for it to stop
+being true (`nextState`: new, waiting, armed, fired). Firing records the price, source and time,
+and shows a browser notification when the user allowed them; asking happens on the Add click,
+the only time browsers allow it. The `alerts` widget (command `alert BTC above 65000`) previews a
+rule before adding it, lists alerts with their state, and offers Re-arm and Remove. Alerts run in
+the page, so they work while a tab is open, not after it is closed; the panel says so.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

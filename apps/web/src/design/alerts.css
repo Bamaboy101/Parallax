@@ -1,0 +1,88 @@
+/* Alerts (F7). Tokens only; no shadows; no motion. Status is interface state, never a price
+   colour: mint marks an alert being watched, the text colour one that happened. */
+
+.alerts-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.alerts-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 8px var(--pad);
+}
+
+.alerts-form input {
+  min-height: var(--row-h);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
+.alerts-preview,
+.alerts-permission {
+  margin: 0;
+  padding: 0 var(--pad) 8px;
+  color: var(--muted);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.alerts-preview {
+  color: var(--text);
+}
+
+.alerts-preview.is-invalid {
+  color: var(--muted);
+}
+
+.alerts-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.alerts-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+}
+
+.alerts-item[data-status='armed'] {
+  border-left-color: var(--live);
+}
+
+.alerts-rule {
+  font-weight: 500;
+}
+
+.alerts-status {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.alerts-item[data-status='fired'] .alerts-status {
+  color: var(--text);
+}
+
+.alerts-actions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alerts-actions .chart-interval {
+  border-color: var(--line);
+}
