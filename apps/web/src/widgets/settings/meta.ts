@@ -7,6 +7,8 @@ export const meta: WidgetMeta = {
   aliases: ['settings', 'keys', 'prefs', 'preferences'],
   dock: true,
   input: 'none',
+  learn:
+    'Your free keys and display choices. Keys stay in this browser and go only to their own provider.',
 };
 
 /** Providers whose free plans need the user's own key, in the order Settings lists them. */

@@ -7,4 +7,6 @@ export const meta: WidgetMeta = {
   aliases: ['news', 'headlines'],
   dock: true,
   input: 'query',
+  learn:
+    'Recent headlines from public news feeds, newest first. Click one to read it at the publisher.',
 };

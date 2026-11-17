@@ -387,6 +387,23 @@ ticket (`widgets/PaperTicket.tsx`); it says when a day order will wait for New Y
 positions with unrealised profit and loss and a Close button (a market order the other way), and
 open orders with Cancel. Every view says fake money and that live trading is not possible.
 
+## Learn mode (F5)
+
+One switch in the top bar (`app/LearnSwitch.tsx`, saved in `store/prefs.ts` with palette and
+density, and marked as `data-learn="on"` on <html>) explains the terminal in plain words:
+
+- **Every panel.** `WidgetMeta.learn` is required, so a widget cannot be added without its
+  explanation. Each dock widget is rendered inside `LearnFrame` (`app/LearnStrip.tsx`, applied in
+  `contained()`), which shows that text above the panel and what the panel's truth badges mean
+  right now. The frame is always there, so switching never remounts a widget.
+- **Every number and label.** `app/LearnLayer.tsx` explains what is under the pointer or focus:
+  a column heading, a number (by the heading of its column, found through the row's shared
+  `*-columns` grid class), a labelled figure, or an element marked `data-term`. The words live in
+  one glossary (`design/learn.ts`, `GLOSSARY`); a test renders the boards and checks every column
+  heading has an entry.
+- **Every badge.** `badgeExplanation` says what each state means (live with its delay, polled,
+  delayed, end of day, connecting, rate limited, no key, key rejected, offline).
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to

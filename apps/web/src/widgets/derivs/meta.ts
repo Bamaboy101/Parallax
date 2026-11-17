@@ -7,4 +7,6 @@ export const meta: WidgetMeta = {
   aliases: ['derivatives', 'derivs', 'perps', 'funding', 'liquidations', 'oi'],
   dock: true,
   input: 'none',
+  learn:
+    'Crypto perpetual futures: contracts that track a coin without expiring. Funding shows which side is paying to hold its bet, open interest how much money is in play, and liquidations when traders were forced out of losing bets.',
 };

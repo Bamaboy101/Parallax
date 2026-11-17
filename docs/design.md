@@ -136,6 +136,9 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   several feeds shows its worst feed (offline, then stale, then slowest) and a `+N` count; the
   tooltip lists all of them. The delay is exchange-to-browser, corrected for local clock skew.
 - Lists (the trades tape) re-render at most 10 times a second; single cells update every frame.
+- Learn mode (F5) adds a quiet strip above each panel (a 6% muted tint over the panel, label size)
+  and a fixed tooltip for whatever is under the pointer or focus. Explainable labels get a dotted
+  underline while it is on. The switch is mint when on (interface state). Nothing animates.
 - A price from history rather than a live tick (an illiquid symbol before its first trade) is
   shown at 60% opacity with a tooltip saying so.
 - Link dots sit before the truth badge: a numbered disc in `--link-1`…`--link-4`, or a dashed

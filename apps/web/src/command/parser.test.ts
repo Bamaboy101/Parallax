@@ -10,6 +10,7 @@ const widget = (id: string, aliases: string[], input: WidgetMeta['input']): Widg
   aliases,
   dock: true,
   input,
+  learn: `${id} panel`,
 });
 const WIDGETS = [
   widget('chart', ['chart', 'candles'], 'symbol'),

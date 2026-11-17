@@ -23,4 +23,6 @@ export interface WidgetMeta {
   input: 'symbol' | 'symbols' | 'query' | 'none';
   /** Params a new panel starts with, and the base a list widget adds to. */
   defaultParams?: Readonly<Record<string, unknown>>;
+  /** Learn mode (F5): what this panel shows, in plain words for someone new to markets. */
+  learn: string;
 }

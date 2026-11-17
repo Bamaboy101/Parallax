@@ -21,4 +21,6 @@ export const meta: WidgetMeta = {
   dock: true,
   input: 'symbols',
   defaultParams: { symbols: DEFAULT_SYMBOLS },
+  learn:
+    'Your list of prices. Each row shows the latest price, a small line of its recent trend and how much it has moved. Add more with “watch” in the command bar.',
 };

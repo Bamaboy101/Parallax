@@ -7,4 +7,6 @@ export const meta: WidgetMeta = {
   aliases: ['movers', 'gainers', 'losers', 'breadth', 'active'],
   dock: true,
   input: 'none',
+  learn:
+    'What is moving most among everything the terminal shows: the biggest gainers, losers and most traded, and breadth (how many are up against down).',
 };

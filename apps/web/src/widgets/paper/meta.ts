@@ -7,4 +7,6 @@ export const meta: WidgetMeta = {
   aliases: ['paper', 'trading', 'orders', 'positions', 'portfolio'],
   dock: true,
   input: 'none',
+  learn:
+    'Practice trading with fake money on your free Alpaca paper account: what you own, what it is worth, your profit or loss, and orders still waiting. No real money moves.',
 };

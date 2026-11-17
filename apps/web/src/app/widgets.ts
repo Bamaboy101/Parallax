@@ -2,6 +2,7 @@ import type { IDockviewPanelProps } from 'dockview-react';
 import { createElement, type FunctionComponent } from 'react';
 import { instrument } from '../store/symbols';
 import type { WidgetMeta } from '../widgets/types';
+import { LearnFrame } from './LearnStrip';
 import { PanelBoundary } from './PanelBoundary';
 
 type WidgetView = FunctionComponent<IDockviewPanelProps>;
@@ -26,12 +27,19 @@ export const WIDGETS: readonly Widget[] = Object.entries(metas).flatMap(([path, 
   return view ? [{ meta, view }] : [];
 });
 
-/** Each dock widget runs inside its own error boundary, so one failure stays in its panel. */
+/**
+ * Each dock widget runs inside its own error boundary, so one failure stays in its panel, and in
+ * the learn frame that explains it when learn mode is on (F5).
+ */
 function contained(widget: Widget): WidgetView {
   const Contained: WidgetView = (props) =>
-    createElement(PanelBoundary, {
-      title: widget.meta.title,
-      children: createElement(widget.view, props),
+    createElement(LearnFrame, {
+      panelId: props.api.id,
+      explanation: widget.meta.learn,
+      children: createElement(PanelBoundary, {
+        title: widget.meta.title,
+        children: createElement(widget.view, props),
+      }),
     });
   Contained.displayName = `Contained(${widget.meta.id})`;
   return Contained;

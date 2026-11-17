@@ -62,6 +62,9 @@ be checked against the provider's own docs before building.
   and by lint (the live trading host cannot appear in source).
 - **F5 Learn mode:** one switch overlays plain-language explanations on every panel, number and
   badge, for students and new traders.
+  Built 17 Nov: a top-bar switch; a strip on every panel (each widget must carry its own
+  explanation) with what its badge means, and plain-language meanings for every number, column,
+  label and badge on hover or focus.
 - **F6 Voice commands** via the browser's speech recognition.
 - **F7 Smart alerts** in plain words, delivered as browser notifications.
 - **F8 Whale radar:** large trades and liquidations as a quiet signal on the Constellation and

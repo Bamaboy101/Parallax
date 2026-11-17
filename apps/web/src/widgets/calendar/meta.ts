@@ -7,6 +7,8 @@ export const meta: WidgetMeta = {
   aliases: ['calendar', 'econ', 'releases', 'events'],
   dock: true,
   input: 'none',
+  learn:
+    'Upcoming US economic reports, such as jobs and inflation. Markets often move sharply in the minutes after one is published.',
 };
 
 /**
