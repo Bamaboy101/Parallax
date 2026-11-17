@@ -17,6 +17,18 @@ use the same semantic tokens in either mode.
 | `--up`    | `#39B54A` | `#237A12` | Rising price, saturated leaf green rather than mint         |
 | `--down`  | `#FF6464` | `#B42332` | Falling price                                               |
 | `--warn`  | `#F4BB4F` | `#8A5A00` | Delayed or stale data                                       |
+| `--paper` | `#A6D6EE` | `#1E3946` | Simulated money: PAPER labels and the paper ticket          |
+
+`--paper` (approved 17 Nov) is ice blue in dark mode and slate in light mode. The first proposal,
+neutral grey (`#B8B8B8` / `#464646`), sat only 3.0 ΔE OK from the sand link group in dark mode.
+These values were searched in OKLCH, greens excluded, against every reserved colour of both
+palettes (mint, up, down, warn, the four link groups, orchid, the blue-orange alternatives and the
+greys). Nearest reserved colour, ΔE OK: dark 10.1 (text), 11.1 sky link, 10.9 sand link; light
+12.4 (sky link). Under simulated deuteranopia and protanopia the nearest stays 6.6 dark and 9.5
+light. Contrast on the panel: **11.4:1 dark / 12.2:1 light**. The dark palette is too crowded for
+any colour to stay far from everything under colour-blind simulation, so PAPER never relies on
+colour: the word `PAPER` in a double outline and the double rule on the ticket carry it. Feed
+warnings keep `--warn`.
 
 Light mint is a deep teal-mint, `#007878`: **5.31:1** contrast on white (the initial `#0E9F75`
 proposal gave only 3.37:1). It sits at OKLCH hue 195° against the light up green's 141°, a

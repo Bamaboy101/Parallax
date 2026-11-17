@@ -67,7 +67,7 @@
   width: min(360px, calc(100% - 16px));
   padding: var(--pad);
   border: 1px solid var(--muted);
-  border-top: 4px double var(--warn);
+  border-top: 4px double var(--paper);
   border-radius: var(--panel-radius);
   background: var(--panel);
   font-size: var(--size-label);
@@ -83,12 +83,13 @@
 
 .paper-ticket-head > strong {
   letter-spacing: 0.06em;
+  color: var(--paper);
   text-transform: uppercase;
 }
 
 .paper-ticket-tag {
   grid-column: 1;
-  color: var(--warn);
+  color: var(--paper);
   line-height: 1.5;
 }
 
@@ -145,6 +146,8 @@
 
 .chart-trade {
   margin-left: auto;
+  color: var(--paper);
+  border: 1px solid var(--paper);
 }
 
 .paper-panel > .panel-toolbar {
@@ -155,7 +158,7 @@
   flex-shrink: 0;
   gap: 8px;
   padding-block: 8px;
-  border-block: 1px solid var(--warn);
+  border-block: 1px solid var(--paper);
   background: var(--panel);
 }
 
@@ -169,9 +172,9 @@
 .paper-mode {
   display: inline-block;
   padding: 2px 8px;
-  border: 1px solid var(--warn);
+  border: 3px double var(--paper);
   border-radius: 4px;
-  color: var(--warn);
+  color: var(--paper);
   font-family: var(--font-num);
   font-size: var(--size-label);
   font-weight: 600;
@@ -218,7 +221,7 @@
 
 .paper-ticket button[type='submit'] {
   padding: 8px;
-  border: 1px solid var(--warn);
+  border: 1px solid var(--paper);
   border-radius: 4px;
   color: var(--text);
 }

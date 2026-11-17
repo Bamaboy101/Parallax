@@ -206,20 +206,44 @@
   pointer-events: auto;
 }
 
-/* F2: the liquidity legend sits over the top-left of the chart and never takes the pointer. */
+/* Reserve a legend rail above the canvas so the explanation never hides candles. */
+.chart-panel > .relative:has(.chart-heat-legend) {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-panel > .relative:has(.chart-heat-legend) > .absolute {
+  position: relative;
+  order: 1;
+  flex: 1;
+  min-height: 0;
+}
+
 .chart-heat-legend {
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  z-index: 2;
-  max-width: calc(100% - 96px);
+  flex-shrink: 0;
   margin: 0;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  padding: 4px 8px;
+  border-block: 1px solid var(--line);
+  background: var(--panel);
   color: var(--muted);
+  font-family: var(--font-num);
   font-size: var(--size-label);
+  line-height: 1.5;
   pointer-events: none;
+}
+
+.chart-heat-legend::before {
+  content: '';
+  display: inline-block;
+  width: 36px;
+  height: 8px;
+  margin-inline-end: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--text) 55%, var(--panel))
+  );
 }
 
 .chart-heat {

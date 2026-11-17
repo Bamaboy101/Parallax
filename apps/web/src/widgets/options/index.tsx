@@ -1,5 +1,5 @@
 import type { IDockviewPanelProps } from 'dockview-react';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Cell } from '../../design/Cell';
 import { formatCompact, formatNumber } from '../../design/format';
 import '../../design/market.css';
@@ -74,11 +74,11 @@ function Side({ quote, inTheMoney }: { quote: OptionQuote | null; inTheMoney: bo
 
 function StrikeRow({ row, spot }: { row: ChainRow; spot: number }) {
   return (
-    <li className="market-row options-row">
+    <div className="market-row options-row">
       <Side quote={row.call} inTheMoney={row.strike < spot} />
       <span className="options-strike font-mono text-num">{formatNumber(row.strike, 2)}</span>
       <Side quote={row.put} inTheMoney={row.strike > spot} />
-    </li>
+    </div>
   );
 }
 
@@ -120,6 +120,9 @@ function Smile({
       .join(' ');
   return (
     <figure className="options-smile">
+      <div className="options-smile-heading">
+        Volatility smile <span>OTM implied volatility</span>
+      </div>
       <svg
         viewBox={`0 0 ${String(SMILE_W)} ${String(SMILE_H)}`}
         preserveAspectRatio="none"
@@ -213,13 +216,13 @@ function Chain({ symbol }: { symbol: string }) {
               <Cell value={spot} decimals={2} />
             </dd>
           </div>
-          <div>
+          <div className="options-atm-summary">
             <dt>ATM IV</dt>
             <dd>
               <Cell value={atmIv === null ? null : atmIv * 100} decimals={1} suffix="%" />
             </dd>
           </div>
-          <div>
+          <div className="options-ratio">
             <dt>Put/call</dt>
             <dd title="Puts traded per call in the session shown, this expiry">
               <Cell value={pc.ratio} decimals={2} />
@@ -254,7 +257,7 @@ function Chain({ symbol }: { symbol: string }) {
         <>
           <div className="options-sides" aria-hidden="true">
             <span>Calls</span>
-            <span />
+            <span className="options-strike-label">Strike</span>
             <span>Puts</span>
           </div>
           <div className="market-columns options-row">
@@ -280,14 +283,18 @@ function Chain({ symbol }: { symbol: string }) {
                 const spotHere =
                   previous !== undefined && previous.strike < spot && row.strike >= spot;
                 return (
-                  <Fragment key={row.strike}>
+                  <li
+                    className="options-strike-group"
+                    data-atm={row.strike === atm}
+                    key={row.strike}
+                  >
                     {spotHere && (
-                      <li className="options-spot" aria-label={`Spot ${formatNumber(spot, 2)}`}>
+                      <div className="options-spot" aria-label={`Spot ${formatNumber(spot, 2)}`}>
                         <span>Spot {formatNumber(spot, 2)}</span>
-                      </li>
+                      </div>
                     )}
                     <StrikeRow row={row} spot={spot} />
-                  </Fragment>
+                  </li>
                 );
               })}
             </ul>
@@ -320,6 +327,7 @@ export default function Options({ api, params }: IDockviewPanelProps<OptionsPara
       <div className="panel-toolbar">
         <span className="panel-heading">Options{equity ? ` · ${equity.label}` : ''}</span>
         <span className="panel-caption">Indicative · quotes adjusted · trades 15 min late</span>
+        <span className="panel-caption">Not OPRA quotes</span>
       </div>
       {equity ? (
         // A new symbol starts fresh: its own expiries, the soonest first.

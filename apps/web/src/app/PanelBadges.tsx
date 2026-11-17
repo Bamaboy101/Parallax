@@ -82,21 +82,28 @@ function PopOutButton({ api, group }: { api: DockviewApi; group: DockviewGroupPa
   const inPopout = location === 'popout';
   const label = inPopout ? 'Back to the main window' : 'Open in a new window';
   return (
-    <button
-      type="button"
-      className="panel-popout"
-      aria-label={label}
-      title={label}
-      onClick={() => {
-        if (inPopout) group.api.moveTo({ position: 'right' });
-        else void popOut(api, group);
-      }}
-    >
-      <svg viewBox="0 0 12 12" aria-hidden="true">
-        {/* Out: an arrow leaving the box. Back: an arrow coming into it. */}
-        <path d={inPopout ? 'M5 2H2v8h8V7M10 2L5 7M5 3v4h4' : 'M7 2H2v8h8V5M5 7l5-5M6 2h4v4'} />
-      </svg>
-    </button>
+    <>
+      <span className="popout-theme" data-location={location} title="Theme follows the main window">
+        <span className="popout-theme-dark">Dark</span>
+        <span className="popout-theme-light">Light</span>
+      </span>
+      <button
+        type="button"
+        className="panel-popout"
+        data-location={location}
+        aria-label={label}
+        title={label}
+        onClick={() => {
+          if (inPopout) group.api.moveTo({ position: 'right' });
+          else void popOut(api, group);
+        }}
+      >
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          {/* Out: an arrow leaving the box. Back: an arrow coming into it. */}
+          <path d={inPopout ? 'M5 2H2v8h8V7M10 2L5 7M5 3v4h4' : 'M7 2H2v8h8V5M5 7l5-5M6 2h4v4'} />
+        </svg>
+      </button>
+    </>
   );
 }
 

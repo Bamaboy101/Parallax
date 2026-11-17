@@ -227,7 +227,10 @@ export default function Rates({ api }: IDockviewPanelProps) {
               { day: latest, className: 'rates-line', label: 'Latest' },
             ]}
           />
-          <ul>
+          <ul
+            className="rates-comparison"
+            aria-label="Yield and historical changes in basis points"
+          >
             <li className="market-columns rates-columns" aria-hidden="true">
               <span>Tenor</span>
               <span className="text-right">Yield</span>
@@ -263,7 +266,7 @@ export default function Rates({ api }: IDockviewPanelProps) {
               );
             })}
           </ul>
-          <dl className="rates-figures">
+          <dl className="rates-figures rates-spreads">
             <div>
               <dt>2s10s</dt>
               <dd>

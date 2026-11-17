@@ -12,13 +12,15 @@
 
 .rates-chart {
   margin: 0;
-  padding: 8px var(--pad);
+  padding: var(--pad);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
+  border-bottom: 1px solid var(--line);
 }
 
 .rates-chart svg {
   display: block;
   width: 100%;
-  height: calc(var(--row-h) * 4);
+  height: calc(var(--row-h) * 6);
   border-bottom: 1px solid var(--line);
 }
 
@@ -52,7 +54,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  margin: 4px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
   font-size: var(--size-label);
 }
@@ -85,15 +87,34 @@
   font-family: var(--font-num);
 }
 
+.rates-comparison {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
 .rates-columns {
-  grid-template-columns: minmax(48px, 1fr) repeat(4, minmax(56px, 1fr));
+  min-width: 320px;
+  grid-template-columns: minmax(40px, 0.7fr) repeat(4, minmax(52px, 1fr));
+}
+
+.rates-columns > .text-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rates-columns > :nth-child(n + 3) {
+  color: var(--muted);
 }
 
 .rates-figures {
   display: grid;
-  gap: 8px;
+  gap: 0;
   margin: 0;
-  padding: 8px var(--pad);
+  padding: 0 var(--pad);
 }
 
 .rates-figures > div {
@@ -101,11 +122,15 @@
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: baseline;
   gap: 8px;
+  min-width: 0;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .rates-figures dt {
   color: var(--muted);
   font-size: var(--size-label);
+  letter-spacing: 0.04em;
 }
 
 .rates-figures dd {
@@ -113,23 +138,28 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
+  min-width: 0;
   margin: 0;
+  font-size: var(--size-num);
 }
 
 .rates-note {
   color: var(--muted);
   font-family: var(--font-num);
   font-size: var(--size-label);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .rates-path-block {
-  padding: 8px var(--pad);
+  padding: var(--pad);
 }
 
 .rates-path {
   display: block;
   width: 100%;
-  height: calc(var(--row-h) * 3);
+  height: calc(var(--row-h) * 4);
+  border-bottom: 1px solid var(--line);
 }
 
 .rates-band {
@@ -147,7 +177,7 @@
 .rates-changes,
 .rates-meetings {
   display: grid;
-  gap: 4px;
+  gap: 0;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
@@ -159,26 +189,91 @@
   font-family: var(--font-num);
 }
 
+.rates-changes li {
+  padding-block: 4px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
 .rates-subhead {
-  margin: 12px 0 0;
-  color: var(--muted);
+  margin: var(--pad) 0 0;
+  padding-top: var(--pad);
+  border-top: 1px solid var(--line);
+  color: var(--text);
   font-size: var(--size-label);
   font-weight: 500;
+  line-height: 1.6;
 }
 
 .rates-meetings li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: baseline;
   gap: 8px;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .rates-meeting-lead {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: baseline;
-  gap: 8px;
+  gap: 4px 8px;
+  text-align: right;
   color: var(--muted);
 }
 
 .rates-meeting-lead .text-num {
   color: var(--text);
+}
+
+.rates-panel > section,
+.rates-panel > .panel-footnote {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.rates-panel .panel-footnote {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.rates-spreads {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pad);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
+}
+
+.rates-spreads > div {
+  grid-template-columns: auto minmax(0, 1fr);
+  border-bottom: 0;
+}
+
+.rates-spreads dd {
+  justify-content: flex-end;
+}
+
+@container (max-width: 360px) {
+  .rates-ticks {
+    font-size: var(--size-label);
+    letter-spacing: -0.06em;
+  }
+
+  .rates-figures:not(.rates-spreads) dd {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rates-meetings li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .rates-meeting-lead {
+    justify-content: flex-start;
+    text-align: left;
+  }
 }
