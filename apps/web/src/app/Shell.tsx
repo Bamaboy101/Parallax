@@ -1,3 +1,4 @@
+import { Tour } from './Tour';
 import { useEffect, useState } from 'react';
 import { CommandPalette, CommandTrigger } from '../command/CommandPalette';
 import { OPEN_SETTINGS_EVENT } from '../design/settingsRequest';
@@ -97,6 +98,7 @@ export function Shell() {
           <button
             type="button"
             className="theme-switch shell-settings"
+            data-tour="keys"
             aria-label="Settings and data keys"
             title="Settings and data keys"
             onClick={openSettings}
@@ -172,6 +174,7 @@ export function Shell() {
       </footer>
       <CommandPalette />
       <LearnLayer />
+      <Tour />
     </div>
   );
 }

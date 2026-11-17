@@ -1,0 +1,91 @@
+/* E3 guided first visit. A mint ring around the target (interface state) and a card beside it;
+   on narrow screens the card sits at the bottom. No shadow, no motion, no dimmed backdrop: the
+   page stays usable behind it. */
+
+.tour-ring {
+  position: fixed;
+  z-index: 1100;
+  border: 2px solid var(--live);
+  border-radius: var(--panel-radius);
+  pointer-events: none;
+}
+
+.tour-card {
+  position: fixed;
+  z-index: 1101;
+  top: auto;
+  right: 12px;
+  bottom: 12px;
+  width: min(320px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid var(--live);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.tour-card h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tour-card p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.tour-card .tour-step {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tour-actions button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tour-actions .tour-skip {
+  margin-right: auto;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.tour-actions .tour-next {
+  border-color: var(--live);
+  color: var(--live);
+}
+
+.tour-actions button:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .tour-card {
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .tour-actions button {
+    min-height: 40px;
+  }
+}

@@ -426,6 +426,7 @@ export function CommandTrigger() {
       aria-label="Open command center"
       aria-keyshortcuts="/ Control+k Meta+k"
       className="command-trigger"
+      data-tour="search"
     >
       <span className="command-trigger-icon" aria-hidden="true">
         ⌕

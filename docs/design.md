@@ -191,6 +191,9 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   controls. Nothing animates.
 - The Simple / Pro switch (E2) uses the same segmented control as Rundown / Cockpit: the chosen
   side is a 12% mint wash with mint text (interface state).
+- The first-visit tour (E3) rings its target with a 2 px mint line and shows a `--panel` card
+  with a mint hairline: step count, title, one or two sentences, and Skip / Back / Next. No
+  backdrop, shadow or motion; on narrow screens the card sits at the bottom.
 
 ## Visual passes
 

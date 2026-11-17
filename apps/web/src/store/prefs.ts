@@ -43,6 +43,8 @@ interface Prefs {
   soundVolume: number;
   view: View;
   mode: Mode;
+  /** E3: the guided first visit has been shown (or skipped). */
+  toured: boolean;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
   setLearn: (learn: boolean) => void;
@@ -52,6 +54,7 @@ interface Prefs {
   setView: (view: View) => void;
   /** Simple also switches Learn hints on; they can be switched off again. */
   setMode: (mode: Mode) => void;
+  setToured: (toured: boolean) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -65,6 +68,7 @@ export const usePrefs = create<Prefs>()(
       soundVolume: 0.5,
       view: FIRST_VISIT ? 'rundown' : 'cockpit',
       mode: FIRST_VISIT ? 'simple' : 'pro',
+      toured: !FIRST_VISIT,
       setPalette: (palette) => {
         set({ palette });
       },
@@ -89,6 +93,9 @@ export const usePrefs = create<Prefs>()(
       setMode: (mode) => {
         set(mode === 'simple' ? { mode, learn: true } : { mode });
       },
+      setToured: (toured) => {
+        set({ toured });
+      },
     }),
     {
       name: PREFS_STORAGE_KEY,
@@ -103,6 +110,7 @@ export const usePrefs = create<Prefs>()(
         soundVolume: state.soundVolume,
         view: state.view,
         mode: state.mode,
+        toured: state.toured,
       }),
     },
   ),
