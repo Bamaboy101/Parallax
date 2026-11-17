@@ -6,6 +6,8 @@ import {
 } from 'dockview-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLayoutStore } from '../store/layout';
+import type { Mode } from '../store/prefs';
+import { SIMPLE_WORKSPACE } from '../workspaces';
 import { setDockApi } from './dockApi';
 import { restoreLayout } from './dockLayout';
 import { useLinkFollower } from './links';
@@ -23,7 +25,11 @@ const cockpitTheme: DockviewTheme = {
   gap: 4,
 };
 
-export function DockArea() {
+/**
+ * The dock. Each mode (E2) has its own layout: Simple starts from the `simple` preset, Pro from
+ * Mission Control. The shell remounts it when the mode changes.
+ */
+export function DockArea({ mode }: { mode: Mode }) {
   const [api, setApi] = useState<DockviewApi | null>(null);
   /** F9: the browser refused to open a window for a panel. */
   const [popoutBlocked, setPopoutBlocked] = useState(false);
@@ -39,7 +45,9 @@ export function DockArea() {
   );
 
   const onReady = (event: DockviewReadyEvent) => {
-    restoreLayout(event.api, useLayoutStore.getState().dock);
+    const { dock, simpleDock } = useLayoutStore.getState();
+    if (mode === 'simple') restoreLayout(event.api, simpleDock, SIMPLE_WORKSPACE);
+    else restoreLayout(event.api, dock);
     setDockApi(event.api);
     setApi(event.api);
     // A share link replaces the restored layout once it has been decoded.
@@ -54,7 +62,7 @@ export function DockArea() {
     const flush = () => {
       window.clearTimeout(timer);
       timer = undefined;
-      saveDock(api.toJSON());
+      saveDock(api.toJSON(), mode);
     };
     const subscription = api.onDidLayoutChange(() => {
       window.clearTimeout(timer);
@@ -66,7 +74,7 @@ export function DockArea() {
       window.removeEventListener('pagehide', flush);
       if (timer !== undefined) flush();
     };
-  }, [api]);
+  }, [api, mode]);
 
   useEffect(() => {
     if (!api) return;

@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import { memo, useMemo, useState } from 'react';
 import { Cell } from '../../design/Cell';
@@ -98,7 +99,9 @@ function PricedChip({ item, background }: { item: Instrument; background: boolea
   const line = usePriceLine(item, background);
   return (
     <span className="odds-asset" title={`${item.name}${item.note ? ` · ${item.note}` : ''}`}>
-      <span className="odds-asset-label">{item.label}</span>
+      <span className="odds-asset-label">
+        <SymbolLabel item={item} />
+      </span>
       {line.price === undefined ? (
         <RowReason symbol={item} label={item.label} />
       ) : (

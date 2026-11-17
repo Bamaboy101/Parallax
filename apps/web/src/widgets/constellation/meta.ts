@@ -26,6 +26,7 @@ export const meta: WidgetMeta = {
   defaultSize: { width: 520, height: 420 },
   aliases: ['constellation', 'sky', 'map'],
   dock: true,
+  pro: true,
   input: 'symbols',
   learn:
     'A map of how markets move together. Bodies that move in step drift close; lines join strong pairs (dashed when they move in opposite directions). Bigger bodies traded more; colour shows the move. Positions are relationships, not prices.',

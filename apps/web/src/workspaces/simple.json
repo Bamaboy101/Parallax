@@ -1,0 +1,47 @@
+{
+  "id": "simple",
+  "title": "Simple",
+  "description": "The essentials in plain words: your list, a chart, the biggest moves, headlines, event odds and today's calendar.",
+  "panels": [
+    {
+      "id": "chart",
+      "component": "chart",
+      "params": { "symbol": "BTC-USD", "interval": "1h", "link": 1 }
+    },
+    {
+      "id": "watchlist",
+      "component": "watchlist",
+      "params": { "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "left" },
+      "width": 340
+    },
+    {
+      "id": "movers",
+      "component": "movers",
+      "params": {},
+      "position": { "referencePanel": "watchlist", "direction": "within" },
+      "inactive": true
+    },
+    {
+      "id": "news",
+      "component": "news",
+      "params": { "query": "", "link": 1 },
+      "position": { "referencePanel": "chart", "direction": "right" },
+      "width": 360
+    },
+    {
+      "id": "predictions",
+      "component": "predictions",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "within" },
+      "inactive": true
+    },
+    {
+      "id": "calendar",
+      "component": "calendar",
+      "params": {},
+      "position": { "referencePanel": "news", "direction": "below" },
+      "height": 260
+    }
+  ]
+}

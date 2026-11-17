@@ -25,4 +25,9 @@ export interface WidgetMeta {
   defaultParams?: Readonly<Record<string, unknown>>;
   /** Learn mode (F5): what this panel shows, in plain words for someone new to markets. */
   learn: string;
+  /**
+   * E2: a panel for traders only (order book, tape, derivatives, options, rates, correlations,
+   * on-chain). Simple mode leaves it out of the command bar, the presets and its own layout.
+   */
+  pro?: boolean;
 }

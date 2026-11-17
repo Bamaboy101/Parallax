@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { usePrefs } from '../store/prefs';
 import { useTickStore } from '../store/ticks';
-import { WORKSPACES } from '../workspaces';
+import { presetsFor } from './modes';
 import { dockApi } from './dockApi';
 import { applyPreset } from './dockLayout';
 import {
@@ -16,13 +17,14 @@ import {
 const NOTICE_MS = 8_000;
 
 /**
- * Top-bar workspace switcher: the four presets, a share link (layout, symbols and Rewind moment
- * in the URL), and layout export and import as a JSON file.
+ * Top-bar workspace switcher: the presets of the current mode (E2), a share link (layout, symbols
+ * and Rewind moment in the URL), and layout export and import as a JSON file.
  */
 export function WorkspaceMenu() {
   const menu = useRef<HTMLDetailsElement>(null);
   const file = useRef<HTMLInputElement>(null);
   const notice = useWorkspaceNotice((state) => state.notice);
+  const mode = usePrefs((state) => state.mode);
 
   useEffect(() => {
     if (notice === null) return;
@@ -98,7 +100,7 @@ export function WorkspaceMenu() {
         <summary>Workspace</summary>
         <div className="workspace-panel">
           <ul aria-label="Preset workspaces">
-            {WORKSPACES.map((workspace) => (
+            {presetsFor(mode).map((workspace) => (
               <li key={workspace.id}>
                 <button
                   type="button"

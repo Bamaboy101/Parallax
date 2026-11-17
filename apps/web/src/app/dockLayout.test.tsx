@@ -69,7 +69,7 @@ describe('restoreLayout', () => {
 });
 
 describe('workspace presets', () => {
-  it('ships Mission Control first, then Overview, Crypto, Equities, Macro and the regions', () => {
+  it('ships Mission Control first, then Overview, Crypto, Equities, Macro, the regions and Simple', () => {
     expect(WORKSPACES.map((workspace) => workspace.id)).toEqual([
       'mission-control',
       'overview',
@@ -78,6 +78,7 @@ describe('workspace presets', () => {
       'macro',
       'europe',
       'asia-pacific',
+      'simple',
     ]);
   });
 

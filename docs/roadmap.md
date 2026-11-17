@@ -135,6 +135,10 @@ experts lose nothing. Built before Batch D.
 - **E2 Simple and Pro modes:** Simple uses plain labels ("Bitcoin", not "BTC/USD perp
   funding"), hides jargon panels and turns Learn hints on. Pro is today's terminal. The choice is
   remembered.
+  Built 18 Nov: a Simple / Pro switch in the top bar. Simple shows plain names in the watchlist,
+  ticker rail, movers, chart, currency rows and odds chips, leaves seven traders' panels out of
+  the command bar and presets, starts from its own layout and turns Learn hints on. First visits
+  start in Simple; existing desks stay in Pro.
 - **E3 Guided first visit:** a 4-step tour (Rundown, search, cockpit, keys), skippable, shown
   once.
 - **E4 Daily brief without a key:** a rule-based written summary of the Rundown, generated from

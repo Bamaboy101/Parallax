@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import { Badge } from '../../design/Badge';
 import { Cell } from '../../design/Cell';
@@ -24,7 +25,9 @@ function LivePair({ item }: { item: Instrument }) {
   const line = usePriceLine(item);
   return (
     <li className="market-row fx-columns" title={`${item.label}: mid of Kraken's best bid and ask`}>
-      <span className="market-symbol">{item.label}</span>
+      <span className="market-symbol">
+        <SymbolLabel item={item} />
+      </span>
       {line.price === undefined ? (
         <RowReason symbol={item} label={item.label} />
       ) : (

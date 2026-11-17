@@ -1,3 +1,4 @@
+import { SymbolLabel } from '../../design/SymbolLabel';
 import type { IDockviewPanelProps } from 'dockview-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Cell } from '../../design/Cell';
@@ -57,10 +58,12 @@ function Row({
       }
     >
       {link === undefined ? (
-        <span className="market-symbol">{item.label}</span>
+        <span className="market-symbol">
+          <SymbolLabel item={item} />
+        </span>
       ) : (
         <button type="button" className="market-symbol watchlist-select">
-          {item.label}
+          <SymbolLabel item={item} />
         </button>
       )}
       <span className="watchlist-sparkline">

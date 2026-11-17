@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { runCommand } from '../app/commands';
-import { LAYOUT_PRESETS } from '../app/dockLayout';
+import { presetsFor, widgetsFor } from '../app/modes';
 import { WIDGETS } from '../app/widgets';
 import { usePrefs } from '../store/prefs';
 import type { WidgetMeta } from '../widgets/types';
@@ -378,13 +378,26 @@ function Palette({ run, widgets, layouts }: PaletteProps) {
   );
 }
 
-/** "/" or Ctrl/Cmd+K anywhere opens the command bar; keyboard only, results as you type. */
-export function CommandPalette({
-  run = runCommand,
-  widgets = WIDGETS.map((widget) => widget.meta),
-  layouts = Object.keys(LAYOUT_PRESETS),
-}: Partial<PaletteProps>) {
+/**
+ * "/" or Ctrl/Cmd+K anywhere opens the command bar; keyboard only, results as you type. Unless
+ * given lists, it offers the widgets and presets of the current mode (E2).
+ */
+export function CommandPalette({ run = runCommand, widgets, layouts }: Partial<PaletteProps>) {
   const open = useCommandBar((state) => state.open);
+  const mode = usePrefs((state) => state.mode);
+  const offered = useMemo(
+    () =>
+      widgets ??
+      widgetsFor(
+        mode,
+        WIDGETS.map((widget) => widget.meta),
+      ),
+    [widgets, mode],
+  );
+  const presets = useMemo(
+    () => layouts ?? presetsFor(mode).map((workspace) => workspace.id),
+    [layouts, mode],
+  );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -401,7 +414,7 @@ export function CommandPalette({
     };
   }, []);
 
-  return open ? <Palette run={run} widgets={widgets} layouts={layouts} /> : null;
+  return open ? <Palette run={run} widgets={offered} layouts={presets} /> : null;
 }
 
 /** Top-bar entry point for mouse users. */

@@ -28,6 +28,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   moves, crypto, the dollar, oil and gold, the events markets are betting on,
   today's calendar and the latest headlines. No key needed. One button opens
   the full cockpit.
+- **Simple or Pro.** Simple mode uses plain names ("Bitcoin", "Euro, in
+  dollars"), keeps to the essential panels and turns on Learn hints; Pro is
+  the full terminal. Each keeps its own layout.
 - **Truth badges.** Every panel header carries a pill — `LIVE 140ms`,
   `POLLED 15s`, `EOD`, `NO KEY`, `RATE LIMITED`, `OFFLINE` — plus the source
   name. A panel fed by several feeds shows its worst one. No other free
@@ -132,8 +135,8 @@ Two limits, stated plainly:
 
 ## Using it
 
-1. Open <https://parallax-markets.pages.dev>. The Mission Control workspace
-   loads; crypto, FX, perps, macro, calendar and news are already live.
+1. Open <https://parallax-markets.pages.dev>. The Rundown opens first; **Open
+   the full cockpit** shows the panels (Simple or Pro, switched in the top bar).
 2. For US stocks, open **Settings** (the key icon) and paste a free
    [Alpaca](https://alpaca.markets) or [Finnhub](https://finnhub.io) key.
    Settings can test the key before saving it.

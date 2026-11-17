@@ -6,6 +6,7 @@ export const meta: WidgetMeta = {
   defaultSize: { width: 620, height: 560 },
   aliases: ['options', 'chain', 'opt'],
   dock: true,
+  pro: true,
   input: 'symbol',
   defaultParams: { symbol: 'SPY' },
   learn:

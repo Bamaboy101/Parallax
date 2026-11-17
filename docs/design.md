@@ -189,6 +189,8 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   exchanges get a mint dot (interface state). Market odds are large plain text, neither a price
   colour nor mint. The cockpit button and the top-bar Rundown / Cockpit switch are the only mint
   controls. Nothing animates.
+- The Simple / Pro switch (E2) uses the same segmented control as Rundown / Cockpit: the chosen
+  side is a 12% mint wash with mint text (interface state).
 
 ## Visual passes
 
