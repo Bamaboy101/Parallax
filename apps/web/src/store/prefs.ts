@@ -17,10 +17,16 @@ interface Prefs {
    * until the user agrees; on-device recognition never needs it.
    */
   voiceOnline: boolean;
+  /** Sound layer (F12): short cues for alerts, whale prints and lost network. Off by default. */
+  sound: boolean;
+  /** Cue volume, 0..1. */
+  soundVolume: number;
   setPalette: (palette: Palette) => void;
   setDensity: (density: Density) => void;
   setLearn: (learn: boolean) => void;
   setVoiceOnline: (voiceOnline: boolean) => void;
+  setSound: (sound: boolean) => void;
+  setSoundVolume: (soundVolume: number) => void;
 }
 
 export const usePrefs = create<Prefs>()(
@@ -30,6 +36,8 @@ export const usePrefs = create<Prefs>()(
       density: 'comfortable',
       learn: false,
       voiceOnline: false,
+      sound: false,
+      soundVolume: 0.5,
       setPalette: (palette) => {
         set({ palette });
       },
@@ -42,6 +50,12 @@ export const usePrefs = create<Prefs>()(
       setVoiceOnline: (voiceOnline) => {
         set({ voiceOnline });
       },
+      setSound: (sound) => {
+        set({ sound });
+      },
+      setSoundVolume: (soundVolume) => {
+        set({ soundVolume: Math.min(1, Math.max(0, soundVolume)) });
+      },
     }),
     {
       name: PREFS_STORAGE_KEY,
@@ -52,6 +66,8 @@ export const usePrefs = create<Prefs>()(
         density: state.density,
         learn: state.learn,
         voiceOnline: state.voiceOnline,
+        sound: state.sound,
+        soundVolume: state.soundVolume,
       }),
     },
   ),

@@ -711,6 +711,15 @@ Enter would. Voice can do only what typing can: open panels, load symbols, switc
 an alert for the user to add. It cannot place a paper order. Firefox has no recognizer, so no
 microphone shows there.
 
+**Sound (F12).** `app/sound.ts` is off by default (`sound` in the prefs, switched in Settings,
+whose click also unlocks the browser's audio). Three cues are synthesised with the Web Audio API,
+so nothing is fetched: `alert` (660 then 880 Hz) when an alert fires (`useSoundLayer` in the shell
+watches the alerts store), `whale` (196 Hz) when a whale print arrives on an open tape while live,
+and `offline` (440 then 330 Hz) when the browser loses the network. Each note is a sine with a
+10 ms attack and an exponential release, scaled by the volume; a cue of the same kind within
+1.5 s is dropped, and a whale print seen by two tapes sounds once. Prices never make a sound by
+themselves, and Rewind is silent.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,

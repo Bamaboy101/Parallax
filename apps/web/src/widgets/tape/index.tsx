@@ -1,5 +1,6 @@
 import type { IDockviewPanelProps } from 'dockview-react';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
+import { playCue } from '../../app/sound';
 import { Cell } from '../../design/Cell';
 import { formatCompact, formatNumber } from '../../design/format';
 import '../../design/market.css';
@@ -7,6 +8,7 @@ import type { TradeEvent } from '../../feeds/types';
 import { useTrades } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument, type Instrument } from '../../store/symbols';
+import { useTickStore } from '../../store/ticks';
 import { notional, perpFor, useRadar, WHALE_FLOOR, type Radar } from '../../store/whales';
 import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_SYMBOL } from './meta';
@@ -112,6 +114,20 @@ export default function Tape({ api, params }: IDockviewPanelProps<TapeParams>) {
   const trades = useTrades(item, ROWS);
   useReportSources(api.id, trades[0] ? [trades[0].source] : []);
   const radar = useRadar(item);
+
+  // F12: a whale print that arrives while this tape is open and live sounds once (sound is off
+  // unless switched on in Settings). Prints already there when it opened, or replayed under
+  // Rewind, stay silent.
+  const [openedAt] = useState(Date.now);
+  const live = useTickStore((state) => state.cursor === null);
+  const newest = radar.trades[0];
+  useEffect(() => {
+    if (!newest || !live || newest.receivedAt < openedAt) return;
+    playCue(
+      'whale',
+      `${item.id}:${String(newest.ts)}:${String(newest.price)}:${String(newest.size)}`,
+    );
+  }, [newest, live, openedAt, item.id]);
 
   // Square-root scale so one block trade does not flatten every other bar.
   const largest = Math.sqrt(Math.max(1, ...trades.map((trade) => trade.price * trade.size)));

@@ -90,6 +90,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   "Bitcoin chart one hour" or "alert Ether below 1,800". Recognition runs on
   your device where the browser can; its online speech service is used only
   if you allow it.
+- **Sound layer.** Off by default. Switched on in Settings, it plays a short
+  tone when an alert fires, a whale prints on an open tape, or the network
+  goes away.
 
 ## The honest part: what "free" and "no delay" allow
 
