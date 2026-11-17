@@ -100,3 +100,26 @@ export function formatCompact(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return '—';
   return compactFormat.format(value);
 }
+
+/**
+ * Higher is worse: offline or unusable (no key, rejected key), then rate limited, then stale,
+ * then end-of-day or delayed, then polled or connecting, then the slowest live stream.
+ */
+export function badgeSeverity(freshness: Freshness): number {
+  switch (freshness.kind) {
+    case 'offline':
+    case 'no-key':
+    case 'key-rejected':
+      return Number.MAX_SAFE_INTEGER;
+    case 'rate-limited':
+      return Number.MAX_SAFE_INTEGER / 1.5;
+    case 'eod':
+    case 'delayed':
+      return Number.MAX_SAFE_INTEGER / 3;
+    case 'polled':
+    case 'connecting':
+      return Number.MAX_SAFE_INTEGER / 4;
+    case 'live':
+      return freshness.stale ? Number.MAX_SAFE_INTEGER / 2 : freshness.ageMs;
+  }
+}

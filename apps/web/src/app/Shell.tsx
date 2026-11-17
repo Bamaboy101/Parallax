@@ -11,6 +11,10 @@ import { LearnSwitch } from './LearnSwitch';
 import { RenameBanner } from './RenameBanner';
 import { isOldAddress } from './rename';
 import { RewindScrubber } from './RewindScrubber';
+import { Rundown } from './Rundown';
+import { ViewSwitch } from './ViewSwitch';
+import { usePrefs } from '../store/prefs';
+import { setCursor } from '../store/ticks';
 import { useAlertEngine } from '../store/alerts/store';
 import { useSoundLayer } from './sound';
 import { useMarketWeather } from './weather';
@@ -39,6 +43,11 @@ export function Shell() {
       window.removeEventListener(OPEN_SETTINGS_EVENT, openSettings);
     };
   }, []);
+  const view = usePrefs((state) => state.view);
+  // The Rundown always shows now; Rewind belongs to the cockpit.
+  useEffect(() => {
+    if (view === 'rundown') setCursor(null);
+  }, [view]);
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
   );
@@ -75,9 +84,10 @@ export function Shell() {
         <div className="shell-command">
           <CommandTrigger />
         </div>
-        <WorkspaceMenu />
+        <ViewSwitch />
+        {view === 'cockpit' && <WorkspaceMenu />}
         <div className="shell-tools">
-          <RewindScrubber />
+          {view === 'cockpit' && <RewindScrubber />}
           <ConnectionStatus />
           <Clock />
           <LearnSwitch />
@@ -134,15 +144,23 @@ export function Shell() {
             </svg>
           </button>
         </div>
-        <p className="shell-scroll-hint">Swipe across panels · all panels remain available</p>
+        {view === 'cockpit' && (
+          <p className="shell-scroll-hint">Swipe across panels · all panels remain available</p>
+        )}
       </header>
-      <main
-        aria-label="Market panels"
-        tabIndex={0}
-        className="shell-dock weather-glow min-h-0 min-w-0 p-2"
-      >
-        <DockArea />
-      </main>
+      {view === 'rundown' ? (
+        <main aria-label="Rundown" tabIndex={-1} className="shell-rundown min-h-0 min-w-0">
+          <Rundown />
+        </main>
+      ) : (
+        <main
+          aria-label="Market panels"
+          tabIndex={0}
+          className="shell-dock weather-glow min-h-0 min-w-0 p-2"
+        >
+          <DockArea />
+        </main>
+      )}
       <footer aria-label="Ticker rail" className="shell-rail">
         <TickerRail />
         <span className="shell-disclaimer">

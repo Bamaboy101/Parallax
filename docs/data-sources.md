@@ -336,8 +336,23 @@ Your audio is sent to a web service for recognition processing"; setting `proces
 recognition happen on the device, after `SpeechRecognition.available()` reports the language
 `available` (or `install()` downloads it), and "neither the audio nor the transcribed speech is
 sent to a third-party service". The terminal therefore prefers on-device recognition, asks before
-the one-time download, and uses a browser's online service only with the user's consent. Open
-Terminal itself never receives audio or transcripts.
+the one-time download, and uses a browser's online service only with the user's consent.
+Parallax itself never receives audio or transcripts.
+
+## The dollar and oil on the Rundown: FRED (`store/rundown.ts`)
+
+The Rundown (E1) shows two daily series through the edge's existing FRED route, both labelled
+"Public Domain: Citation Requested" on FRED (checked 18 Nov 2026):
+
+- `DTWEXBGS`, Nominal Broad U.S. Dollar Index, Board of Governors of the Federal Reserve System
+  (H.10 release), daily.
+- `DCOILWTICO`, Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma, U.S. Energy
+  Information Administration (Spot Prices release), daily.
+
+The page cites both sources and FRED, as FRED's terms ask for this label, and badges them EOD.
+Gold on the Rundown is the PAX Gold token (PAXG/USD), a proxy, as elsewhere. World markets by
+region show exchange hours, live currencies (Kraken) and TAIEX's official close without a key;
+the US-listed country funds fill in with a stock key, labelled as funds trading in US hours.
 
 ## US market hours
 

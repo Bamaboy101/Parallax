@@ -112,11 +112,35 @@ be checked against the provider's own docs before building.
   to the other screen); it shares the page, so links, prices and theme follow, and it comes back
   with one click. Hover explanations stay in the main window.
 - **F10 Session recorder:** record, replay, export as a file.
-- **F11 Installable app** with an offline shell.
+- **F11 Installable app** with an offline shell (moved to Batch E as E6).
 - **F12 Sound layer**, off by default.
   Built 18 Nov: off until switched on in Settings; three short synthesised cues (an alert fires, a
   whale print on an open tape, the network goes away) with a volume and test buttons. Prices never
   make a sound by themselves.
+
+## Rundown (Batch E, 18 Nov)
+
+Goal: a first-time visitor with no finance background understands the markets in 10 seconds;
+experts lose nothing. Built before Batch D.
+
+- **E1 Rundown home:** the new first-visit screen. One calm page answering "what's happening in
+  markets right now?": world markets by region, the five biggest moves, crypto, the dollar, oil
+  and gold, the top three market-moving events with odds, today's calendar, the latest
+  headlines. Plain words, big numbers, every figure keeps its badge. Fully useful with no keys
+  at all. One button: "Open the full cockpit" (Mission Control).
+  Built 18 Nov: the home page for first visits, switched with the cockpit in the top bar. Without
+  a key: exchange hours, live currencies, TAIEX's official close, crypto, the Fed's broad dollar
+  index and WTI oil (daily, FRED), gold through PAXG, Polymarket odds, FRED's release calendar
+  and publisher headlines. Stock funds by region appear with a key.
+- **E2 Simple and Pro modes:** Simple uses plain labels ("Bitcoin", not "BTC/USD perp
+  funding"), hides jargon panels and turns Learn hints on. Pro is today's terminal. The choice is
+  remembered.
+- **E3 Guided first visit:** a 4-step tour (Rundown, search, cockpit, keys), skippable, shown
+  once.
+- **E4 Daily brief without a key:** a rule-based written summary of the Rundown, generated from
+  the store with no AI, every sentence traceable to a number on screen.
+- **E5 Phone first:** Rundown and Simple mode work well at 390 px wide.
+- **E6 Installable app:** F11, pulled forward from Batch D.
 
 ## Waiting for written permission
 
@@ -130,14 +154,16 @@ and the exact clauses are in data-sources.md.
 
 ## Batches
 
-| Batch | Contents                | Note                     |
-| ----- | ----------------------- | ------------------------ |
-| A     | M1, F4, F5, F1          | Build now, in that order |
-| B     | M2, M3, F2, F7, F9      |                          |
-| C     | F3, F8, M5, M6, F6, F12 |                          |
-| D     | M4, M7, M8, F10, F11    |                          |
+| Batch | Contents                      | Note                     |
+| ----- | ----------------------------- | ------------------------ |
+| A     | M1, F4, F5, F1                | Build now, in that order |
+| B     | M2, M3, F2, F7, F9            |                          |
+| C     | F3, F8, M5, M6, F6, F12       |                          |
+| E     | E1, E2, E3, E4, E5, E6 (=F11) | Before Batch D           |
+| D     | M4, M7, M8, F10               |                          |
 
-Each batch ends with one GPT visual pass.
+Each batch ends with one GPT visual pass. Batch C's is combined with Batch E's, at the end of
+Batch E; it also covers the Parallax logo and the social preview card.
 
 ## Hard rules for Batch A (17 Nov)
 

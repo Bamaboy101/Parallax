@@ -30,6 +30,13 @@ export function DockArea() {
   const surface = useRef<HTMLDivElement>(null);
   const bootHint = useRef<HTMLButtonElement>(null);
   useLinkFollower(api);
+  // The Rundown unmounts the dock; commands then wait for it (see runCommand).
+  useEffect(
+    () => () => {
+      setDockApi(null);
+    },
+    [],
+  );
 
   const onReady = (event: DockviewReadyEvent) => {
     restoreLayout(event.api, useLayoutStore.getState().dock);

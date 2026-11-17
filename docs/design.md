@@ -183,6 +183,12 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - At the pre-rename address only, a banner row above the top bar names the new address and
   offers "Move my layout and keys": a 6% mint tint over the panel (interface information), mint
   link and outlined button, no shadow or motion.
+- The Rundown (E1) is one calm page on `--bg`: sections are `--panel` cards with a hairline,
+  their titles in muted small caps with the section's truth badge on the right. Big numbers are
+  JetBrains Mono at 22–30 px in `--text`; changes keep their sign and the up/down colours; open
+  exchanges get a mint dot (interface state). Market odds are large plain text, neither a price
+  colour nor mint. The cockpit button and the top-bar Rundown / Cockpit switch are the only mint
+  controls. Nothing animates.
 
 ## Visual passes
 

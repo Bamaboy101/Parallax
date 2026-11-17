@@ -23,6 +23,11 @@ FX, perpetual futures, macro and news work the moment the page loads.
 
 ## What makes it different
 
+- **Rundown.** The first screen answers "what's happening in markets right
+  now?" in plain words and big numbers: world markets by region, the biggest
+  moves, crypto, the dollar, oil and gold, the events markets are betting on,
+  today's calendar and the latest headlines. No key needed. One button opens
+  the full cockpit.
 - **Truth badges.** Every panel header carries a pill — `LIVE 140ms`,
   `POLLED 15s`, `EOD`, `NO KEY`, `RATE LIMITED`, `OFFLINE` — plus the source
   name. A panel fed by several feeds shows its worst one. No other free
@@ -57,8 +62,8 @@ FX, perpetual futures, macro and news work the moment the page loads.
   for what they are: market odds, not forecasts.
 - **Paper trading.** Trade from any stock or ETF chart with fake money on
   your free Alpaca paper account: market and limit orders, open orders,
-  positions, profit and loss, cancel. Live trading is not possible in Open
-  Terminal: the code can only reach Alpaca's paper environment.
+  positions, profit and loss, cancel. Live trading is not possible in
+  Parallax: the code can only reach Alpaca's paper environment.
 - **Learn mode.** One switch explains the terminal for students and new
   traders: what each panel shows, what its badge means right now, and, on
   hover or focus, every number, column and label in plain words.

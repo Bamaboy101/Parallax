@@ -278,8 +278,8 @@ export default function Settings() {
       <h2 className="settings-heading">Data keys</h2>
       <p className="settings-note">
         Crypto and FX work without a key. A free key from a provider below switches on live US
-        stocks. Keys stay in this browser and are sent only to their own provider, never to Open
-        Terminal.
+        stocks. Keys stay in this browser and are sent only to their own provider, never to
+        Parallax.
       </p>
       {KEY_PROVIDERS.map((provider) => (
         <ProviderKeys key={provider.id} provider={provider} />
