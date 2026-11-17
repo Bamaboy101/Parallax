@@ -6,17 +6,23 @@ use the same semantic tokens in either mode.
 
 ## Colour
 
-| Token     | Dark      | Light     | Used for                                                    |
-| --------- | --------- | --------- | ----------------------------------------------------------- |
-| `--bg`    | `#0D0D0D` | `#F0F0F0` | App background                                              |
-| `--panel` | `#181818` | `#FFFFFF` | Widget surface                                              |
-| `--line`  | `#383838` | `#D6D6D6` | Silver hairlines                                            |
-| `--text`  | `#E8E8E8` | `#181818` | Primary text                                                |
-| `--muted` | `#969696` | `#626262` | Secondary text                                              |
-| `--live`  | `#6EF0C2` | `#007878` | Mint: live status, focus, active tabs, drag highlight, logo |
-| `--up`    | `#39B54A` | `#237A12` | Rising price, saturated leaf green rather than mint         |
-| `--down`  | `#FF6464` | `#B42332` | Falling price                                               |
-| `--warn`  | `#F4BB4F` | `#8A5A00` | Delayed or stale data                                       |
+| Token     | Dark      | Light     | Used for                                                      |
+| --------- | --------- | --------- | ------------------------------------------------------------- |
+| `--bg`    | `#0D0D0D` | `#F0F0F0` | App background                                                |
+| `--panel` | `#181818` | `#FFFFFF` | Widget surface                                                |
+| `--line`  | `#383838` | `#D6D6D6` | Silver hairlines                                              |
+| `--text`  | `#E8E8E8` | `#181818` | Primary text                                                  |
+| `--muted` | `#969696` | `#626262` | Secondary text                                                |
+| `--live`  | `#6EF0C2` | `#007878` | Mint: live status, focus, active tabs, drag highlight, logo   |
+| `--up`    | `#39B54A` | `#237A12` | Rising price, saturated leaf green rather than mint           |
+| `--down`  | `#FF6464` | `#B42332` | Falling price                                                 |
+| `--warn`  | `#F4BB4F` | `#8A5A00` | Delayed or stale data                                         |
+| `--paper` | `#B8B8B8` | `#464646` | Simulated money: neutral silver / graphite, never feed status |
+
+PAPER uses an achromatic token rather than a status hue: distinct from amber/yellow warnings,
+green/red (or blue/orange) price moves, mint, the four chromatic link groups and orchid weather.
+Contrast on the panel is **8.95:1 dark / 9.44:1 light**. Outlined `PAPER` labels and double-rule
+ticket framing identify simulation without relying on colour. Feed warnings keep `--warn`.
 
 Light mint is a deep teal-mint, `#007878`: **5.31:1** contrast on white (the initial `#0E9F75`
 proposal gave only 3.37:1). It sits at OKLCH hue 195° against the light up green's 141°, a

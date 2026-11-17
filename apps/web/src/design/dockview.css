@@ -193,6 +193,58 @@
   outline-offset: 2px;
 }
 
+/* Detached panels retain the terminal's tab title, link dot and live source header.
+   Use the existing location state; no second window shell or theme synchronizer. */
+.dv-groupview:has(.panel-popout[data-location='popout']) {
+  border: 1px solid var(--line);
+  border-top: 3px double var(--muted);
+  border-radius: var(--panel-radius);
+  overflow: hidden;
+}
+
+.dv-groupview:has(.panel-popout[data-location='popout']) .dv-tabs-and-actions-container {
+  --dv-tabs-and-actions-container-height: calc(var(--row-h) + 12px);
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.dv-groupview:has(.panel-popout[data-location='popout']) .dv-tab {
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.dv-groupview:has(.panel-popout[data-location='popout']) .dv-tab.dv-active-tab {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  order: -1;
+  background: var(--panel);
+}
+
+.popout-theme {
+  display: none;
+  padding: 2px 4px;
+  border-inline: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.popout-theme[data-location='popout'] {
+  display: inline-flex;
+}
+
+.popout-theme-light,
+:root[data-theme='light'] .popout-theme-dark {
+  display: none;
+}
+
+:root[data-theme='light'] .popout-theme-light {
+  display: inline;
+}
+
 .dock-popout-blocked {
   position: absolute;
   top: 8px;

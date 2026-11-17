@@ -2,20 +2,25 @@
    colour: mint marks an alert being watched, the text colour one that happened. */
 
 .alerts-panel {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
 }
 
 .alerts-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
-  padding: 8px var(--pad);
+  padding: var(--pad);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
 }
 
 .alerts-form input {
-  min-height: var(--row-h);
+  min-width: 0;
+  min-height: calc(var(--row-h) + 8px);
   padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: var(--panel-radius);
@@ -24,17 +29,50 @@
   font: inherit;
 }
 
+.alerts-form input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.alerts-form .chart-interval {
+  min-width: 48px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+}
+
+.alerts-form .chart-interval:not(:disabled) {
+  border-color: var(--live);
+  color: var(--live);
+  background: color-mix(in srgb, var(--live) 6%, var(--panel));
+}
+
+.alerts-form .chart-interval:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
 .alerts-preview,
 .alerts-permission {
   margin: 0;
-  padding: 0 var(--pad) 8px;
+  padding: 8px var(--pad);
   color: var(--muted);
   font-size: var(--size-label);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .alerts-preview {
   color: var(--text);
+}
+
+.alerts-permission {
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 20%, var(--panel));
+}
+
+.alerts-permission .chart-interval {
+  margin-block: 4px;
+  border-color: var(--line);
 }
 
 .alerts-preview.is-invalid {
@@ -51,8 +89,8 @@
 .alerts-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 8px;
-  padding: 8px var(--pad);
+  gap: 4px 8px;
+  padding: var(--pad);
   border-bottom: 1px solid var(--line);
   border-left: 2px solid transparent;
 }
@@ -61,28 +99,83 @@
   border-left-color: var(--live);
 }
 
+.alerts-item[data-status='fired'] {
+  border-left-color: var(--text);
+  background: color-mix(in srgb, var(--muted) 6%, var(--panel));
+}
+
 .alerts-rule {
   font-weight: 500;
+  min-width: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .alerts-status {
   grid-column: 1;
   color: var(--muted);
   font-size: var(--size-label);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .alerts-item[data-status='fired'] .alerts-status {
   color: var(--text);
 }
 
+.alerts-status::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.alerts-item[data-status='armed'] .alerts-status::before {
+  border-color: var(--live);
+  background: var(--live);
+}
+
+.alerts-item[data-status='fired'] .alerts-status::before {
+  border-color: var(--text);
+  border-radius: 0;
+  background: var(--text);
+}
+
 .alerts-actions {
   grid-column: 2;
   grid-row: 1 / span 2;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
 }
 
 .alerts-actions .chart-interval {
   border-color: var(--line);
+  min-height: var(--row-h);
+}
+
+.alerts-panel > * {
+  flex-shrink: 0;
+}
+
+.alerts-panel .panel-footnote {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: 380px) {
+  .alerts-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .alerts-actions {
+    grid-column: 1;
+    grid-row: auto;
+    flex-wrap: wrap;
+    padding-top: 4px;
+  }
 }
