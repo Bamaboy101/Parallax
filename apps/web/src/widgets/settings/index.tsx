@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { install, isAppleMobile, useInstall } from '../../app/install';
 import { playCue, unlockSound } from '../../app/sound';
 import { recognitionClass } from '../../command/speech';
 import '../../design/settings.css';
@@ -216,6 +217,40 @@ const SOUND = [
   ['on', 'On'],
 ] as const;
 
+/** E6: install the app, or how to, and what the offline copy holds. */
+function AppSettings() {
+  const { prompt, installed } = useInstall();
+  return (
+    <>
+      <h2 className="settings-heading">App</h2>
+      <p className="settings-note">
+        Installed, Parallax opens in its own window from your home screen or dock. It keeps a copy
+        of the app itself so it opens without a connection (panels then say they are offline).
+        Market data, news and keys never pass through that copy.
+      </p>
+      {installed ? (
+        <p className="settings-note">You are using the installed app.</p>
+      ) : prompt ? (
+        <button
+          type="button"
+          className="chart-interval settings-install"
+          onClick={() => {
+            void install();
+          }}
+        >
+          Install Parallax
+        </button>
+      ) : (
+        <p className="settings-note">
+          {isAppleMobile()
+            ? 'On iPhone or iPad: tap Share, then “Add to Home Screen”.'
+            : 'If your browser can install it, its menu offers “Install Parallax” or “Add to Home Screen”.'}
+        </p>
+      )}
+    </>
+  );
+}
+
 /** The sound layer (F12): off by default; on, three short cues and a volume. */
 function SoundSettings() {
   const { sound, soundVolume, setSound, setSoundVolume } = usePrefs();
@@ -309,6 +344,7 @@ export default function Settings() {
         <p className="settings-note">This browser has no speech recognition, so voice is off.</p>
       )}
       <SoundSettings />
+      <AppSettings />
     </div>
   );
 }

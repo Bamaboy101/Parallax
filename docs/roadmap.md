@@ -153,6 +153,9 @@ experts lose nothing. Built before Batch D.
   and Simple / Pro); Simple's cockpit is one full-width group of tabs with its own saved layout.
   Checked in both themes; Pro on a phone is unchanged.
 - **E6 Installable app:** F11, pulled forward from Batch D.
+  Built 18 Nov: manifest and icons (placeholder mark until the visual pass), an offline shell for
+  the app's own files only, and Settings › App to install it. Chromium reports no installability
+  errors; the shell reloads with the network off.
 
 ## Waiting for written permission
 

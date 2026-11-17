@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import { App } from './app/App';
+import { setUpInstall } from './app/install';
 import { receiveHandoff, withoutHandoff } from './app/rename';
 import './index.css';
 import { applyPrefs, usePrefs } from './store/prefs';
@@ -11,6 +12,8 @@ import { SHARE_KEY } from './app/workspace';
 
 function render(): void {
   applyPrefs();
+  // E6: the offline shell (production only, so development always loads fresh code).
+  setUpInstall(import.meta.env.PROD);
   // A shared workspace link opens in the cockpit, where the dock can load it.
   if (new URLSearchParams(window.location.hash.slice(1)).has(SHARE_KEY)) {
     usePrefs.getState().setView('cockpit');
