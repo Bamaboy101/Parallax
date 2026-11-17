@@ -6,6 +6,8 @@ import { lastPriceOf, priceChannel, priceLine } from '../hooks';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
 import type { PaperState } from '../paper/store';
 import type { OptionsSummary } from '../options/store';
+import { basisPoints, curveOn, daysBefore } from '../rates/parse';
+import type { RatesState } from '../rates/store';
 import { dayChangeOf, oddsOf, openOutcomes, type PredictionEvent } from '../predictions/classify';
 import { PERPS } from '../perps';
 import { instrument, type Instrument } from '../symbols';
@@ -46,6 +48,8 @@ export interface ContextInput {
   releases: readonly Release[] | null;
   /** What each open options panel last showed, by underlying. */
   options: Readonly<Record<string, OptionsSummary>>;
+  /** The rates desk's curve and overnight rates. */
+  rates: Pick<RatesState, 'curve' | 'sofr' | 'effr'>;
   now: number;
 }
 
@@ -133,6 +137,8 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
       const pc = summary.putCall;
       return `${underlying} options expiring ${summary.expiry} (Alpaca indicative feed: quotes adjusted, trades 15 min delayed): spot ${formatNumber(summary.spot, 2)}, at-the-money implied volatility ${summary.atmIv === null ? 'unknown' : `${formatNumber(summary.atmIv * 100, 1)}%`}, put/call ratio ${pc.ratio === null ? 'unknown' : formatNumber(pc.ratio, 2)} by contracts traded (${formatCompact(pc.callVolume)} calls, ${formatCompact(pc.putVolume)} puts)`;
     }
+    case 'rates':
+      return ratesDetail(input.rates);
     case 'macro':
       return input.fred ? macroDetail(input.fred) : null;
     case 'calendar': {
@@ -171,6 +177,36 @@ function macroDetail(fred: SeriesMap): string | null {
     ...stat('Payrolls, monthly change', monthlyChange(fred.PAYEMS), 0, 'k jobs', true),
   ];
   return lines.length > 0 ? `Official FRED data, daily or monthly: ${lines.join('; ')}` : null;
+}
+
+/** The rates desk: key tenors with their one-month change, the 2s10s spread and overnight rates. */
+function ratesDetail(rates: ContextInput['rates']): string | null {
+  const latest = rates.curve.at(-1);
+  const parts: string[] = [];
+  if (latest) {
+    const monthAgo = curveOn(rates.curve, daysBefore(latest.date, 30));
+    const tenors = ['3M', '2Y', '10Y', '30Y'].flatMap((label) => {
+      const value = latest.yields[label];
+      if (value == null) return [];
+      const change = basisPoints(value, monthAgo?.yields[label]);
+      return [
+        `${label} ${formatNumber(value, 2)}%${change === null ? '' : ` (${formatNumber(change, 0, true)} bp over a month)`}`,
+      ];
+    });
+    const spread = basisPoints(latest.yields['10Y'], latest.yields['2Y']);
+    parts.push(
+      `US Treasury curve on ${latest.date}: ${tenors.join(', ')}${spread === null ? '' : `; 10Y minus 2Y ${formatNumber(spread, 0, true)} bp`}`,
+    );
+  }
+  const sofr = rates.sofr.at(-1);
+  if (sofr) parts.push(`SOFR ${formatNumber(sofr.rate, 2)}% on ${sofr.date}`);
+  const effr = rates.effr.at(-1);
+  if (effr) {
+    parts.push(
+      `effective fed funds rate ${formatNumber(effr.rate, 2)}% on ${effr.date}, target range ${formatNumber(effr.targetFrom, 2)}–${formatNumber(effr.targetTo, 2)}% (New York Fed)`,
+    );
+  }
+  return parts.length > 0 ? `Official end-of-day data: ${parts.join('; ')}` : null;
 }
 
 /** Up to eight market-moving events with their odds and 24 h change. */

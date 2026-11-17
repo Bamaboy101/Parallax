@@ -17,6 +17,7 @@ import {
 import { newsTarget } from '../news';
 import { usePaperStore } from '../paper/store';
 import { useOptionsSummaries } from '../options/store';
+import { useRatesStore } from '../rates/store';
 import { usePredictionStore } from '../predictions/store';
 import { INSTRUMENTS } from '../symbols';
 import { useTickStore } from '../ticks';
@@ -162,6 +163,7 @@ export async function askCopilot(
     fred,
     releases,
     options: useOptionsSummaries.getState(),
+    rates: useRatesStore.getState(),
     now,
   });
   try {

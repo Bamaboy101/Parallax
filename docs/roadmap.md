@@ -40,6 +40,10 @@ be checked against the provider's own docs before building.
   IV, so the panel opens on the first later expiry.
 - **M3 Rates desk:** full Treasury yield curve with history, SOFR, Fed funds path. Source: US
   Treasury daily yields, New York Fed API. No key.
+  Built 17 Nov: both checked and called straight from the browser; the New York Fed's required
+  reference-rate notice is on the desk. The plan names no source for the Fed funds path, so the
+  desk shows the path so far (target range and EFFR from the New York Fed) and, beside it, the
+  next decisions' Polymarket odds, labelled market odds, not forecasts.
 - **M4 Energy:** oil and gas inventories, production, storage surprises. Source: EIA open data.
   Free project key.
 - **M5 On-chain:** Bitcoin fees and blocks, Ethereum gas, stablecoin supply, DeFi totals, fear

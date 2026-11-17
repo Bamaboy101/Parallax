@@ -1,0 +1,184 @@
+/* Rates desk (M3). Tokens only; no shadows; no motion. Yield changes are rates, not price moves,
+   so they stay neutral; the latest curve is the text colour, older curves muted and dashed. */
+
+.rates-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.rates-chart {
+  margin: 0;
+  padding: 8px var(--pad);
+}
+
+.rates-chart svg {
+  display: block;
+  width: 100%;
+  height: calc(var(--row-h) * 4);
+  border-bottom: 1px solid var(--line);
+}
+
+.rates-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.rates-line.is-month {
+  stroke: var(--muted);
+  stroke-dasharray: 4 3;
+}
+
+.rates-line.is-year {
+  stroke: var(--muted);
+  stroke-dasharray: 1 3;
+}
+
+.rates-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.rates-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.rates-key::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  margin-right: 4px;
+  border-top: 2px solid var(--text);
+  vertical-align: middle;
+}
+
+.rates-key.is-month::before {
+  border-top: 2px dashed var(--muted);
+}
+
+.rates-key.is-year::before {
+  border-top: 2px dotted var(--muted);
+}
+
+.rates-key.is-band::before {
+  height: 8px;
+  border: 0;
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.rates-axis {
+  margin-left: auto;
+  font-family: var(--font-num);
+}
+
+.rates-columns {
+  grid-template-columns: minmax(48px, 1fr) repeat(4, minmax(56px, 1fr));
+}
+
+.rates-figures {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 8px var(--pad);
+}
+
+.rates-figures > div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rates-figures dt {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.rates-figures dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.rates-note {
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: var(--size-label);
+}
+
+.rates-path-block {
+  padding: 8px var(--pad);
+}
+
+.rates-path {
+  display: block;
+  width: 100%;
+  height: calc(var(--row-h) * 3);
+}
+
+.rates-band {
+  fill: color-mix(in srgb, var(--muted) 30%, transparent);
+  stroke: none;
+}
+
+.rates-effr {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.rates-changes,
+.rates-meetings {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--size-label);
+}
+
+.rates-changes {
+  color: var(--muted);
+  font-family: var(--font-num);
+}
+
+.rates-subhead {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 500;
+}
+
+.rates-meetings li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rates-meeting-lead {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.rates-meeting-lead .text-num {
+  color: var(--text);
+}

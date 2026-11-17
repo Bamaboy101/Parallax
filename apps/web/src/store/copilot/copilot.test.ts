@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FeedEvent } from '../../feeds/types';
 import { EDGE_URL } from '../edge';
+import { parseRefRates, parseTreasuryCsv } from '../rates/parse';
+import effrFixture from '../rates/fixtures/effr.json';
+import treasuryCsv from '../rates/fixtures/treasury-2026.csv?raw';
 import { ingest, resetTicks, useTickStore } from '../ticks';
 import { buildContext } from './context';
 import { ADVICE_REFUSAL, asksForAdvice, citedIds, givesAdvice } from './guard';
@@ -49,6 +52,7 @@ describe('buildContext', () => {
           at: now,
         },
       },
+      rates: { curve: [], sofr: [], effr: [] },
       now,
     });
     expect(items.map((item) => `${item.id}:${item.label}`)).toEqual([
@@ -63,6 +67,26 @@ describe('buildContext', () => {
     expect(items[2]?.detail).toContain(
       'at-the-money implied volatility 35.9%, put/call ratio 1.50',
     );
+  });
+
+  it('gives the rates desk its curve, spread and overnight rates', () => {
+    const [item] = buildContext({
+      panels: [{ component: 'rates', title: 'Rates desk', params: {} }],
+      ticks: useTickStore.getState(),
+      barsOf: () => undefined,
+      events: [],
+      midpoints: {},
+      paper: null,
+      headlines: [],
+      fred: null,
+      releases: null,
+      options: {},
+      rates: { curve: parseTreasuryCsv(treasuryCsv), sofr: [], effr: parseRefRates(effrFixture) },
+      now,
+    });
+    expect(item?.detail).toContain('US Treasury curve on 2026-11-16: 3M 4.34%');
+    expect(item?.detail).toContain('10Y minus 2Y +29 bp');
+    expect(item?.detail).toContain('target range 3.75–4.00% (New York Fed)');
   });
 });
 

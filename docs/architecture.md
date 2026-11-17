@@ -451,6 +451,22 @@ put/call ratio and volumes, the smile, and the chain with calls left, puts right
 it opens centred on, and a muted tint on in-the-money halves. Each row is eleven direct cells so
 learn mode explains every number by its column.
 
+## Rates desk (M3)
+
+`store/rates/store.ts` is one store for the desk and the co-pilot. While a desk is open it loads,
+straight from the browser and hourly, the US Treasury's daily par yield curve CSV for this year
+and last (`home.treasury.gov`, CORS `*`) and a year of SOFR and EFFR from the New York Fed's
+Markets Data API (`markets.newyorkfed.org`, which allows our origin). Each source may fail alone;
+what is shown stays, and `treasury` and `nyfed` report `EOD` freshness. `parse.ts` reads the CSV
+(13 tenors, 1M to 30Y; empty cells stay missing, never zero), the reference rates, and the FOMC
+target range's changes from the EFFR history (`targetPath`). The `rates` widget (commands
+`rates`, `curve`, `yields`, `sofr`; the Macro panel keeps `macro` and `fred`) draws the curve now,
+a month and a year ago, a tenor table with 1-day, 1-month and 1-year changes in basis points
+(neutral, since yields are not price moves), the 2s10s and 3m10y spreads, SOFR with its
+1st–99th percentile range and volume, EFFR with the target range, the target range over the year
+as a band with EFFR inside, its recent moves, and the next three Fed decisions from Polymarket,
+labelled market odds, not forecasts. The footnote carries the New York Fed's required notice.
+
 ## Tick store and Rewind
 
 `store/feedClient.ts` starts the hub worker on first use and passes its batches to
