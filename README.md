@@ -74,6 +74,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Smart alerts.** Type `alert BTC above 65000` or `alert ETH down 2% in
 15m` and get a browser notification, with the price, source and time,
   when it happens. Alerts run while Open Terminal is open in a tab.
+- **Multi-screen.** The window button on any panel moves it into its own
+  browser window for a second monitor. It stays linked and live, and follows
+  your theme; one click brings it back.
 
 ## The honest part: what "free" and "no delay" allow
 

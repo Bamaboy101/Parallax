@@ -25,6 +25,8 @@ const cockpitTheme: DockviewTheme = {
 
 export function DockArea() {
   const [api, setApi] = useState<DockviewApi | null>(null);
+  /** F9: the browser refused to open a window for a panel. */
+  const [popoutBlocked, setPopoutBlocked] = useState(false);
   const surface = useRef<HTMLDivElement>(null);
   const bootHint = useRef<HTMLButtonElement>(null);
   useLinkFollower(api);
@@ -56,6 +58,16 @@ export function DockArea() {
       subscription.dispose();
       window.removeEventListener('pagehide', flush);
       if (timer !== undefined) flush();
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+    const failure = api.onDidOpenPopoutWindowFail(() => {
+      setPopoutBlocked(true);
+    });
+    return () => {
+      failure.dispose();
     };
   }, [api]);
 
@@ -144,6 +156,21 @@ export function DockArea() {
         rightHeaderActionsComponent={PanelBadges}
         onReady={onReady}
       />
+      {popoutBlocked && (
+        <p className="dock-popout-blocked" role="alert">
+          The browser blocked the new window. Allow pop-ups for this site, then press the window
+          button again.
+          <button
+            type="button"
+            className="chart-interval"
+            onClick={() => {
+              setPopoutBlocked(false);
+            }}
+          >
+            OK
+          </button>
+        </p>
+      )}
       <button ref={bootHint} type="button" className="cockpit-boot" hidden>
         Initialising panels · click or press any key to skip
       </button>

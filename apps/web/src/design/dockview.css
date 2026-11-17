@@ -159,6 +159,59 @@
   outline-offset: 2px;
 }
 
+/* F9: open the group in its own window, or bring it back. A neutral interface control. */
+.panel-popout {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.panel-popout svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.panel-popout:hover {
+  color: var(--text);
+}
+
+.panel-popout:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: 2px;
+}
+
+.dock-popout-blocked {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100% - 32px));
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--warn);
+  border-radius: var(--panel-radius);
+  background: var(--panel);
+  color: var(--text);
+  font-size: var(--size-label);
+  transform: translateX(-50%);
+}
+
 .link-dot[data-link='1'] {
   border: 0;
   background: var(--link-1);
