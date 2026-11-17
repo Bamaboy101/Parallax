@@ -759,6 +759,12 @@ with the same formatter as the section the sentence links to, and the big figure
 is not on screen. A sentence whose figures have not arrived is left out. It describes, never
 advises: tests check for buy/sell wording.
 
+**Phones (E5).** Up to 760 px wide (`useNarrow`, the same breakpoint as the CSS), Simple's
+cockpit uses a third layout slot, `phone` (`phoneDock` in `store/layout.ts`): presets are laid
+out as tabs in one full-width group (`setTabbedPresets`), with no sideways scrolling and no
+Rewind bar. Pro on a phone keeps its wide desk and the "Swipe across panels" hint, so nothing a
+trader set up changes. The Rundown is one column.
+
 ## Workspaces
 
 - **Presets** are JSON files in `apps/web/src/workspaces/` (`mission-control`, `overview`,

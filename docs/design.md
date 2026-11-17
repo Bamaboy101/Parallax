@@ -134,8 +134,10 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   is a neutral outline. Rows show a short mono reason (`Needs key`, `Cap full`, `Offline`) with the
   same small mark where a price is missing. The World markets board, like the tape and the book,
   has no per-row pulse.
-- Narrow screens (under 760 px) keep every panel at a readable width: the dock scrolls
-  sideways, and the top bar says so ("Swipe across panels").
+- Narrow screens (under 760 px): the top bar is a grid of 34–40 px controls (brand, Learn,
+  Settings and theme; full-width search; Rundown / Cockpit and Simple / Pro). The Rundown is one
+  column. Simple's cockpit is one full-width group of tabs. Pro keeps every panel at a readable
+  width: its dock scrolls sideways, and the top bar says so ("Swipe across panels").
 - `Cell`: a number in mono with tabular figures, optional sign, suffix and up/down tone. Missing
   values render as an em dash. With `pulse`, a change washes the cell in `--up` or `--down` at
   28% and fades over `--motion-pulse` (Web Animations API, so no React render; none under reduced

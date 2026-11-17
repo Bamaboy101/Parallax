@@ -148,6 +148,10 @@ experts lose nothing. Built before Batch D.
   Built 18 Nov: up to six sentences at the top of the Rundown, each with a link to the section
   whose numbers it quotes; tested for matching figures and for advice wording; checked live.
 - **E5 Phone first:** Rundown and Simple mode work well at 390 px wide.
+  Built 18 Nov: at 390 px the Rundown is one column with no sideways scroll; the top bar is three
+  rows of 34–40 px controls (brand, Learn, Settings, theme; full-width search; Rundown / Cockpit
+  and Simple / Pro); Simple's cockpit is one full-width group of tabs with its own saved layout.
+  Checked in both themes; Pro on a phone is unchanged.
 - **E6 Installable app:** F11, pulled forward from Batch D.
 
 ## Waiting for written permission
