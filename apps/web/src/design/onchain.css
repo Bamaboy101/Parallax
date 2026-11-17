@@ -1,0 +1,111 @@
+/* On-chain (M5). Tokens only; no shadows; no motion. Fees, gas and the mood index are not price
+   moves, so nothing here uses up or down. */
+
+.onchain-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.onchain-panel > section,
+.onchain-panel > .panel-footnote {
+  flex-shrink: 0;
+}
+
+.onchain-figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0 var(--pad) 8px;
+}
+
+.onchain-figures > div {
+  min-width: 0;
+  padding: 4px 8px;
+  border-inline-start: 1px solid var(--line);
+}
+
+.onchain-figures dt {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.onchain-figures dd {
+  margin: 2px 0 0;
+  font-size: calc(var(--size-num) + 2px);
+}
+
+.onchain-line {
+  margin: 0;
+  padding: 0 var(--pad) 8px;
+  color: var(--muted);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.onchain-line-label {
+  color: var(--text);
+}
+
+.onchain-blocks {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.onchain-block-columns {
+  grid-template-columns: 72px 56px 56px 72px minmax(0, 1fr);
+}
+
+.onchain-pool {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.onchain-mood {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 0 var(--pad) var(--pad);
+  font-size: var(--size-label);
+}
+
+.onchain-mood-value {
+  font-size: calc(var(--size-num) + 8px);
+  font-weight: 600;
+}
+
+.onchain-mood-label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* alternative.me asks for the credit right next to the data: it sits in the same row. */
+.onchain-credit {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@container (max-width: 380px) {
+  .onchain-figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .onchain-block-columns {
+    grid-template-columns: 64px 48px 48px 64px;
+  }
+
+  .onchain-block-columns > :last-child {
+    display: none;
+  }
+}

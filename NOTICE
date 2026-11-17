@@ -27,7 +27,8 @@ The application code, the edge Worker and the documentation are original
 work of the contributors, licensed under the Apache License 2.0 (LICENSE).
 
 Market data is displayed as delivered by its public sources (Binance,
-Coinbase, Kraken, Bybit, OKX, Alpaca, Finnhub, FRED, SEC EDGAR, Frankfurter
-and the listed publisher feeds) under each source's own terms. This project
+Coinbase, Kraken, Bybit, OKX, Alpaca, Finnhub, FRED, SEC EDGAR, Frankfurter,
+mempool.space, PublicNode, alternative.me and the listed publisher feeds)
+under each source's own terms. This project
 is not affiliated with, endorsed by, or a redistribution of any of them, and
 each visitor's own keys serve only that visitor.

@@ -518,6 +518,18 @@ floating groups in the main window (`popoutsAsFloating`), one click from popping
 Learn mode's hover explanations and the command bar's `/` shortcut work in the main window only:
 their listeners are on its document (learn strips do show in popouts).
 
+## On-chain (M5)
+
+`store/onchain/` reads three keyless sources straight from the browser while an On-chain panel
+is open (`useOnchain`): Bitcoin fees, mempool and the latest six blocks from mempool.space every
+30 s; one PublicNode JSON-RPC batch every 15 s with `eth_feeHistory` (the next block's base fee,
+and the median over 5 blocks of the 25th/50th/75th percentile tips: slow, standard, fast) and the
+`totalSupply()` of USDT, USDC and DAI on Ethereum (BigInt, so DAI's 18 decimals stay exact); and
+the Fear & Greed Index from alternative.me every 30 minutes. Each section fails alone and keeps
+what it showed; each source reports its own badge (`mempool`, `publicnode` polled,
+`alternative-me` EOD). Fees, gas and the mood index are not price moves, so the panel uses no up
+or down colour. DeFi totals wait for DefiLlama's written permission (see data-sources.md).
+
 ## World globe (F3)
 
 `widgets/globe/` draws an orthographic globe on one canvas. `model.ts` is pure: the subsolar

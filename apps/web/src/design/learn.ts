@@ -89,6 +89,24 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
     'The three markets whose US-listed fund (an ETF that tracks the country) moved most since its previous close, drawn as arcs from New York, where those funds trade.',
   Whale:
     'An unusually large trade: worth at least $100,000 and among the biggest 0.5% of this market’s trades in the last hour. Large forced closes (liquidations) on the matching futures count too. A whale shows size, not which way the price will go.',
+  'Next block':
+    'The Bitcoin fee, in satoshis per virtual byte, likely to get a transaction into the very next block. Higher fees go first.',
+  '30 min':
+    'The Bitcoin fee likely to confirm a transaction within about 30 minutes (three blocks).',
+  '1 hour': 'The Bitcoin fee likely to confirm a transaction within about an hour (six blocks).',
+  Economy:
+    'The lowest Bitcoin fee that should still confirm, eventually, when the network is quiet.',
+  Mempool:
+    'Bitcoin transactions waiting to be put in a block. A block holds about 1 vMB, so the size says roughly how many blocks it would take to clear.',
+  'Base fee':
+    'The fee every Ethereum transaction in the next block must pay, in gwei (a billionth of an ether). The network sets it from how full recent blocks were.',
+  Slow: 'Base fee plus a small tip: what the cheapest quarter of recent transactions paid.',
+  Standard: 'Base fee plus a typical tip: what the middle of recent transactions paid.',
+  Fast: 'Base fee plus a generous tip: what the top quarter of recent transactions paid.',
+  'Stablecoin supply':
+    'How many of each dollar-pegged token exist on Ethereum, read from the token’s own contract. The same tokens also exist on other blockchains, not counted here.',
+  'Fear & Greed':
+    'A daily mood index for crypto from alternative.me, 0 (extreme fear) to 100 (extreme greed), built from price swings, momentum, social media and search interest. A mood, not a forecast.',
 };
 
 /** What a truth badge means, in plain words. */

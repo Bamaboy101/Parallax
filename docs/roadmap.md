@@ -49,6 +49,11 @@ be checked against the provider's own docs before building.
 - **M5 On-chain:** Bitcoin fees and blocks, Ethereum gas, stablecoin supply, DeFi totals, fear
   and greed. Source: mempool.space, DeFiLlama, alternative.me, a public Ethereum endpoint
   (confirm).
+  Built 17 Nov: Bitcoin fees, mempool and blocks (mempool.space), Ethereum gas and stablecoin
+  supply on Ethereum (PublicNode JSON-RPC: USDT, USDC, DAI contracts), Fear & Greed with the
+  required credit beside it (alternative.me). Differs from the plan: DefiLlama is not used, its
+  terms bar republishing without permission (pending written permission), so DeFi totals are out
+  and stablecoin supply covers Ethereum only.
 - **M6 DEX pairs:** prices and liquidity of trending on-chain pairs. Source: GeckoTerminal or
   DexScreener public APIs (confirm).
 - **M7 Corporate events:** earnings calendar, insider trades, large-holder filings. Source:

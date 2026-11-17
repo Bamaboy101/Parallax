@@ -246,6 +246,41 @@ data is premium; personal use), Tiingo and Nasdaq Data Link (internal use), Mass
 coverage), data.go.kr and BoK ECOS for KOSPI (no third parties). When a licence arrives, its index
 gets an official row like TAIEX's (`official` in `widgets/regionBoards.ts`) and keeps its proxy.
 
+## On-chain (M5): mempool.space, PublicNode, alternative.me (`store/onchain/`)
+
+Checked 17 Nov 2026 against each provider's own terms, and called from our origin (all answer
+`Access-Control-Allow-Origin: *`, keyless). All three are read straight from the visitor's browser;
+the edge Worker is not involved.
+
+- **mempool.space** (`/api/v1/fees/recommended`, `/api/mempool`, `/api/v1/blocks`, every 30 s).
+  Terms of Service (updated 10 July 2024) cover "their associated API services" and contain only
+  no-warranty, no-liability, no-advertising and accelerator clauses: nothing restricts display,
+  caching or commercial use, and no attribution is asked. No published rate limit (HTTP 429 when
+  exceeded). The panel names the source anyway.
+- **PublicNode** (`https://ethereum-rpc.publicnode.com`, one JSON-RPC batch every 15 s:
+  `eth_feeHistory` over 5 blocks at the 25th/50th/75th tip percentiles, and `totalSupply()` of
+  USDT, USDC and DAI). Terms (publicnode.com/terms): automated access "for development and
+  production purposes … No prior authorization from us is required", and blockchain data "You may
+  use it in your own applications and services, including displaying it to your users, but you
+  may not resell access to the Endpoints or such data as a standalone product". Ruled out:
+  cloudflare-eth.com (Cloudflare is deprecating the legacy hostname), eth.llamarpc.com (HTTP 525,
+  no CORS header) and rpc.ankr.com/eth (Ethereum moved to Ankr's sign-in plan).
+- **alternative.me Crypto Fear & Greed Index** (`/fng/?limit=2`, every 30 minutes; the index is
+  daily, so the badge says EOD). Rules on the index page: "You must properly acknowledge the source
+  of the data and prominently reference it accordingly. Commercial use is allowed as long as the
+  attribution is given right next to the display of the data", and nothing that "could be
+  confused with our offering". The panel shows "Data from alternative.me", linked to the index
+  page, in the same row as the reading, in our own neutral style. 60 requests a minute.
+- **DefiLlama: not used (pending written permission).** The plan named DefiLlama for DeFi totals
+  and stablecoin supply. Its FAQ calls the API "open … free to use", but its Terms of Use (effective
+  24 June 2025) govern the "official public API(s)" and grant a licence "for personal,
+  non-commercial purposes" (§7), forbid to "republish the data in any form without permission" and
+  to "transfer or 'mirror' the materials on another server" (§8.7, §8.4), with liquidated damages
+  of up to USD 100,000 per violation (§14). A public app showing the data is republishing it. So
+  DeFi totals are left out and stablecoin supply is read from the token contracts on Ethereum
+  instead, labelled "on Ethereum; supply on other chains is not counted". Written permission from
+  DefiLlama (contact on defillama.com/terms) would unlock both.
+
 ## Natural Earth land outlines (`widgets/globe/`)
 
 Checked 17 Nov 2026 against naturalearthdata.com/about/terms-of-use: "All versions of Natural Earth

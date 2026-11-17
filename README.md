@@ -83,6 +83,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Whale radar.** Unusually large trades, and big liquidations on the
   matching futures, show as a quiet dotted ring on the Constellation and a
   marked row on the tape, with a 15-minute summary.
+- **On-chain.** Bitcoin fees, mempool and the latest blocks, Ethereum gas,
+  stablecoin supply on Ethereum and the daily Fear & Greed Index, read by
+  your browser with no key.
 
 ## The honest part: what "free" and "no delay" allow
 
@@ -102,6 +105,7 @@ fees for consolidated real-time feeds, and no free API gets around that.
 | Rates and macro                                        | Daily, which is how they publish | US Treasury yield curve and New York Fed SOFR and EFFR, read by your browser; FRED through the project's edge cache          | Nothing to fix; daily by nature                                                                    |
 | News and filings                                       | Minutes                          | Publisher RSS and FRED/SEC through the edge cache; Finnhub company news on your key                                          | Not a paid newswire                                                                                |
 | Prediction markets                                     | Yes, polled every 15 s           | Polymarket public data, read by your browser. No key                                                                         | Market odds, not forecasts; Kalshi is not used without its written permission                      |
+| On-chain                                               | Yes, polled                      | mempool.space, PublicNode (Ethereum JSON-RPC), alternative.me Fear & Greed; read by your browser. No key                     | DeFi totals wait for DefiLlama's written permission; stablecoin supply is Ethereum's only          |
 
 Two limits, stated plainly:
 
