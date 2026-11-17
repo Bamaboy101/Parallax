@@ -10,7 +10,7 @@ import {
   type Time,
   type UTCTimestamp,
 } from 'lightweight-charts';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../../design/market.css';
 import { failureNotice } from '../../design/notices';
 import { PanelNotice } from '../../design/PanelNotice';
@@ -19,6 +19,7 @@ import { INTERVALS, useCandles } from '../../store/candles';
 import { useTick } from '../../store/hooks';
 import { useReportSources } from '../../store/panels';
 import { instrument } from '../../store/symbols';
+import { PaperTicket } from '../PaperTicket';
 import { SymbolNotice } from '../SymbolNotice';
 import { DEFAULT_INTERVAL, DEFAULT_SYMBOL } from './meta';
 
@@ -147,6 +148,9 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
   const candles = useCandles(item, interval);
   const source = useTick(item, 'bar')?.source;
   useReportSources(api.id, source ? [source] : []);
+  // US stocks and ETFs can be paper traded from the chart (F4).
+  const [ticket, setTicket] = useState(false);
+  const tradable = item.kind === 'equity';
 
   const container = useRef<HTMLDivElement>(null);
   const handles = useRef<Handles | null>(null);
@@ -247,7 +251,27 @@ export default function Chart({ api, params }: IDockviewPanelProps<ChartParams>)
             {failureNotice(candles.failure, 'History').title}
           </span>
         )}
+        {tradable && (
+          <button
+            type="button"
+            className="chart-interval chart-trade"
+            aria-expanded={ticket}
+            onClick={() => {
+              setTicket((open) => !open);
+            }}
+          >
+            Paper trade
+          </button>
+        )}
       </div>
+      {tradable && ticket && (
+        <PaperTicket
+          item={item}
+          onClose={() => {
+            setTicket(false);
+          }}
+        />
+      )}
       <div className="relative min-h-0 flex-1">
         <div ref={container} className="absolute inset-0" />
         {candles.state === 'loading' && history.length === 0 && (

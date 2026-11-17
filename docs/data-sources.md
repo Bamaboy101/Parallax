@@ -96,6 +96,24 @@ Needs the user's free key.
 - Recorded 16 Nov 2026 with a free key on `BINANCE:BTCUSDT`, which trades around the clock; stock
   trades use the same message format.
 
+## Alpaca paper trading (`store/paper/`)
+
+Checked 17 Nov 2026 against Alpaca's docs (Paper Trading; Create an Order) and its OpenAPI spec.
+
+- Paper accounts are free to anyone worldwide, start with $100,000 and have their own API keys,
+  separate from live keys; the API is the same as live at `https://paper-api.alpaca.markets`.
+  Live trading is on another host, which Open Terminal never calls (see architecture.md).
+- The paper API allows browser calls (`Access-Control-Allow-Origin: *`, with the `APCA-API-KEY-ID`
+  and `APCA-API-SECRET-KEY` headers allowed).
+- Orders: `POST /v2/orders` with `symbol`, `qty`, `side`, `type` (`market` or `limit`),
+  `time_in_force` (`day`) and `limit_price`; `DELETE /v2/orders/{id}` answers 204. A refused order
+  answers 422 with `{ code, message }` (for example "qty must be > 0"), shown as is.
+- Paper fills are simulated against live quotes: only marketable orders fill, partial fills come
+  10% of the time, and slippage, market impact, fees and dividends are not simulated.
+- Recorded 17 Nov 2026 with a paper key: account, positions, a limit and a market order (both
+  cancelled at once; nothing filled) and a refused order, ids and account number replaced
+  (`store/paper/fixtures/paper-account.json`).
+
 ## Polymarket, public market data (`store/predictions/`)
 
 Confirmed against Polymarket's docs on 17 Nov 2026 (docs.polymarket.com: API, Rate Limits,
