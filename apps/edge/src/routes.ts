@@ -501,34 +501,45 @@ export async function insiders(params: URLSearchParams, env: Env): Promise<Route
       url: `${folder}/${document}`,
       raw: `${folder}/${rawDocument(document)}`,
       xml: document.endsWith('.xml'),
+      // An accession number starts with the filer's CIK (or its filing agent's).
+      byCompany: Number(accession.split('-')[0]) === cik,
     };
   });
+  // A company's submissions also list filings it made about other companies (NVIDIA's 13G on
+  // CoreWeave, its Form 4s as a 10% owner): keep those whose issuer is this company.
+  const aboutCompany = (xml: string) => Number(tag(xml, 'issuerCik')) === cik;
 
   const form4s = filings.filter((filing) => filing.form === '4').slice(0, FORM4_READ);
   const insiderFilings = (
     await inBatches(form4s, async (filing) => {
       const answer = await fetch(filing.raw, { headers: secHeaders(env) });
-      // One unreadable filing is left out, not fatal.
-      return answer.ok ? parseForm4(await answer.text(), filing.filed, filing.url) : null;
+      if (!answer.ok) return null; // One unreadable filing is left out, not fatal.
+      const xml = await answer.text();
+      return aboutCompany(xml) ? parseForm4(xml, filing.filed, filing.url) : null;
     })
   ).filter((filing): filing is InsiderFiling => filing !== null);
 
   const holderForms = filings
-    .filter((filing) => /^(SC|SCHEDULE) 13[DG](\/A)?$/.test(filing.form))
+    .filter((filing) => /^(SC|SCHEDULE) 13[DG](\/A)?$/.test(filing.form) && !filing.byCompany)
+    .slice(0, HOLDER_FILINGS + 4);
+  const holders = (
+    await inBatches(holderForms, async (filing): Promise<HolderFiling | null> => {
+      const base = { form: filing.form, filed: filing.filed, url: filing.url };
+      if (!filing.xml) return { ...base, holder: null, percent: null };
+      const answer = await fetch(filing.raw, { headers: secHeaders(env) });
+      if (!answer.ok) return { ...base, holder: null, percent: null };
+      const xml = await answer.text();
+      if (!aboutCompany(xml)) return null;
+      const percent = Number(tag(xml, 'classPercent'));
+      return {
+        ...base,
+        holder: xmlText(tag(xml, 'reportingPersonName')) || null,
+        percent: tag(xml, 'classPercent') !== '' && Number.isFinite(percent) ? percent : null,
+      };
+    })
+  )
+    .filter((filing): filing is HolderFiling => filing !== null)
     .slice(0, HOLDER_FILINGS);
-  const holders: HolderFiling[] = await inBatches(holderForms, async (filing) => {
-    const base = { form: filing.form, filed: filing.filed, url: filing.url };
-    if (!filing.xml) return { ...base, holder: null, percent: null };
-    const answer = await fetch(filing.raw, { headers: secHeaders(env) });
-    if (!answer.ok) return { ...base, holder: null, percent: null };
-    const xml = await answer.text();
-    const percent = Number(tag(xml, 'classPercent'));
-    return {
-      ...base,
-      holder: xmlText(tag(xml, 'reportingPersonName')) || null,
-      percent: tag(xml, 'classPercent') !== '' && Number.isFinite(percent) ? percent : null,
-    };
-  });
 
   return {
     status: 200,
