@@ -584,7 +584,14 @@ export interface WorldCountry {
 export async function world(now = Date.now()): Promise<RouteResult> {
   const year = String(new Date(now).getUTCFullYear());
   const getJson = async (label: string, url: string): Promise<unknown> => {
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    // The IMF's site refuses requests without a user agent (403 from the Worker, recorded 18 Nov
+    // 2026); with one naming the app it answers. Workers send none by default.
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Parallax Terminal (+https://parallax-terminal.pages.dev)',
+      },
+    });
     if (!response.ok) throw upstreamError(label, response);
     return response.json();
   };

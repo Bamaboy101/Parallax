@@ -427,8 +427,9 @@ sends `SEC_USER_AGENT` and fetches documents five at a time.
   training.
   API: `https://www.imf.org/external/datamapper/api/v1/{indicator}` returns every economy and
   year (1980–2031 recorded); `/countries` and `/indicators` give names and the edition ("World
-  Economic Outlook (October 2026)"). No CORS header, so the edge fetches it. The figures for the
-  current year are IMF estimates.
+  Economic Outlook (October 2026)"). No CORS header, so the edge fetches it, declaring a user
+  agent: without one the IMF answers 403 to a Worker (recorded 18 Nov 2026 from a test Worker:
+  403 without, 200 with). The figures for the current year are IMF estimates.
 - **World Bank.** Checked 18 Nov 2026 against datacatalog.worldbank.org/public-licenses: datasets
   are CC BY 4.0 by default, which "allows users to copy, modify and distribute data in any format
   for any purpose, including commercial use", with credit and a note of changes. The panel credits
