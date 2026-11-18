@@ -396,7 +396,10 @@ sends `SEC_USER_AGENT` and fetches documents five at a time.
 - `https://www.sec.gov/files/company_tickers.json`: ticker to CIK, cached a day at the edge.
 - `https://data.sec.gov/submissions/CIK##########.json`: a company's recent filings. Form 4s and
   Schedules 13D/13G about the company are listed there (recorded for Apple: 212 Form 4s and 8
-  13G filings in the latest 400).
+  13G filings in the latest 400), but so are those the company filed about others (recorded:
+  NVIDIA's 13G holding 11.5% of CoreWeave). The edge keeps only documents whose `issuerCik` is
+  the company, and leaves out non-XML 13D/13G filings whose accession number starts with the
+  company's own CIK.
 - Form 4: the raw `ownershipDocument` XML is the primary document without its `xslF345X0N/`
   folder (recorded: an Apple officer's 10b5-1 sale). Only non-derivative transactions are shown.
 - Schedules 13D/13G: XML since December 2024 (`reportingPersonName`, `classPercent`; recorded:

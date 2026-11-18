@@ -34,18 +34,34 @@ afterEach(() => {
 const urlOf = (input: Parameters<typeof fetch>[0]) =>
   input instanceof Request ? input.url : input.toString();
 
+/**
+ * Apple's submissions, with two filings that are not about Apple: a 13G Apple filed itself (its
+ * accession starts with Apple's CIK) and an XML 13G and Form 4 whose issuer is another company.
+ */
 const SUBMISSIONS = {
   name: 'Apple Inc.',
   filings: {
     recent: {
-      form: ['4', '8-K', 'SCHEDULE 13G', 'SC 13G/A', '4'],
-      filingDate: ['2026-11-12', '2026-11-01', '2026-04-29', '2024-02-14', '2026-11-05'],
+      form: ['4', '8-K', 'SCHEDULE 13G', 'SC 13G/A', '4', 'SC 13G', 'SCHEDULE 13G', '4'],
+      filingDate: [
+        '2026-11-12',
+        '2026-11-01',
+        '2026-04-29',
+        '2024-02-14',
+        '2026-11-05',
+        '2024-01-10',
+        '2026-03-01',
+        '2026-02-01',
+      ],
       accessionNumber: [
         '0001140361-26-043484',
         '0000320193-26-000100',
         '0002100119-26-000139',
         '0001193125-24-036431',
         '0001140361-26-042149',
+        '0000320193-24-000007',
+        '0002100119-26-000999',
+        '0001140361-26-000888',
       ],
       primaryDocument: [
         'xslF345X06/form4.xml',
@@ -53,10 +69,16 @@ const SUBMISSIONS = {
         'xslSCHEDULE_13G_X02/primary_doc.xml',
         'd751537dsc13ga.htm',
         'xslF345X06/form4.xml',
+        'apple-13g-on-another.htm',
+        'xslSCHEDULE_13G_X02/primary_doc.xml',
+        'xslF345X06/form4.xml',
       ],
     },
   },
 };
+
+/** The same documents, about NVIDIA instead of Apple. */
+const aboutOther = (xml: string) => xml.replaceAll('0000320193', '0001045810');
 
 function secServer(input: Parameters<typeof fetch>[0]): Promise<Response> {
   const url = urlOf(input);
@@ -67,8 +89,12 @@ function secServer(input: Parameters<typeof fetch>[0]): Promise<Response> {
   if (url.includes('/submissions/CIK0000320193.json'))
     return Promise.resolve(Response.json(SUBMISSIONS));
   if (url.endsWith('/000114036126043484/form4.xml')) return Promise.resolve(new Response(form4));
+  if (url.endsWith('/000114036126000888/form4.xml'))
+    return Promise.resolve(new Response(aboutOther(form4)));
   if (url.endsWith('/000210011926000139/primary_doc.xml'))
     return Promise.resolve(new Response(schedule13g));
+  if (url.endsWith('/000210011926000999/primary_doc.xml'))
+    return Promise.resolve(new Response(aboutOther(schedule13g)));
   return Promise.resolve(new Response('not found', { status: 404 }));
 }
 

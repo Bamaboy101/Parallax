@@ -493,7 +493,8 @@ CIK with SEC's `company_tickers.json` (kept a day in the edge cache), reads the 
 submissions, parses the raw XML of its latest ten Form 4s (`parseForm4`: owner, role, 10b5-1
 plan flag, each non-derivative transaction) and lists its latest eight Schedule 13D/13G filings,
 reading holder and percent from the XML schedules (since December 2024) and linking older HTML
-ones. Documents are fetched five at a time with the declared user agent, inside SEC's 10 a
+ones; a document whose `issuerCik` is another company (filed by this one, about someone else) is
+left out. Documents are fetched five at a time with the declared user agent, inside SEC's 10 a
 second. The panel (commands `earnings`, `insiders`, `holders`, `corporate`, `form4`; `aapl
 earnings`) shows trades in neutral colours with SEC's transaction codes in words (plainer in
 Simple), and the co-pilot gets the same rows.
