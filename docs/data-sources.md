@@ -354,6 +354,28 @@ Gold on the Rundown is the PAX Gold token (PAXG/USD), a proxy, as elsewhere. Wor
 region show exchange hours, live currencies (Kraken) and TAIEX's official close without a key;
 the US-listed country funds fill in with a stock key, labelled as funds trading in US hours.
 
+## U.S. Energy Information Administration (EIA): the Energy panel (`store/energy.ts`)
+
+Checked 18 Nov 2026 against eia.gov/about/copyrights_reuse.php: "U.S. government publications are
+in the public domain and are not subject to copyright protection. You may use and/or distribute
+any of our data"; EIA asks for an acknowledgment with the publication date, which the panel gives
+("Source: U.S. Energy Information Administration (EIA)", each row with its week). The EIA logo and
+name may not be used as a mark; the panel uses neither as one.
+
+- API: `https://api.eia.gov/v2/seriesid/{id}` needs a free key (HTTP 403 without one, recorded);
+  the project's key is a Worker secret (`EIA_API_KEY`). CORS is `*`, but the key stays on the
+  edge. EIA's answer headers show a limit of 10 requests per window; the edge makes nine per
+  hour at most, all cached together.
+- Series: `PET.WCESTUS1.W` crude stocks excluding SPR, `PET.WGTSTUS1.W` gasoline,
+  `PET.WDISTUS1.W` distillate, `PET.WCSSTUS1.W` SPR (thousand barrels), `NG.NW2_EPG0_SWO_R48_BCF.W`
+  Lower 48 working gas (Bcf), `PET.WCRFPUS2.W` crude production (thousand barrels a day),
+  `PET.WPULEUS3.W` refinery utilisation (%), `PET.RWTC.D` WTI Cushing spot ($/bbl),
+  `NG.RNGWHHD.D` Henry Hub spot ($/MMBtu). Recorded 18 Nov 2026: latest week 2026-11-06, values
+  as numbers, `period` as YYYY-MM-DD.
+- Release days: petroleum Wednesdays and gas storage Thursdays, 10:30 New York time.
+- No free source publishes analysts' forecasts for these reports, so "vs 5-yr" is a seasonal
+  norm computed from EIA's own history, not a surprise against expectations.
+
 ## US market hours
 
 Equity feeds turn stale after 30 s without a message, counted only during the regular session

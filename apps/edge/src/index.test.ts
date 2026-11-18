@@ -10,6 +10,7 @@ const ENV: Env = {
   ALLOWED_ORIGINS: `http://localhost:5173,${SITE},https://*.parallax-terminal.pages.dev`,
   FRED_API_KEY: 'fred-secret-key',
   SEC_USER_AGENT: 'Parallax admin@example.com',
+  EIA_API_KEY: 'eia-secret-key',
 };
 
 /** An in-memory stand-in for the edge cache. */
@@ -128,6 +129,56 @@ describe('/fred', () => {
 
     await get('/fred?series=DGS10');
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('/eia', () => {
+  it('returns every Energy series, numeric, cached an hour, without the key', async () => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          response: {
+            data: [
+              {
+                period: '2026-11-06',
+                value: 414417,
+                units: 'MBBL',
+                'series-description': 'U.S. Ending Stocks excluding SPR of Crude Oil',
+              },
+              { period: '2026-11-13', value: null, units: 'MBBL' },
+            ],
+          },
+        }),
+      ),
+    );
+    const first = await get('/eia');
+    const text = await first.text();
+    const body = JSON.parse(text) as { series: Record<string, unknown> };
+    expect(Object.keys(body.series)).toHaveLength(9);
+    expect(body.series['PET.WCESTUS1.W']).toEqual({
+      cadence: 'weekly',
+      description: 'U.S. Ending Stocks excluding SPR of Crude Oil',
+      units: 'MBBL',
+      observations: [{ date: '2026-11-06', value: 414417 }],
+    });
+    expect(text).not.toContain('eia-secret-key');
+    expect(first.headers.get('Cache-Control')).toBe('public, max-age=3600');
+    const urls = fetchMock.mock.calls.map(([url]) =>
+      url instanceof Request ? url.url : url.toString(),
+    );
+    expect(urls.every((url) => url.startsWith('https://api.eia.gov/v2/seriesid/'))).toBe(true);
+
+    await get('/eia');
+    expect(fetchMock).toHaveBeenCalledTimes(9);
+  });
+
+  it('reports a missing key as not configured', async () => {
+    const response = await handle(
+      new Request('https://edge.example/eia', { headers: { Origin: SITE } }),
+      { ...ENV, EIA_API_KEY: undefined },
+    );
+    expect(response.status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

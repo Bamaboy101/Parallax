@@ -467,6 +467,20 @@ a month and a year ago, a tenor table with 1-day, 1-month and 1-year changes in 
 as a band with EFFR inside, its recent moves, and the next three Fed decisions from Polymarket,
 labelled market odds, not forecasts. The footnote carries the New York Fed's required notice.
 
+## Energy (M4)
+
+The edge's `/eia` route (cached an hour) fetches nine EIA series by legacy series id from
+`api.eia.gov/v2/seriesid/` on the project's `EIA_API_KEY`: six years of the weekly ones, 45 days
+of the two daily spot prices; the key is spent on nothing else and never reaches the browser.
+`store/energy.ts` (`useEnergy`, refreshed hourly; `fetchEnergy` for the co-pilot, which the edge
+cache answers) reads the answer, and `energyStat` gives each row its latest figure, its change and,
+for weekly series, that change minus the average change in the same week of the previous five
+years (the nearest observation within three days of each 364-day step back; shown only with at
+least three of those years). The `energy` widget (commands `energy`, `eia`, `inventories`,
+`crude`, `natgas`; a background tab in the Macro workspace) shows stocks, supply and spot prices
+with plain names in Simple. Inventory changes are neutral (they are not price moves); spot price
+changes keep the up and down colours. Its badge reads `WEEKLY` (`eod` freshness with a cadence).
+
 ## Liquidity heatmap (F2)
 
 A chart of a symbol with an order-book feed (crypto and FX; the free US stock feeds carry no

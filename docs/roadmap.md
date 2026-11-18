@@ -46,6 +46,12 @@ be checked against the provider's own docs before building.
   next decisions' Polymarket odds, labelled market odds, not forecasts.
 - **M4 Energy:** oil and gas inventories, production, storage surprises. Source: EIA open data.
   Free project key.
+  Built 18 Nov: an Energy panel from EIA's weekly reports (crude, gasoline, distillate and SPR
+  stocks, Lower 48 gas storage, crude production, refinery utilisation) and the daily WTI and
+  Henry Hub spot prices, through the edge on the project key. Differs from the plan: a "storage
+  surprise" against analysts' forecasts needs consensus data no free source offers, so the panel
+  compares each week's change with the same week of the previous five years, labelled a seasonal
+  norm, not a forecast.
 - **M5 On-chain:** Bitcoin fees and blocks, Ethereum gas, stablecoin supply, DeFi totals, fear
   and greed. Source: mempool.space, DeFiLlama, alternative.me, a public Ethereum endpoint
   (confirm).

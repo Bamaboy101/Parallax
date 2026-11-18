@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { NewsItem } from '../../feeds/types';
 import { parseCalendar, type Release } from '../calendar';
 import { edgeJson } from '../edge';
+import { fetchEnergy, type EnergyMap } from '../energy';
 import { failureOf } from '../failure';
 import { cachedHistory } from '../history';
 import { priceHistorySpan } from '../hooks';
@@ -129,6 +130,15 @@ async function calendarReleases(): Promise<Release[] | null> {
   }
 }
 
+/** The Energy panel's EIA series, through the same edge request (so the edge cache answers). */
+async function energySeries(): Promise<EnergyMap | null> {
+  try {
+    return await fetchEnergy();
+  } catch {
+    return null;
+  }
+}
+
 /** Ask the co-pilot. Explains from what is on screen; never recommends. */
 export async function askCopilot(
   question: string,
@@ -147,10 +157,11 @@ export async function askCopilot(
   const predictions = usePredictionStore.getState();
   const open = (component: string) => panels.some((panel) => panel.component === component);
   const now = Date.now();
-  const [headlines, fred, releases] = await Promise.all([
+  const [headlines, fred, releases, energy] = await Promise.all([
     headlinesFor(trimmed),
     open('macro') ? macroSeries(now) : null,
     open('calendar') ? calendarReleases() : null,
+    open('energy') ? energySeries() : null,
   ]);
   const context = buildContext({
     panels,
@@ -164,6 +175,7 @@ export async function askCopilot(
     releases,
     options: useOptionsSummaries.getState(),
     rates: useRatesStore.getState(),
+    energy,
     now,
   });
   try {

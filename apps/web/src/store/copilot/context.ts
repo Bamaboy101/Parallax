@@ -3,6 +3,7 @@ import { sourceName } from '../../design/sources';
 import type { Bar, NewsItem } from '../../feeds/types';
 import type { Release } from '../calendar';
 import { lastPriceOf, priceChannel, priceLine } from '../hooks';
+import { energyStat, PRICE_ROWS, STOCK_ROWS, SUPPLY_ROWS, type EnergyMap } from '../energy';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
 import type { PaperState } from '../paper/store';
 import type { OptionsSummary } from '../options/store';
@@ -50,6 +51,8 @@ export interface ContextInput {
   options: Readonly<Record<string, OptionsSummary>>;
   /** The rates desk's curve and overnight rates. */
   rates: Pick<RatesState, 'curve' | 'sofr' | 'effr'>;
+  /** EIA series the Energy panel shows, when it is open. */
+  energy?: EnergyMap | null;
   now: number;
 }
 
@@ -147,6 +150,8 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
         ? `Upcoming major US releases (FRED calendar, dates only): ${next.map((release) => `${release.date} ${release.name}`).join('; ')}`
         : null;
     }
+    case 'energy':
+      return input.energy ? energyDetail(input.energy) : null;
     default:
       return null;
   }
@@ -177,6 +182,25 @@ function macroDetail(fred: SeriesMap): string | null {
     ...stat('Payrolls, monthly change', monthlyChange(fred.PAYEMS), 0, 'k jobs', true),
   ];
   return lines.length > 0 ? `Official FRED data, daily or monthly: ${lines.join('; ')}` : null;
+}
+
+/** The Energy panel's rows: latest, weekly change and change against the five-year norm. */
+function energyDetail(energy: EnergyMap): string | null {
+  const lines = [...STOCK_ROWS, ...SUPPLY_ROWS, ...PRICE_ROWS].flatMap((row) => {
+    const stat = energyStat(energy[row.id]);
+    if (!stat) return [];
+    const scaled = (value: number) => formatNumber(value / row.scale, row.decimals, true);
+    const step = energy[row.id]?.cadence === 'daily' ? 'on the day' : 'on the week';
+    const change = stat.change === undefined ? '' : `, ${scaled(stat.change)} ${step}`;
+    const norm =
+      stat.vsNorm === undefined
+        ? ''
+        : `, ${scaled(stat.vsNorm)} against the average change in the same week of the previous ${String(stat.normYears)} years`;
+    return [
+      `${row.label} ${formatNumber(stat.value / row.scale, row.decimals)} ${row.unit}${change}${norm} (as of ${stat.asOf})`,
+    ];
+  });
+  return lines.length > 0 ? `US energy (EIA): ${lines.join('; ')}` : null;
 }
 
 /** The rates desk: key tenors with their one-month change, the 2s10s spread and overnight rates. */

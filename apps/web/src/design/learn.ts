@@ -107,6 +107,32 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
     'How many of each dollar-pegged token exist on Ethereum, read from the token’s own contract. The same tokens also exist on other blockchains, not counted here.',
   'Fear & Greed':
     'A daily mood index for crypto from alternative.me, 0 (extreme fear) to 100 (extreme greed), built from price swings, momentum, social media and search interest. A mood, not a forecast.',
+  // Energy (M4)
+  Measure: 'What is being counted, and the unit it is counted in.',
+  Week: 'Change since the week before (for the spot prices, since the day before).',
+  'vs 5-yr':
+    'This week’s change minus the average change in the same week of the previous five years. Storage always rises and falls with the seasons; this shows whether this week was unusual for the time of year. A seasonal norm, not what analysts expected.',
+  Stocks:
+    'How much oil, fuel and gas is held in storage across the US, counted each week by the government’s Energy Information Administration (EIA).',
+  Supply:
+    'How much crude oil the US pumps each day, and how much of its refining capacity is running.',
+  'Spot prices':
+    'What oil and natural gas cost for delivery now at the main US trading hubs, daily.',
+  'Crude stocks (ex-SPR)':
+    'Crude oil held by companies in tanks and pipelines, in millions of barrels, leaving out the government’s emergency reserve.',
+  'Gasoline stocks': 'Gasoline held in storage across the US, in millions of barrels.',
+  'Distillate stocks':
+    'Diesel and heating oil (distillates) held in storage across the US, in millions of barrels.',
+  SPR: 'The Strategic Petroleum Reserve: crude oil the US government keeps for emergencies, in millions of barrels.',
+  'Gas storage (Lower 48)':
+    'Natural gas held underground in the 48 connected states, in billions of cubic feet (Bcf). It builds through summer and is drawn down for winter heating.',
+  'Crude production': 'Crude oil pumped from US fields each day, in millions of barrels per day.',
+  'Refinery utilisation':
+    'How much of the country’s refining capacity is running, in percent. High in summer driving season, lower during autumn maintenance.',
+  'WTI spot (Cushing)':
+    'The price of a barrel of West Texas Intermediate, the US benchmark crude, delivered at the Cushing, Oklahoma hub.',
+  'Henry Hub spot':
+    'The price of natural gas at Henry Hub in Louisiana, the US benchmark, in dollars per million British thermal units (MMBtu).',
 };
 
 /** What a truth badge means, in plain words. */
@@ -122,6 +148,10 @@ export function badgeExplanation(freshness: Freshness, source: string): string {
     case 'polled':
       return `Polled: fetched from ${name} every ${formatAge(freshness.everyMs)}, not streamed, so it can be that old.`;
     case 'eod':
+      if (freshness.cadence === 'weekly')
+        return `Weekly: ${name} publishes this once a week, so it can be up to a week old.`;
+      if (freshness.cadence === 'annual')
+        return `Annual: ${name} publishes these figures once a year; the latest year shown is the newest on record.`;
       return `End of day: ${name} publishes this once per trading day.`;
     case 'connecting':
       return `Connecting to ${name}: nothing has arrived yet.`;

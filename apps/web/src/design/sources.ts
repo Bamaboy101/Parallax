@@ -20,6 +20,10 @@ const NAMES: Readonly<Record<string, string>> = {
   mempool: 'mempool.space',
   publicnode: 'PublicNode',
   'alternative-me': 'alternative.me',
+  eia: 'EIA',
+  sec: 'SEC EDGAR',
+  worldbank: 'World Bank',
+  imf: 'IMF',
 };
 
 export const sourceName = (id: string): string => NAMES[id] ?? id;
