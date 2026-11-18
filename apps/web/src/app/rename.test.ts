@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   HANDOFF_TIMEOUT_MS,
   NEW_ORIGIN,
-  OLD_ORIGIN,
+  OLD_ORIGINS,
+  OPEN_TERMINAL_ORIGIN,
+  isOldAddress,
   handoffEntries,
   migrateStorage,
   receiveHandoff,
@@ -100,7 +102,8 @@ describe('handoff between the old and new address', () => {
     vi.useRealTimers();
   });
 
-  it('carries saved entries from the old address to the new one', async () => {
+  it.each(OLD_ORIGINS)('carries saved entries from %s to the new address', async (OLD_ORIGIN) => {
+    expect(isOldAddress(OLD_ORIGIN)).toBe(true);
     const old = new FakeWindow(`${OLD_ORIGIN}/`);
     localStorage.setItem('parallax:layout', '{"dock":2}');
     expect(sendHandoff(asWindow(old))).toBe(true);
@@ -110,7 +113,10 @@ describe('handoff between the old and new address', () => {
 
     localStorage.clear();
     const moved = receiveHandoff(asWindow(fresh));
-    expect(old.posted).toEqual([{ data: { type: 'parallax:handoff-ready' }, origin: OLD_ORIGIN }]);
+    // "Ready" goes to each old address at its exact origin; only the opener's own one arrives.
+    expect(old.posted).toEqual(
+      OLD_ORIGINS.map((origin) => ({ data: { type: 'parallax:handoff-ready' }, origin })),
+    );
 
     // The old window answers the new one only, at its exact origin.
     old.deliver(old.posted[0]?.data, NEW_ORIGIN, fresh);
@@ -129,19 +135,20 @@ describe('handoff between the old and new address', () => {
   });
 
   it('ignores messages from any other origin or window, then gives up', async () => {
-    const opener = new FakeWindow(`${OLD_ORIGIN}/`);
+    const opener = new FakeWindow(`${OPEN_TERMINAL_ORIGIN}/`);
     const fresh = new FakeWindow(`${NEW_ORIGIN}/?handoff=1`);
     fresh.opener = opener;
     const moved = receiveHandoff(asWindow(fresh));
     const entries = { type: 'parallax:handoff-entries', entries: { 'parallax:keys': 'stolen' } };
     fresh.deliver(entries, 'https://evil.example', opener);
-    fresh.deliver(entries, OLD_ORIGIN, new FakeWindow('https://other/'));
+    fresh.deliver(entries, OPEN_TERMINAL_ORIGIN, new FakeWindow('https://other/'));
     vi.advanceTimersByTime(HANDOFF_TIMEOUT_MS);
     await expect(moved).resolves.toBe(false);
     expect(localStorage.getItem('parallax:keys')).toBeNull();
   });
 
   it('does nothing on an ordinary visit', () => {
+    expect(isOldAddress(NEW_ORIGIN)).toBe(false);
     expect(receiveHandoff(asWindow(new FakeWindow(`${NEW_ORIGIN}/`)))).toBeNull();
     expect(withoutHandoff(`${NEW_ORIGIN}/?handoff=1#w=abc`)).toBe(`${NEW_ORIGIN}/#w=abc`);
   });

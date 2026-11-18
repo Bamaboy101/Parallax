@@ -1,18 +1,18 @@
 <p>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/brand/parallax-mark.svg" />
-    <img src="docs/brand/parallax-mark-light.svg" alt="Parallax logo" width="64" height="64" />
+    <img src="docs/brand/parallax-mark-light.svg" alt="Parallax Terminal logo" width="64" height="64" />
   </picture>
 </p>
 
-# Parallax
+# Parallax Terminal
 
 A free, open-source market terminal that runs entirely in your browser:
 live crypto, FX, US stocks on your own key, rates and macro, news and
 filings — in one dockable cockpit where every number shows its source and
 its age.
 
-**Live:** <https://parallax-markets.pages.dev> — no account, no install. Crypto,
+**Live:** <https://parallax-terminal.pages.dev> — no account, no install. Crypto,
 FX, perpetual futures, macro and news work the moment the page loads.
 
 > Parallax shows market data as delivered by its public sources. It is
@@ -149,7 +149,7 @@ Two limits, stated plainly:
 
 ## Using it
 
-1. Open <https://parallax-markets.pages.dev>. The Rundown opens first; **Open
+1. Open <https://parallax-terminal.pages.dev>. The Rundown opens first; **Open
    the full cockpit** shows the panels (Simple or Pro, switched in the top bar).
 2. For US stocks, open **Settings** (the key icon) and paste a free
    [Alpaca](https://alpaca.markets) or [Finnhub](https://finnhub.io) key.
@@ -205,6 +205,6 @@ their licences (TradingView's chart library, the Inter and JetBrains Mono
 fonts, React, dockview, zustand) are listed in [NOTICE](NOTICE); the chart
 panel carries the required "Charting by TradingView" attribution.
 
-Parallax was called Open Terminal until 18 November 2026; the old address,
-open-terminal.pages.dev, points here until 18 December 2026. This project is not affiliated
-with Bloomberg LP or any data provider it displays.
+Parallax Terminal was called Open Terminal until 18 November 2026; the earlier addresses,
+open-terminal.pages.dev and parallax-markets.pages.dev, point here until 18 December 2026.
+This project is not affiliated with Bloomberg LP or any data provider it displays.

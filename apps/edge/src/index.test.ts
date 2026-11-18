@@ -5,9 +5,9 @@ import fed from './fixtures/fed.xml?raw';
 import { handle, originAllowed } from './index';
 import { filterNews, type Env } from './routes';
 
-const SITE = 'https://parallax-markets.pages.dev';
+const SITE = 'https://parallax-terminal.pages.dev';
 const ENV: Env = {
-  ALLOWED_ORIGINS: `http://localhost:5173,${SITE},https://*.parallax-markets.pages.dev`,
+  ALLOWED_ORIGINS: `http://localhost:5173,${SITE},https://*.parallax-terminal.pages.dev`,
   FRED_API_KEY: 'fred-secret-key',
   SEC_USER_AGENT: 'Parallax admin@example.com',
 };
@@ -45,15 +45,20 @@ const get = (path: string, origin: string | null = SITE) =>
 describe('origin check', () => {
   it('allows the listed origins and their preview subdomains only', () => {
     expect(originAllowed(SITE, ENV.ALLOWED_ORIGINS)).toBe(true);
-    expect(originAllowed('https://v2-visual.parallax-markets.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
-      true,
-    );
-    expect(originAllowed('https://evil-parallax-markets.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
+    expect(
+      originAllowed('https://v2-visual.parallax-terminal.pages.dev', ENV.ALLOWED_ORIGINS),
+    ).toBe(true);
+    expect(originAllowed('https://evil-parallax-terminal.pages.dev', ENV.ALLOWED_ORIGINS)).toBe(
       false,
     );
-    expect(originAllowed('https://parallax-markets.pages.dev.evil.com', ENV.ALLOWED_ORIGINS)).toBe(
+    expect(originAllowed('https://parallax-terminal.pages.dev.evil.com', ENV.ALLOWED_ORIGINS)).toBe(
       false,
     );
+    // The deployed default keeps both earlier addresses until 18 Dec 2026.
+    for (const old of ['https://parallax-markets.pages.dev', 'https://open-terminal.pages.dev']) {
+      expect(originAllowed(old, undefined)).toBe(true);
+    }
+    expect(originAllowed(SITE, undefined)).toBe(true);
   });
 
   it('refuses requests without an allowed Origin', async () => {
