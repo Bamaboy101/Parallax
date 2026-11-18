@@ -259,7 +259,7 @@ export default function Globe({ api, params }: IDockviewPanelProps<GlobeParams>)
         )}
       </div>
       <dl className="globe-legend">
-        <div>
+        <div className="globe-open-markets">
           <dt data-term="Open now">Open now</dt>
           <dd>
             {openNames.length > 0 ? openNames.join(' · ') : 'No exchange; crypto never closes'}

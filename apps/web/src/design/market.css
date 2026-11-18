@@ -150,6 +150,7 @@
    no flash, no per-row motion. */
 .tape-columns[data-whale] {
   font-weight: 600;
+  background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .tape-columns[data-whale]::before {
@@ -164,8 +165,9 @@
 .tape-radar {
   flex-shrink: 0;
   margin: 0;
-  padding: 4px var(--pad);
+  padding: 8px var(--pad);
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
   color: var(--muted);
   font-family: var(--font-num);
   font-size: var(--size-label);
@@ -176,6 +178,11 @@
 .tape-radar-label {
   color: var(--muted);
   font-family: var(--font-ui);
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .tape-radar[data-active] {

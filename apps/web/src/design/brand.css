@@ -1,0 +1,39 @@
+.parallax-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  color: var(--text);
+}
+.shell-brand .parallax-mark {
+  width: 28px;
+  height: 28px;
+}
+.shell-identity h1 {
+  letter-spacing: -0.04em;
+}
+.rundown-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font: 500 11px var(--font-ui);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.rundown-brand .parallax-mark {
+  width: 28px;
+  height: 28px;
+}
+.cockpit-boot .parallax-mark {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 12px;
+  width: 24px;
+  height: 24px;
+}
+@media (max-width: 760px) {
+  .rundown-brand {
+    margin-bottom: 12px;
+  }
+}

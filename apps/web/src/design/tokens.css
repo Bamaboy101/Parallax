@@ -201,24 +201,6 @@ body {
   white-space: nowrap;
 }
 
-.shell-mark {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  border: 1px solid var(--live);
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--panel), var(--line), var(--panel));
-}
-
-.shell-mark span {
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--live);
-  border-radius: 50%;
-}
-
 .shell-rail {
   display: flex;
   align-items: center;

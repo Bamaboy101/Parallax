@@ -83,17 +83,17 @@ export function drawGlobe(context: CanvasRenderingContext2D, scene: Scene, palet
   context.beginPath();
   path(GRATICULE);
   context.strokeStyle = palette.line;
-  context.lineWidth = 0.5;
+  context.lineWidth = 0.35;
   context.stroke();
 
   context.beginPath();
   path(LAND);
-  context.globalAlpha = palette.theme === 'dark' ? 0.32 : 0.28;
+  context.globalAlpha = palette.theme === 'dark' ? 0.42 : 0.2;
   context.fillStyle = palette.muted;
   context.fill();
   context.globalAlpha = 1;
   context.strokeStyle = palette.muted;
-  context.lineWidth = 0.6;
+  context.lineWidth = 0.75;
   context.stroke();
 
   // Day and night. The sphere is the background colour, so dark mode lifts the day side (up to
@@ -101,7 +101,7 @@ export function drawGlobe(context: CanvasRenderingContext2D, scene: Scene, palet
   // Twilight, the 6° past the horizon, gets half the shade.
   const lit = palette.theme === 'dark';
   const centreOfShade = asPoint(lit ? subsolarPoint(scene.now) : antisolarPoint(scene.now));
-  const half = (lit ? 0.14 : 0.18) / 2;
+  const half = (lit ? 0.2 : 0.24) / 2;
   const twilight = TWILIGHT_RADIUS - NIGHT_RADIUS;
   const layers: readonly (readonly [number, number])[] = lit
     ? [
@@ -123,8 +123,8 @@ export function drawGlobe(context: CanvasRenderingContext2D, scene: Scene, palet
 
   context.beginPath();
   path({ type: 'Sphere' });
-  context.strokeStyle = palette.line;
-  context.lineWidth = 1;
+  context.strokeStyle = palette.muted;
+  context.lineWidth = 0.75;
   context.stroke();
 
   // Arcs: from New York, where the country ETFs trade, to the markets that moved most.
@@ -132,7 +132,7 @@ export function drawGlobe(context: CanvasRenderingContext2D, scene: Scene, palet
     context.beginPath();
     path({ type: 'LineString', coordinates: [asPoint(NEW_YORK), asPoint(move.at)] });
     context.strokeStyle = move.changePct >= 0 ? palette.up : palette.down;
-    context.lineWidth = 1.5;
+    context.lineWidth = 1.25;
     context.stroke();
   }
 
@@ -151,6 +151,13 @@ export function drawGlobe(context: CanvasRenderingContext2D, scene: Scene, palet
     if (open) {
       context.fillStyle = palette.live;
       context.fill();
+      context.beginPath();
+      context.arc(xy[0], xy[1], 7, 0, Math.PI * 2);
+      context.strokeStyle = palette.live;
+      context.globalAlpha = 0.35;
+      context.lineWidth = 0.75;
+      context.stroke();
+      context.globalAlpha = 1;
     } else {
       context.strokeStyle = palette.muted;
       context.lineWidth = 1;

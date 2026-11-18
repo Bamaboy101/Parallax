@@ -1,3 +1,4 @@
+import { ParallaxMark } from '../design/ParallaxMark';
 import type { ReactNode } from 'react';
 import { Badge } from '../design/Badge';
 import { badgeSeverity, formatNumber, type Freshness } from '../design/format';
@@ -329,6 +330,10 @@ export function Rundown() {
     <div className="rundown" id="rundown">
       <div className="rundown-intro">
         <div data-tour="rundown">
+          <div className="rundown-brand">
+            <ParallaxMark />
+            <span>Parallax / Rundown</span>
+          </div>
           <h1 id="rundown-title">What&apos;s happening in markets right now</h1>
           <p className="rundown-date">
             {dayFormat.format(now)} · {timeFormat.format(now)}

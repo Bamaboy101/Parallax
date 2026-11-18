@@ -1,3 +1,5 @@
+import { ParallaxMark } from '../design/ParallaxMark';
+import '../design/brand.css';
 import type { LayoutSlot } from '../store/layout';
 import { useNarrow } from './useNarrow';
 import { Tour } from './Tour';
@@ -81,9 +83,7 @@ export function Shell() {
       {OLD_ADDRESS && <RenameBanner />}
       <header className="shell-topbar">
         <div className="shell-brand">
-          <div aria-hidden="true" className="shell-mark">
-            <span />
-          </div>
+          <ParallaxMark />
           <div className="shell-identity">
             <h1>Parallax</h1>
             <div className="shell-micro">Market operations</div>
