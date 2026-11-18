@@ -199,8 +199,11 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - The daily brief (E4) is reading text at 15 px in `--text`, one sentence per line, each followed
   by a small muted pill naming the section its numbers come from; the pill turns mint on hover or
   focus and the target section's title turns mint while it is the URL target.
-- App icons (E6) are a placeholder: the top-bar mark (a mint ring and dot) on `--bg`, with a
-  maskable version inside the 80% safe zone. The Parallax logo replaces them in the visual pass.
+- The Parallax mark (launch visual pass, 18 Nov): a silver outline pointing right with two mint
+  lines of sight converging on one point, one market seen from two angles. Sources in
+  `docs/brand/` (colour, light-mode, one-colour and wordmark SVGs, social card); in the app it is
+  `design/ParallaxMark.tsx` in the top bar, the boot hint and the Rundown header. App icons and
+  the favicon draw it on `--bg`; the maskable icon keeps it inside the 80% safe zone.
 
 ## Visual passes
 

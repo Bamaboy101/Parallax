@@ -1,3 +1,10 @@
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/parallax-mark.svg" />
+    <img src="docs/brand/parallax-mark-light.svg" alt="Parallax logo" width="64" height="64" />
+  </picture>
+</p>
+
 # Parallax
 
 A free, open-source market terminal that runs entirely in your browser:
@@ -14,12 +21,15 @@ FX, perpetual futures, macro and news work the moment the page loads.
 
 ## Screenshots
 
+![The Rundown, the first screen: what's happening in markets right now](docs/screenshots/rundown-desktop.png)
+
 ![Mission Control, dark mode](docs/screenshots/mission-control-dark.png)
 
 |                                                                            |                                                      |
 | -------------------------------------------------------------------------- | ---------------------------------------------------- |
 | ![Mission Control, light mode](docs/screenshots/mission-control-light.png) | ![Constellation](docs/screenshots/constellation.png) |
 | ![Command bar](docs/screenshots/command-bar.png)                           | ![On a phone](docs/screenshots/mobile.png)           |
+| ![The Rundown on a phone](docs/screenshots/rundown-phone.png)              |                                                      |
 
 ## What makes it different
 
