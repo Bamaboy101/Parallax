@@ -166,6 +166,13 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   Debt: 'What the government owes, as a share of the economy’s yearly output (gross general government debt, % of GDP), the IMF’s estimate.',
   'Map shading':
     'Darker means a higher value. Each of the five shades holds about a fifth of the countries with data; grey means no figure.',
+  // Session recorder (F10)
+  Recording:
+    'Every market event this page receives is being kept: prices, trades, order books and funding. Up to an hour.',
+  Replay:
+    'A recorded session loaded into Rewind. Drag Rewind or press Play to watch it; every panel follows, and badges say REPLAY.',
+  'Session file':
+    'A recording saved as a compressed file you can keep, share or open later. It holds market data only.',
 };
 
 /** What a truth badge means, in plain words. */
@@ -196,6 +203,8 @@ export function badgeExplanation(freshness: Freshness, source: string): string {
       return `${name} refused the saved key. Check it in Settings.`;
     case 'offline':
       return `${name} is not answering right now; the terminal keeps trying.`;
+    case 'replay':
+      return `Replay: what ${name} sent during a recorded session, played back. Nothing here is live.`;
   }
 }
 

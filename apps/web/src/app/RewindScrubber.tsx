@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { useCursor } from '../store/hooks';
+import { useRecorder } from '../store/recorder';
 import { HISTORY_SINCE, REWIND_MS, useTickStore } from '../store/ticks';
 
 const STEP_MS = 5_000;
@@ -62,7 +63,9 @@ export function RewindScrubber() {
   const [cursor, setCursor] = useCursor();
   const { now, observedSince, activity } = useTimeline();
   const descriptionId = useId();
-  const start = Math.max(HISTORY_SINCE, now - REWIND_MS);
+  // A replayed session (F10) starts before the page did: Rewind reaches back to its start.
+  const replayStart = useRecorder((state) => state.replay?.start);
+  const start = Math.max(Math.min(HISTORY_SINCE, replayStart ?? HISTORY_SINCE), now - REWIND_MS);
   const span = Math.max(1, now - start);
   const value = cursor ?? now;
   const live = cursor === null;

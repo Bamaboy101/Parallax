@@ -12,6 +12,7 @@ import {
   priceLine,
   usePriceSubscriptions,
 } from '../hooks';
+import { isReplaying } from '../recorder';
 import { instrument, type Instrument } from '../symbols';
 import { sampleAt, useTickStore } from '../ticks';
 import { describeRule, type AlertRule } from './parse';
@@ -152,8 +153,12 @@ function notify(alert: Alert, detail: string): void {
   new Notification(`Parallax: ${describeRule(alert.rule)}`, { body: detail, tag: alert.id });
 }
 
-/** Check every unfired alert against the latest prices. Live only: Rewind does not fire alerts. */
+/**
+ * Check every unfired alert against the latest prices. Live only: Rewind does not fire alerts,
+ * and neither does a replayed session (F10).
+ */
 export function checkAlerts(now = Date.now()): void {
+  if (isReplaying()) return;
   const state = useTickStore.getState();
   const { alerts } = useAlerts.getState();
   const next = alerts.map((alert): Alert => {

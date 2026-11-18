@@ -129,6 +129,10 @@ be checked against the provider's own docs before building.
   to the other screen); it shares the page, so links, prices and theme follow, and it comes back
   with one click. Hover explanations stay in the main window.
 - **F10 Session recorder:** record, replay, export as a file.
+  Built 18 Nov: a Session recorder panel keeps every market event the page receives (up to an
+  hour), saves it as a gzipped file and replays a file through Rewind, with Play at 1×, 4× or
+  16×. Replayed badges read REPLAY and a banner says so; alerts and whale sounds stay silent.
+  Going back to live reloads the page, because live events are set aside during a replay.
 - **F11 Installable app** with an offline shell (moved to Batch E as E6).
 - **F12 Sound layer**, off by default.
   Built 18 Nov: off until switched on in Settings; three short synthesised cues (an alert fires, a

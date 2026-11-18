@@ -62,7 +62,17 @@ export interface ContextInput {
   corporate?: Readonly<Record<string, CorporateFacts>> | null;
   /** IMF and World Bank figures the Global macro panel shows, when it is open. */
   world?: WorldData | null;
+  /** What the Session recorder panel shows. */
+  recorder?: RecorderSummary | null;
   now: number;
+}
+
+export interface RecorderSummary {
+  mode: 'idle' | 'recording' | 'replaying';
+  /** The recording being made, ready, or replayed: its span and size. */
+  from: number | null;
+  to: number | null;
+  events: number;
 }
 
 export interface CorporateFacts {
@@ -188,6 +198,21 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
     }
     case 'worldmacro':
       return input.world ? worldDetail(input.world) : null;
+    case 'recorder': {
+      const recorder = input.recorder;
+      if (!recorder) return null;
+      const span =
+        recorder.from === null
+          ? ''
+          : ` from ${new Date(recorder.from).toISOString().slice(0, 16).replace('T', ' ')} UTC${recorder.to === null ? '' : ` to ${new Date(recorder.to).toISOString().slice(11, 16)} UTC`}`;
+      if (recorder.mode === 'recording')
+        return `Session recorder: recording${span}, ${String(recorder.events)} market events so far`;
+      if (recorder.mode === 'replaying')
+        return `Session recorder: replaying a session recorded${span} (${String(recorder.events)} market events)`;
+      return recorder.from === null
+        ? 'Session recorder: not recording; no recording loaded'
+        : `Session recorder: a recording${span} (${String(recorder.events)} market events) is ready to save or replay`;
+    }
     default:
       return null;
   }
@@ -381,14 +406,21 @@ export function contextMessage(
   question: string,
   now: number,
   rewound: number | null,
+  replay: { from: number; to: number } | null = null,
 ): string {
   const time = new Date(now).toISOString().slice(0, 16).replace('T', ' ');
+  const utc = (at: number) => new Date(at).toISOString().slice(0, 16).replace('T', ' ');
   const lines = items.map(
     (item) =>
       `[${item.id}] ${item.kind === 'panel' ? `Panel “${item.label}”` : item.kind === 'odds' ? `Event “${item.label}”` : 'Headline'}: ${item.detail}`,
   );
   return [
     `CONTEXT (as of ${time} UTC${rewound === null ? '' : `; the user is rewound to ${new Date(rewound).toISOString().slice(11, 16)} UTC, but figures here are the latest`}):`,
+    ...(replay
+      ? [
+          `REPLAY: the terminal is replaying a session recorded ${utc(replay.from)} to ${utc(replay.to)} UTC. Prices, trades, books and funding in the panels come from that recording, not from the markets now; say so when you use them. Headlines and published data are current.`,
+        ]
+      : []),
     ...(lines.length > 0 ? lines : ['(nothing on screen has figures yet)']),
     '',
     `QUESTION: ${question}`,

@@ -1,0 +1,137 @@
+/* Session recorder (F10) and the replay banner. Tokens only; no shadows, no motion. Recording and
+   replay are interface state: the recording dot is static, a replay is amber like other data that
+   is not live. */
+
+.recorder-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  padding: var(--pad);
+  overflow: auto;
+}
+
+.recorder-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.recorder-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.recorder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+}
+
+.recorder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recorder-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--live);
+  border-radius: var(--panel-radius);
+  background: transparent;
+  color: var(--live);
+  font: inherit;
+  font-size: var(--size-ui);
+  cursor: pointer;
+}
+
+.recorder-button:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: default;
+}
+
+.recorder-button--quiet {
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.recorder-button:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+.recorder-note,
+.recorder-notice {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.recorder-notice {
+  color: var(--warn);
+}
+
+.recorder-panel > .panel-footnote {
+  margin-top: auto;
+}
+
+.shell-banners {
+  display: flex;
+  flex-direction: column;
+}
+
+.replay-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 6px var(--pad);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--warn) 8%, var(--panel));
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.replay-banner p {
+  margin: 0;
+}
+
+.replay-banner strong {
+  color: var(--warn);
+}
+
+.replay-live {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--live);
+  border-radius: var(--panel-radius);
+  background: transparent;
+  color: var(--live);
+  font: inherit;
+  cursor: pointer;
+}
+
+.replay-live:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+.truth-badge[data-state='replay'] .truth-badge-mark {
+  width: 0;
+  height: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 5px solid currentColor;
+  border-radius: 0;
+  background: none;
+}

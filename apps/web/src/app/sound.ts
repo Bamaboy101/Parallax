@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAlerts } from '../store/alerts/store';
 import { usePrefs } from '../store/prefs';
+import { isReplaying } from '../store/recorder';
 
 /**
  * F12 sound layer, off by default: three short cues synthesised with the Web Audio API (no
@@ -83,10 +84,14 @@ export function schedule(target: BaseAudioContext, notes: readonly Note[], volum
   }
 }
 
-/** Play a cue if sound is on. `key` makes a cue once-only (a whale print seen by two tapes). */
+/**
+ * Play a cue if sound is on. `key` makes a cue once-only (a whale print seen by two tapes). A
+ * replayed session's whales are not news, so they stay silent.
+ */
 export function playCue(cue: Cue, key?: string, now = Date.now()): void {
   const { sound, soundVolume } = usePrefs.getState();
   if (!sound) return;
+  if (cue === 'whale' && isReplaying()) return;
   if (key !== undefined) {
     if (heard.has(key)) return;
     heard.add(key);
