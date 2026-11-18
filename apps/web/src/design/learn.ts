@@ -156,6 +156,16 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
   Stake: 'The share of the company’s stock the holder reported owning, in percent.',
   Form: 'The SEC form: 13D or 13G, with /A for an update to an earlier filing.',
   Filed: 'The day the filing reached the SEC.',
+  // Global macro (M8)
+  Country: 'The economy, as the IMF names it. The table lists the 50 largest by GDP.',
+  GDP: 'Gross domestic product: the value of everything the economy produces in a year, in US dollars, from the World Bank’s latest full year.',
+  Growth:
+    'How much the economy is expected to grow this year after removing inflation (real GDP growth), the IMF’s estimate.',
+  Inflation:
+    'How much prices are expected to rise on average this year (consumer prices), the IMF’s estimate.',
+  Debt: 'What the government owes, as a share of the economy’s yearly output (gross general government debt, % of GDP), the IMF’s estimate.',
+  'Map shading':
+    'Darker means a higher value. Each of the five shades holds about a fifth of the countries with data; grey means no figure.',
 };
 
 /** What a truth badge means, in plain words. */

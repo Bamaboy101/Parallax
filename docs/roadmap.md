@@ -78,6 +78,10 @@ be checked against the provider's own docs before building.
   5% must make about the company are used instead.
 - **M8 Global macro:** GDP, inflation, debt for 50 countries on a map. Source: World Bank and IMF
   open data.
+  Built 18 Nov: a Global macro panel: a world map shaded by the IMF's estimates for this year
+  (real GDP growth, inflation, government debt as a share of GDP; World Economic Outlook, October
+  2026), and the 50 largest economies by the World Bank's GDP in US dollars, with all four
+  figures. All economies with IMF data are shaded, not only the 50 in the table.
 
 ## Futuristic features
 

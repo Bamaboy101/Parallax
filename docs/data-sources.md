@@ -334,7 +334,11 @@ raster + vector map data found on this website are in the public domain", "No pe
 needed", and crediting is optional; the globe uses their suggested short credit, "Made with
 Natural Earth." The 1:110m land layer comes packaged as TopoJSON by world-atlas (ISC), bundled
 with the app, so no request is made for it. The globe's moves are the region boards' ETF proxies
-and carry the same "proxy, US hours only" label.
+and carry the same "proxy, US hours only" label. The Global macro map (M8) uses the same project's
+1:110m countries layer (`world-atlas/countries-110m.json`) under the same terms and credit. Its
+ids are ISO 3166 numeric codes; `store/worldIso.ts` holds their alpha-3 codes, a table of codes
+generated once from the ISO 3166 list in pycountry (not shipped). N. Cyprus, Somaliland and Kosovo
+have no numeric code in the layer and are drawn without data.
 
 ## Speech recognition for voice commands (F6)
 
@@ -407,6 +411,32 @@ sends `SEC_USER_AGENT` and fetches documents five at a time.
 - 13F was the plan's source for large holders, but a 13F lists one fund's own holdings; finding
   every fund that holds a company would mean reading every fund's 13F. 13D and 13G are the
   filings made about the company by anyone holding more than 5%.
+
+## IMF World Economic Outlook and World Bank GDP: Global macro (`store/world.ts`, edge `/world`)
+
+- **IMF.** Checked 18 Nov 2026 against imf.org/en/About/copyright-and-terms, "Special Terms for
+  Statistical Data": users "may download, extract, copy, create derivative works, publish,
+  distribute, and use Data", including the World Economic Outlook database, with attribution
+  ("Source: International Monetary Fund, Database Name, link"), without altering the data, and
+  "reasonable efforts to communicate and promote compliance" by their own users; commercial reuse
+  needs permission (Parallax is free) and "bulk download ... by automated technology" without
+  permission is barred. The edge makes three indicator requests a day through the DataMapper API,
+  cached, which is not a bulk download of the site; the panel credits the IMF and links its terms
+  in the footnote. The IMF also bars training language models on its content; the co-pilot only
+  passes the figures on screen to the user's own AI provider to answer a question, which is not
+  training.
+  API: `https://www.imf.org/external/datamapper/api/v1/{indicator}` returns every economy and
+  year (1980–2031 recorded); `/countries` and `/indicators` give names and the edition ("World
+  Economic Outlook (October 2026)"). No CORS header, so the edge fetches it. The figures for the
+  current year are IMF estimates.
+- **World Bank.** Checked 18 Nov 2026 against datacatalog.worldbank.org/public-licenses: datasets
+  are CC BY 4.0 by default, which "allows users to copy, modify and distribute data in any format
+  for any purpose, including commercial use", with credit and a note of changes. The panel credits
+  "World Bank, World Development Indicators (NY.GDP.MKTP.CD), CC BY 4.0" and says the figures are
+  rounded. API: `https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&mrnev=1`
+  (CORS `*`; recorded: US $30.77 trillion for 2025), fetched by the edge with the IMF data so the
+  panel makes one request. The World Bank's site terms bar implying its endorsement; the panel
+  only credits it.
 
 ## US market hours
 

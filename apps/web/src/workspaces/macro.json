@@ -18,6 +18,13 @@
       "inactive": true
     },
     {
+      "id": "worldmacro",
+      "component": "worldmacro",
+      "params": {},
+      "position": { "referencePanel": "macro", "direction": "within" },
+      "inactive": true
+    },
+    {
       "id": "watchlist",
       "component": "watchlist",
       "params": {

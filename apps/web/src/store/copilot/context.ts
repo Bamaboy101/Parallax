@@ -14,6 +14,7 @@ import { dayChangeOf, oddsOf, openOutcomes, type PredictionEvent } from '../pred
 import { PERPS } from '../perps';
 import { instrument, type Instrument } from '../symbols';
 import { valueAt, type TickState } from '../ticks';
+import { largestEconomies, type WorldData } from '../world';
 import { computeMovers } from '../movers';
 
 /** One thing the co-pilot can cite: a panel on screen, an event's odds or a headline. */
@@ -59,6 +60,8 @@ export interface ContextInput {
    * list): earnings from Finnhub (null without a key), insiders and holders from SEC EDGAR.
    */
   corporate?: Readonly<Record<string, CorporateFacts>> | null;
+  /** IMF and World Bank figures the Global macro panel shows, when it is open. */
+  world?: WorldData | null;
   now: number;
 }
 
@@ -67,6 +70,21 @@ export interface CorporateFacts {
   ownership: Ownership | null;
 }
 
+/** The Global macro table: the 50 largest economies with the IMF's figures for this year. */
+function worldDetail(world: WorldData): string | null {
+  const rows = largestEconomies(world.countries).map((country) => {
+    const value = (number: number | null, signed = false) =>
+      number === null ? 'n/a' : `${formatNumber(number, 1, signed)}%`;
+    const gdp =
+      country.gdpUsd === null
+        ? ''
+        : `, GDP $${formatCompact(country.gdpUsd)} (${country.gdpYear ?? ''})`;
+    return `${country.name}: growth ${value(country.growth, true)}, inflation ${value(country.inflation)}, government debt ${value(country.debt)} of GDP${gdp}`;
+  });
+  return rows.length > 0
+    ? `Largest economies, IMF ${world.imfEdition} estimates for ${world.year} and World Bank GDP in US dollars: ${rows.join('; ')}`
+    : null;
+}
 const pct = (value: number | undefined) =>
   value === undefined ? 'change unknown' : `${formatNumber(value, 2, true)}%`;
 
@@ -168,6 +186,8 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
       const facts = input.corporate?.[ticker];
       return facts ? corporateDetail(ticker, facts) : null;
     }
+    case 'worldmacro':
+      return input.world ? worldDetail(input.world) : null;
     default:
       return null;
   }

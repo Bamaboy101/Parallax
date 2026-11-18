@@ -548,3 +548,101 @@ export async function insiders(params: URLSearchParams, env: Env): Promise<Route
     body: { ticker, cik, name: data.name ?? '', insiders: insiderFilings, holders },
   };
 }
+
+/* ---------------------------------------------------------------------------------------------
+ * Global macro (M8): GDP growth, inflation and government debt from the IMF's World Economic
+ * Outlook (DataMapper API; "Users may download, extract, copy, ... publish, distribute ... Data
+ * ... with attribution to the IMF", imf.org/en/About/copyright-and-terms, checked 18 Nov 2026),
+ * and GDP in US dollars from the World Bank's World Development Indicators (CC BY 4.0,
+ * datacatalog.worldbank.org/public-licenses). Six requests, cached a day: the IMF updates the
+ * WEO twice a year, the World Bank its annual figures a few times a year.
+ * ------------------------------------------------------------------------------------------- */
+
+const IMF = 'https://www.imf.org/external/datamapper/api/v1';
+/** IMF DataMapper indicator ids, by the field the panel uses. */
+export const IMF_INDICATORS = {
+  growth: 'NGDP_RPCH',
+  inflation: 'PCPIPCH',
+  debt: 'GGXWDG_NGDP',
+} as const;
+const WORLD_BANK_GDP =
+  'https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&mrnev=1&per_page=400';
+
+export interface WorldCountry {
+  /** ISO 3166 alpha-3, as both sources use. */
+  iso3: string;
+  name: string;
+  /** IMF WEO for the current year: real GDP growth and average inflation (%), gross debt (% GDP). */
+  growth: number | null;
+  inflation: number | null;
+  debt: number | null;
+  /** World Bank: GDP in current US dollars, for its latest year on record. */
+  gdpUsd: number | null;
+  gdpYear: string | null;
+}
+
+export async function world(now = Date.now()): Promise<RouteResult> {
+  const year = String(new Date(now).getUTCFullYear());
+  const getJson = async (label: string, url: string): Promise<unknown> => {
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw upstreamError(label, response);
+    return response.json();
+  };
+  const [labels, indicators, wb, growthSeries, inflationSeries, debtSeries] = await Promise.all([
+    getJson('IMF countries', `${IMF}/countries`),
+    getJson('IMF indicators', `${IMF}/indicators`),
+    getJson('World Bank', WORLD_BANK_GDP),
+    getJson('IMF growth', `${IMF}/${IMF_INDICATORS.growth}`),
+    getJson('IMF inflation', `${IMF}/${IMF_INDICATORS.inflation}`),
+    getJson('IMF debt', `${IMF}/${IMF_INDICATORS.debt}`),
+  ]);
+
+  const record = (value: unknown): Record<string, unknown> =>
+    typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  const names = record(record(labels).countries);
+  /** This year's value for a country in one DataMapper answer: `{ values: { ID: { ISO: { year } } } }`. */
+  const pick = (answer: unknown, id: string, iso3: string): number | null => {
+    const value = record(record(record(record(answer).values)[id])[iso3])[year];
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  };
+
+  const gdp = new Map<string, { value: number; year: string }>();
+  const rows: unknown = Array.isArray(wb) ? wb[1] : null;
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const entry = record(row);
+    if (typeof entry.countryiso3code === 'string' && typeof entry.value === 'number') {
+      gdp.set(entry.countryiso3code, { value: entry.value, year: String(entry.date) });
+    }
+  }
+
+  // IMF "countries" are economies; the World Bank's list also has regions, kept out by this.
+  const countries: WorldCountry[] = Object.entries(names).flatMap(([iso3, label]) => {
+    const name = record(label).label;
+    if (typeof name !== 'string') return [];
+    const growth = pick(growthSeries, IMF_INDICATORS.growth, iso3);
+    const inflation = pick(inflationSeries, IMF_INDICATORS.inflation, iso3);
+    const debt = pick(debtSeries, IMF_INDICATORS.debt, iso3);
+    const usd = gdp.get(iso3);
+    if (growth === null && inflation === null && debt === null && !usd) return [];
+    return [
+      {
+        iso3,
+        name,
+        growth,
+        inflation,
+        debt,
+        gdpUsd: usd?.value ?? null,
+        gdpYear: usd?.year ?? null,
+      },
+    ];
+  });
+  const edition = record(record(record(indicators).indicators)[IMF_INDICATORS.growth]).source;
+  return {
+    status: 200,
+    body: {
+      year,
+      imfEdition: typeof edition === 'string' ? edition : 'World Economic Outlook',
+      countries,
+    },
+  };
+}
