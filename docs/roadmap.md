@@ -69,6 +69,13 @@ be checked against the provider's own docs before building.
   data-sources.md, "Waiting for written permission".
 - **M7 Corporate events:** earnings calendar, insider trades, large-holder filings. Source:
   Finnhub earnings calendar (user's key), SEC EDGAR Form 4 and 13F.
+  Built 18 Nov: a Corporate events panel. For a US stock: its next earnings date and estimates
+  (Finnhub, the user's key), insider trades read from its latest Form 4 filings and its large
+  holders (Schedules 13D and 13G, SEC EDGAR through the edge). Without one: the 25 largest US
+  companies (by expected revenue) reporting in the next two weeks. Differs from the plan: 13F
+  lists one fund's holdings, filed by the fund, so a company's large holders cannot be read from
+  13F without searching every fund's filings; the 13D and 13G filings that holders of more than
+  5% must make about the company are used instead.
 - **M8 Global macro:** GDP, inflation, debt for 50 countries on a map. Source: World Bank and IMF
   open data.
 

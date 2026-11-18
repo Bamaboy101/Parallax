@@ -95,6 +95,14 @@ Needs the user's free key.
   because Finnhub's CORS preflight does not allow its `X-Finnhub-Token` header from a browser.
 - Recorded 16 Nov 2026 with a free key on `BINANCE:BTCUSDT`, which trades around the clock; stock
   trades use the same message format.
+- Earnings calendar (M7): `GET /api/v1/calendar/earnings?from=&to=[&symbol=]&token=` works on the
+  free plan, CORS `*` (recorded 18 Nov 2026: 304 US companies from 18 Nov to 2 Dec,
+  `{symbol, date, hour: bmo|amc|dmh|'', quarter, year, epsEstimate, epsActual, revenueEstimate,
+revenueActual}`). Finnhub's terms (finnhub.io/terms-of-service, checked 18 Nov 2026) make every
+  plan "strictly for personal use" and bar redistributing or sharing its data "with anyone or any
+  3rd party": the panel fetches on the user's own key, shows it in the user's browser only, and the
+  co-pilot passes it to the user's own AI provider only when the user asks it a question, as it
+  already does for Finnhub stock prices.
 
 ## Alpaca paper trading (`store/paper/`)
 
@@ -375,6 +383,27 @@ name may not be used as a mark; the panel uses neither as one.
 - Release days: petroleum Wednesdays and gas storage Thursdays, 10:30 New York time.
 - No free source publishes analysts' forecasts for these reports, so "vs 5-yr" is a seasonal
   norm computed from EIA's own history, not a surprise against expectations.
+
+## SEC EDGAR: insider trades and large holders (`store/corporate.ts`, edge `/insiders`)
+
+Checked 18 Nov 2026 against sec.gov/about/privacy-information, "Website Dissemination":
+"Information presented on sec.gov is considered public information and may be copied or further
+distributed by users of the web site without the SEC's permission", with SEC credited as the
+source; the EDGAR name and logo are trademarks, used here only in text, as the policy allows.
+Fair access: at most 10 requests a second and a declared user agent with a contact; the edge
+sends `SEC_USER_AGENT` and fetches documents five at a time.
+
+- `https://www.sec.gov/files/company_tickers.json`: ticker to CIK, cached a day at the edge.
+- `https://data.sec.gov/submissions/CIK##########.json`: a company's recent filings. Form 4s and
+  Schedules 13D/13G about the company are listed there (recorded for Apple: 212 Form 4s and 8
+  13G filings in the latest 400).
+- Form 4: the raw `ownershipDocument` XML is the primary document without its `xslF345X0N/`
+  folder (recorded: an Apple officer's 10b5-1 sale). Only non-derivative transactions are shown.
+- Schedules 13D/13G: XML since December 2024 (`reportingPersonName`, `classPercent`; recorded:
+  Vanguard, 7.48% of Apple); older ones are HTML or text and are linked, not read.
+- 13F was the plan's source for large holders, but a 13F lists one fund's own holdings; finding
+  every fund that holds a company would mean reading every fund's 13F. 13D and 13G are the
+  filings made about the company by anyone holding more than 5%.
 
 ## US market hours
 

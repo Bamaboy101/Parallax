@@ -1,0 +1,68 @@
+/* Corporate events (M7). Tokens only; no shadows, no motion. Trades are neutral: buying or
+   selling shares is not a price move. */
+
+.corporate-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.corporate-earnings {
+  grid-template-columns: 96px minmax(0, 1fr) 72px 88px;
+}
+
+.corporate-earnings.is-market {
+  grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 72px;
+}
+
+.corporate-insiders {
+  grid-template-columns: 48px minmax(0, 1.4fr) minmax(0, 1fr) 80px 64px;
+}
+
+.corporate-holders {
+  grid-template-columns: minmax(0, 1fr) 60px 112px 88px;
+}
+
+.corporate-earnings > :nth-last-child(-n + 1),
+.corporate-insiders > :nth-last-child(-n + 2) {
+  text-align: right;
+}
+
+.corporate-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.corporate-name:hover,
+a.corporate-name:focus-visible {
+  color: var(--live);
+  outline: none;
+}
+
+.corporate-role,
+.corporate-form {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--size-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.corporate-plan {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.corporate-panel > .panel-footnote {
+  margin-top: auto;
+}

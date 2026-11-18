@@ -330,3 +330,208 @@ export async function eia(env: Env): Promise<RouteResult> {
   );
   return { status: 200, body: { series: Object.fromEntries(entries) } };
 }
+
+/* ---------------------------------------------------------------------------------------------
+ * Corporate events (M7): insider trades (Form 4) and large holders (Schedule 13D/13G) from SEC
+ * EDGAR. Public information that "may be copied or further distributed" (sec.gov privacy and
+ * dissemination policy, checked 18 Nov 2026); SEC asks for a declared user agent and no more than
+ * 10 requests a second, so documents are fetched five at a time and the answer is cached 10 min.
+ * ------------------------------------------------------------------------------------------- */
+
+const SEC_TICKERS_URL = 'https://www.sec.gov/files/company_tickers.json';
+/** The ticker map changes rarely; one copy a day serves every lookup. */
+const SEC_TICKERS_SECONDS = 86_400;
+/** Form 4s read per company, newest first, and large-holder filings listed. */
+const FORM4_READ = 10;
+const HOLDER_FILINGS = 8;
+const SEC_BATCH = 5;
+
+const secHeaders = (env: Env) => ({
+  'User-Agent': env.SEC_USER_AGENT ?? '',
+  Accept: 'application/json, application/xml, text/xml',
+});
+
+/** A ticker's CIK from SEC's company_tickers.json, kept a day in the edge cache. */
+async function tickerCik(ticker: string, env: Env): Promise<number | null> {
+  const cache = caches.default;
+  const key = new Request('https://edge.internal/sec-tickers');
+  let response = await cache.match(key);
+  if (!response) {
+    const fresh = await fetch(SEC_TICKERS_URL, { headers: secHeaders(env) });
+    if (!fresh.ok) throw upstreamError('SEC tickers', fresh);
+    response = new Response(await fresh.text(), {
+      headers: { 'Cache-Control': `public, max-age=${String(SEC_TICKERS_SECONDS)}` },
+    });
+    await cache.put(key, response.clone());
+  }
+  const map: Record<string, { cik_str?: number; ticker?: string } | undefined> =
+    await response.json();
+  const wanted = ticker.toUpperCase();
+  for (const entry of Object.values(map)) {
+    if (entry?.ticker === wanted && typeof entry.cik_str === 'number') return entry.cik_str;
+  }
+  return null;
+}
+
+/** The text of the first `<name>` element, trimmed; '' when absent. */
+const tag = (xml: string, name: string) =>
+  new RegExp(`<${name}>([\\s\\S]*?)</${name}>`).exec(xml)?.[1]?.trim() ?? '';
+/** The `<value>` inside the first `<name>` element (Form 4 wraps most fields this way). */
+const valueOf = (xml: string, name: string) => tag(tag(xml, name), 'value') || tag(xml, name);
+const truthy = (text: string) => text === 'true' || text === '1';
+const xmlText = (text: string) =>
+  text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;|&#39;/g, "'");
+
+export interface InsiderTrade {
+  date: string;
+  /** SEC transaction code: P purchase, S sale, A grant, M option exercise, F tax, G gift… */
+  code: string;
+  shares: number;
+  /** Per share; null when none was reported (grants, gifts). */
+  price: number | null;
+  /** Acquired (true) or disposed of (false). */
+  acquired: boolean;
+  /** Shares held after the transaction. */
+  after: number | null;
+}
+
+export interface InsiderFiling {
+  filed: string;
+  url: string;
+  owner: string;
+  /** 'Director', 'CEO', '10% owner'…, joined. */
+  role: string;
+  /** Made under a pre-arranged Rule 10b5-1 trading plan. */
+  plan: boolean;
+  trades: InsiderTrade[];
+}
+
+/** One Form 4 (ownershipDocument XML) as the panel shows it; null when it is not one. */
+export function parseForm4(xml: string, filed: string, url: string): InsiderFiling | null {
+  if (!xml.includes('<ownershipDocument>')) return null;
+  const relationship = tag(xml, 'reportingOwnerRelationship');
+  const role = [
+    truthy(tag(relationship, 'isDirector')) ? 'Director' : '',
+    truthy(tag(relationship, 'isOfficer'))
+      ? xmlText(tag(relationship, 'officerTitle')) || 'Officer'
+      : '',
+    truthy(tag(relationship, 'isTenPercentOwner')) ? '10% owner' : '',
+    truthy(tag(relationship, 'isOther')) ? xmlText(tag(relationship, 'otherText')) || 'Other' : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const trades = [
+    ...xml.matchAll(/<nonDerivativeTransaction>([\s\S]*?)<\/nonDerivativeTransaction>/g),
+  ].flatMap(([, block = '']) => {
+    const shares = Number(valueOf(block, 'transactionShares'));
+    if (!Number.isFinite(shares)) return [];
+    const priceText = valueOf(block, 'transactionPricePerShare');
+    const afterText = valueOf(block, 'sharesOwnedFollowingTransaction');
+    return [
+      {
+        date: valueOf(block, 'transactionDate'),
+        code: tag(block, 'transactionCode'),
+        shares,
+        price: priceText === '' || !Number.isFinite(Number(priceText)) ? null : Number(priceText),
+        acquired: valueOf(block, 'transactionAcquiredDisposedCode') === 'A',
+        after: afterText === '' ? null : Number(afterText),
+      },
+    ];
+  });
+  return {
+    filed,
+    url,
+    owner: xmlText(tag(xml, 'rptOwnerName')),
+    role,
+    plan: truthy(tag(xml, 'aff10b5One')),
+    trades,
+  };
+}
+
+export interface HolderFiling {
+  form: string;
+  filed: string;
+  url: string;
+  /** From the XML Schedule 13D/13G (since Dec 2024); older filings are HTML, so null. */
+  holder: string | null;
+  percent: number | null;
+}
+
+/** Run `work` over `items` a few at a time, keeping SEC's request rate down. */
+async function inBatches<T, R>(items: readonly T[], work: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = [];
+  for (let start = 0; start < items.length; start += SEC_BATCH) {
+    results.push(...(await Promise.all(items.slice(start, start + SEC_BATCH).map(work))));
+  }
+  return results;
+}
+
+/** The machine-readable XML behind a filing's rendered page: 'xslF345X06/form4.xml' → 'form4.xml'. */
+const rawDocument = (document: string) => document.replace(/^xsl[^/]+\//, '');
+
+export async function insiders(params: URLSearchParams, env: Env): Promise<RouteResult> {
+  const ticker = (params.get('ticker') ?? '').toUpperCase();
+  if (!/^[A-Z][A-Z0-9.-]{0,9}$/.test(ticker)) throw new RouteError(400, 'ticker: a US ticker');
+  if (!env.SEC_USER_AGENT?.includes('@')) throw new RouteError(503, 'SEC contact not configured');
+  const cik = await tickerCik(ticker, env);
+  if (cik === null) throw new RouteError(404, `no SEC filer for ${ticker}`);
+  const response = await fetch(
+    `https://data.sec.gov/submissions/CIK${String(cik).padStart(10, '0')}.json`,
+    { headers: secHeaders(env) },
+  );
+  if (!response.ok) throw upstreamError('SEC', response);
+  const data: {
+    name?: string;
+    filings?: { recent?: Record<string, string[] | undefined> };
+  } = await response.json();
+  const recent = data.filings?.recent ?? {};
+  const column = (name: string) => recent[name] ?? [];
+  const filings = column('form').map((form, index) => {
+    const accession = column('accessionNumber')[index] ?? '';
+    const document = column('primaryDocument')[index] ?? '';
+    const folder = `https://www.sec.gov/Archives/edgar/data/${String(cik)}/${accession.replaceAll('-', '')}`;
+    return {
+      form,
+      filed: column('filingDate')[index] ?? '',
+      url: `${folder}/${document}`,
+      raw: `${folder}/${rawDocument(document)}`,
+      xml: document.endsWith('.xml'),
+    };
+  });
+
+  const form4s = filings.filter((filing) => filing.form === '4').slice(0, FORM4_READ);
+  const insiderFilings = (
+    await inBatches(form4s, async (filing) => {
+      const answer = await fetch(filing.raw, { headers: secHeaders(env) });
+      // One unreadable filing is left out, not fatal.
+      return answer.ok ? parseForm4(await answer.text(), filing.filed, filing.url) : null;
+    })
+  ).filter((filing): filing is InsiderFiling => filing !== null);
+
+  const holderForms = filings
+    .filter((filing) => /^(SC|SCHEDULE) 13[DG](\/A)?$/.test(filing.form))
+    .slice(0, HOLDER_FILINGS);
+  const holders: HolderFiling[] = await inBatches(holderForms, async (filing) => {
+    const base = { form: filing.form, filed: filing.filed, url: filing.url };
+    if (!filing.xml) return { ...base, holder: null, percent: null };
+    const answer = await fetch(filing.raw, { headers: secHeaders(env) });
+    if (!answer.ok) return { ...base, holder: null, percent: null };
+    const xml = await answer.text();
+    const percent = Number(tag(xml, 'classPercent'));
+    return {
+      ...base,
+      holder: xmlText(tag(xml, 'reportingPersonName')) || null,
+      percent: tag(xml, 'classPercent') !== '' && Number.isFinite(percent) ? percent : null,
+    };
+  });
+
+  return {
+    status: 200,
+    body: { ticker, cik, name: data.name ?? '', insiders: insiderFilings, holders },
+  };
+}

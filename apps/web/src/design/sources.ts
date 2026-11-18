@@ -22,6 +22,7 @@ const NAMES: Readonly<Record<string, string>> = {
   'alternative-me': 'alternative.me',
   eia: 'EIA',
   sec: 'SEC EDGAR',
+  'finnhub-earnings': 'Finnhub earnings',
   worldbank: 'World Bank',
   imf: 'IMF',
 };

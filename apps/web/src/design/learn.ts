@@ -133,6 +133,29 @@ export const GLOSSARY: Readonly<Record<string, string>> = {
     'The price of a barrel of West Texas Intermediate, the US benchmark crude, delivered at the Cushing, Oklahoma hub.',
   'Henry Hub spot':
     'The price of natural gas at Henry Hub in Louisiana, the US benchmark, in dollars per million British thermal units (MMBtu).',
+  // Corporate events (M7)
+  Earnings:
+    'When a company publishes its quarterly results: how much it sold and earned. Share prices often jump or drop on the day.',
+  Date: 'The day it happens (earnings) or the day the trade was made (insiders).',
+  Company: 'The company reporting, by its ticker.',
+  When: 'Before the market opens, after it closes, or during trading hours, as the company has said.',
+  'EPS est.':
+    'Earnings per share that analysts expect, on average: the company’s profit divided by its shares. Results are often judged against this number.',
+  'Revenue est.': 'Sales that analysts expect for the quarter, on average.',
+  'Insider trades':
+    'Shares bought, sold, granted or given away by the company’s directors, senior officers and owners of more than 10%. They must report each one to the SEC on Form 4 within two business days.',
+  Who: 'The insider who reported the trade, and their role at the company.',
+  Trade:
+    'What happened: a buy or sell on the market, shares granted as pay, options turned into shares, shares kept back for tax, or a gift.',
+  Shares: 'How many shares changed hands: plus for shares received, minus for shares given up.',
+  '10b5-1':
+    'Made under a trading plan the insider set up in advance (SEC Rule 10b5-1), so the timing was fixed months earlier, not chosen on the day.',
+  'Large holders':
+    'Investors who own more than 5% of the company. They must file Schedule 13D (if they may seek to influence it) or the shorter 13G (if they are passive) with the SEC.',
+  Holder: 'The investor who filed, as named in the filing.',
+  Stake: 'The share of the company’s stock the holder reported owning, in percent.',
+  Form: 'The SEC form: 13D or 13G, with /A for an update to an earlier filing.',
+  Filed: 'The day the filing reached the SEC.',
 };
 
 /** What a truth badge means, in plain words. */

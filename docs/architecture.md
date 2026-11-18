@@ -482,6 +482,22 @@ least three of those years). The `energy` widget (commands `energy`, `eia`, `inv
 with plain names in Simple. Inventory changes are neutral (they are not price moves); spot price
 changes keep the up and down colours. Its badge reads `WEEKLY` (`eod` freshness with a cadence).
 
+## Corporate events (M7)
+
+`store/corporate.ts` loads, every 30 minutes while a `corporate` panel is open: earnings dates
+from Finnhub's `/calendar/earnings` straight from the browser on the user's key (two weeks ahead;
+for one stock, its own; otherwise `largestReporting`, the 25 with the largest revenue estimate,
+since the calendar carries no company size), badge source `finnhub-earnings`; and, for a stock,
+the edge's `/insiders?ticker=` (cached 10 minutes, badge `sec`). That route maps the ticker to a
+CIK with SEC's `company_tickers.json` (kept a day in the edge cache), reads the company's
+submissions, parses the raw XML of its latest ten Form 4s (`parseForm4`: owner, role, 10b5-1
+plan flag, each non-derivative transaction) and lists its latest eight Schedule 13D/13G filings,
+reading holder and percent from the XML schedules (since December 2024) and linking older HTML
+ones. Documents are fetched five at a time with the declared user agent, inside SEC's 10 a
+second. The panel (commands `earnings`, `insiders`, `holders`, `corporate`, `form4`; `aapl
+earnings`) shows trades in neutral colours with SEC's transaction codes in words (plainer in
+Simple), and the co-pilot gets the same rows.
+
 ## Liquidity heatmap (F2)
 
 A chart of a symbol with an order-book feed (crypto and FX; the free US stock feeds carry no

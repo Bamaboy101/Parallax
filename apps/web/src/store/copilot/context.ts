@@ -2,6 +2,7 @@ import { formatCompact, formatNumber } from '../../design/format';
 import { sourceName } from '../../design/sources';
 import type { Bar, NewsItem } from '../../feeds/types';
 import type { Release } from '../calendar';
+import { TRADE_CODES, type Earnings, type Ownership } from '../corporate';
 import { lastPriceOf, priceChannel, priceLine } from '../hooks';
 import { energyStat, PRICE_ROWS, STOCK_ROWS, SUPPLY_ROWS, type EnergyMap } from '../energy';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
@@ -53,7 +54,17 @@ export interface ContextInput {
   rates: Pick<RatesState, 'curve' | 'sofr' | 'effr'>;
   /** EIA series the Energy panel shows, when it is open. */
   energy?: EnergyMap | null;
+  /**
+   * What each open Corporate events panel shows, by its ticker ('' for the market-wide earnings
+   * list): earnings from Finnhub (null without a key), insiders and holders from SEC EDGAR.
+   */
+  corporate?: Readonly<Record<string, CorporateFacts>> | null;
   now: number;
+}
+
+export interface CorporateFacts {
+  earnings: readonly Earnings[] | null;
+  ownership: Ownership | null;
 }
 
 const pct = (value: number | undefined) =>
@@ -152,6 +163,11 @@ function panelDetail(input: ContextInput, panel: PanelRef): string | null {
     }
     case 'energy':
       return input.energy ? energyDetail(input.energy) : null;
+    case 'corporate': {
+      const ticker = symbol && instrument(symbol)?.kind === 'equity' ? symbol : '';
+      const facts = input.corporate?.[ticker];
+      return facts ? corporateDetail(ticker, facts) : null;
+    }
     default:
       return null;
   }
@@ -184,6 +200,60 @@ function macroDetail(fred: SeriesMap): string | null {
   return lines.length > 0 ? `Official FRED data, daily or monthly: ${lines.join('; ')}` : null;
 }
 
+const HOUR_WORDS: Readonly<Record<Earnings['hour'], string>> = {
+  bmo: 'before the open',
+  amc: 'after the close',
+  dmh: 'during market hours',
+  '': 'time not given',
+};
+
+/** The Corporate events panel: earnings dates, insider trades and large holders, as shown. */
+function corporateDetail(ticker: string, facts: CorporateFacts): string | null {
+  const parts: string[] = [];
+  const earnings = (facts.earnings ?? []).slice(0, ticker === '' ? 25 : 2);
+  if (earnings.length > 0) {
+    parts.push(
+      `Earnings dates (Finnhub): ${earnings
+        .map(
+          (entry) =>
+            `${entry.symbol} ${entry.date} ${HOUR_WORDS[entry.hour]}${entry.epsEstimate === null ? '' : `, EPS estimate ${formatNumber(entry.epsEstimate, 2)}`}`,
+        )
+        .join('; ')}`,
+    );
+  } else if (facts.earnings !== null) {
+    parts.push(
+      `No earnings date${ticker === '' ? 's for the catalogue' : ` for ${ticker}`} in the next two weeks (Finnhub)`,
+    );
+  }
+  const ownership = facts.ownership;
+  if (ownership) {
+    const trades = ownership.insiders
+      .flatMap((filing) =>
+        filing.trades.map(
+          (trade) =>
+            `${trade.date} ${filing.owner}${filing.role ? ` (${filing.role})` : ''} ${TRADE_CODES[trade.code]?.label.toLowerCase() ?? trade.code} ${formatNumber(trade.shares, 0)} shares${trade.price === null ? '' : ` at ${formatNumber(trade.price, 2)}`}${filing.plan ? ', under a pre-arranged 10b5-1 plan' : ''}`,
+        ),
+      )
+      .slice(0, 12);
+    parts.push(
+      trades.length > 0
+        ? `${ticker} insider trades (SEC Form 4, latest filings): ${trades.join('; ')}`
+        : `${ticker}: no insider trades in the latest Form 4 filings`,
+    );
+    const holders = ownership.holders.filter((filing) => filing.holder !== null);
+    if (holders.length > 0) {
+      parts.push(
+        `${ticker} large holders (SEC Schedule 13D/13G): ${holders
+          .map(
+            (filing) =>
+              `${filing.holder ?? ''}${filing.percent === null ? '' : ` ${formatNumber(filing.percent, 2)}%`} (${filing.form}, filed ${filing.filed})`,
+          )
+          .join('; ')}`,
+      );
+    }
+  }
+  return parts.length > 0 ? parts.join('. ') : null;
+}
 /** The Energy panel's rows: latest, weekly change and change against the five-year norm. */
 function energyDetail(energy: EnergyMap): string | null {
   const lines = [...STOCK_ROWS, ...SUPPLY_ROWS, ...PRICE_ROWS].flatMap((row) => {
