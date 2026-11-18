@@ -109,6 +109,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   use from the government's weekly EIA reports, each week's change set
   against the same week of the five years before, plus WTI and Henry Hub
   spot prices.
+- **Corporate events.** A company's next earnings date and estimates (with a
+  free Finnhub key), the shares its insiders bought and sold (SEC Form 4),
+  and the investors holding more than 5% (Schedules 13D and 13G).
 - **Voice commands.** Press the microphone in the command bar and say
   "Bitcoin chart one hour" or "alert Ether below 1,800". Recognition runs on
   your device where the browser can; its online speech service is used only

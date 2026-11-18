@@ -1,0 +1,70 @@
+{
+  "earningsCalendar": [
+    {
+      "symbol": "CRM",
+      "date": "2026-12-02",
+      "hour": "amc",
+      "quarter": 3,
+      "year": 2027,
+      "epsEstimate": 3.4724,
+      "epsActual": null,
+      "revenueEstimate": 11571853436,
+      "revenueActual": null
+    },
+    {
+      "symbol": "DE",
+      "date": "2026-11-25",
+      "hour": "amc",
+      "quarter": 4,
+      "year": 2026,
+      "epsEstimate": 4.1688,
+      "epsActual": null,
+      "revenueEstimate": 10677445374,
+      "revenueActual": null
+    },
+    {
+      "symbol": "WMT",
+      "date": "2026-11-19",
+      "hour": "bmo",
+      "quarter": 3,
+      "year": 2027,
+      "epsEstimate": 0.6421,
+      "epsActual": null,
+      "revenueEstimate": 189143823120,
+      "revenueActual": null
+    },
+    {
+      "symbol": "COO",
+      "date": "2026-12-02",
+      "hour": "amc",
+      "quarter": 4,
+      "year": 2026,
+      "epsEstimate": 1.0797,
+      "epsActual": null,
+      "revenueEstimate": 1078919996,
+      "revenueActual": null
+    },
+    {
+      "symbol": "CRMT",
+      "date": "2026-12-02",
+      "hour": "",
+      "quarter": 2,
+      "year": 2027,
+      "epsEstimate": -1.2648,
+      "epsActual": null,
+      "revenueEstimate": 256159740,
+      "revenueActual": null
+    },
+    {
+      "symbol": "CXM",
+      "date": "2026-12-02",
+      "hour": "",
+      "quarter": 3,
+      "year": 2027,
+      "epsEstimate": 0.113,
+      "epsActual": null,
+      "revenueEstimate": 217627356,
+      "revenueActual": null
+    }
+  ]
+}

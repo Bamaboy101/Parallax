@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { NewsItem } from '../../feeds/types';
 import { parseCalendar, type Release } from '../calendar';
+import { fetchEarnings, fetchOwnership } from '../corporate';
 import { edgeJson } from '../edge';
 import { fetchEnergy, type EnergyMap } from '../energy';
 import { failureOf } from '../failure';
@@ -20,9 +21,16 @@ import { usePaperStore } from '../paper/store';
 import { useOptionsSummaries } from '../options/store';
 import { useRatesStore } from '../rates/store';
 import { usePredictionStore } from '../predictions/store';
-import { INSTRUMENTS } from '../symbols';
+import { useKeyVault } from '../keys';
+import { INSTRUMENTS, instrument } from '../symbols';
 import { useTickStore } from '../ticks';
-import { buildContext, contextMessage, type ContextItem, type PanelRef } from './context';
+import {
+  buildContext,
+  contextMessage,
+  type ContextItem,
+  type CorporateFacts,
+  type PanelRef,
+} from './context';
 import {
   ADVICE_REFUSAL,
   ADVICE_WITHHELD,
@@ -139,6 +147,37 @@ async function energySeries(): Promise<EnergyMap | null> {
   }
 }
 
+/**
+ * What each open Corporate events panel shows, fetched as the panel does: earnings from Finnhub on
+ * the user's own key, SEC filings through the edge (whose cache answers).
+ */
+async function corporateFacts(
+  panels: readonly PanelRef[],
+): Promise<Record<string, CorporateFacts> | null> {
+  const tickers = [
+    ...new Set(
+      panels
+        .filter((panel) => panel.component === 'corporate')
+        .map((panel) => {
+          const symbol = typeof panel.params.symbol === 'string' ? panel.params.symbol : '';
+          return instrument(symbol)?.kind === 'equity' ? symbol : '';
+        }),
+    ),
+  ];
+  if (tickers.length === 0) return null;
+  const token = useKeyVault.getState().keys.finnhub;
+  const entries = await Promise.all(
+    tickers.map(async (ticker) => {
+      const [earnings, ownership] = await Promise.all([
+        token ? fetchEarnings(token, ticker === '' ? null : ticker).catch(() => null) : null,
+        ticker === '' ? null : fetchOwnership(ticker).catch(() => null),
+      ]);
+      return [ticker, { earnings, ownership }] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
 /** Ask the co-pilot. Explains from what is on screen; never recommends. */
 export async function askCopilot(
   question: string,
@@ -157,11 +196,12 @@ export async function askCopilot(
   const predictions = usePredictionStore.getState();
   const open = (component: string) => panels.some((panel) => panel.component === component);
   const now = Date.now();
-  const [headlines, fred, releases, energy] = await Promise.all([
+  const [headlines, fred, releases, energy, corporate] = await Promise.all([
     headlinesFor(trimmed),
     open('macro') ? macroSeries(now) : null,
     open('calendar') ? calendarReleases() : null,
     open('energy') ? energySeries() : null,
+    corporateFacts(panels),
   ]);
   const context = buildContext({
     panels,
@@ -176,6 +216,7 @@ export async function askCopilot(
     options: useOptionsSummaries.getState(),
     rates: useRatesStore.getState(),
     energy,
+    corporate,
     now,
   });
   try {

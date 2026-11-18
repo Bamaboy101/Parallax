@@ -4,6 +4,7 @@ import {
   eia,
   filterNews,
   fred,
+  insiders,
   isNewsBody,
   RouteError,
   sec,
@@ -21,6 +22,7 @@ export const CACHE_SECONDS = {
   sec: 600,
   calendar: 21_600,
   eia: 3600,
+  insiders: 600,
 } as const;
 
 type Route = keyof typeof CACHE_SECONDS;
@@ -132,6 +134,14 @@ export async function handle(request: Request, env: Env): Promise<Response> {
         );
       case 'eia':
         return withCors(await cached('eia', new URL('/eia', url), () => eia(env)), origin);
+      case 'insiders': {
+        const key = new URL('/insiders', url);
+        key.searchParams.set('ticker', (url.searchParams.get('ticker') ?? '').toUpperCase());
+        return withCors(
+          await cached('insiders', key, () => insiders(url.searchParams, env)),
+          origin,
+        );
+      }
       default:
         return withCors(json(404, { error: 'unknown route' }), origin);
     }
