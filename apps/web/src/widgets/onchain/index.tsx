@@ -147,7 +147,7 @@ export default function OnchainPanel({ api }: IDockviewPanelProps) {
             <h3 className="markets-group" data-term="Stablecoin supply">
               Stablecoins on Ethereum · supply
             </h3>
-            <dl className="onchain-figures">
+            <dl className="onchain-figures onchain-supply">
               {ethereum.data.supply.map((coin) => (
                 <Figure key={coin.symbol} term="Stablecoin supply" label={coin.symbol}>
                   <span className="font-mono text-num">{formatCompact(coin.supply)}</span>

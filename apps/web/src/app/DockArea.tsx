@@ -1,3 +1,4 @@
+import { ParallaxMark } from '../design/ParallaxMark';
 import {
   DockviewReact,
   type DockviewApi,
@@ -190,6 +191,7 @@ export function DockArea({ slot }: { slot: LayoutSlot }) {
         </p>
       )}
       <button ref={bootHint} type="button" className="cockpit-boot" hidden>
+        <ParallaxMark />
         Initialising panels · click or press any key to skip
       </button>
     </div>

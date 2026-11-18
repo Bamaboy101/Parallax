@@ -180,8 +180,8 @@
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  width: calc(var(--grid) * 7);
-  height: calc(var(--grid) * 7);
+  width: calc(var(--grid) * 9);
+  height: calc(var(--grid) * 9);
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
@@ -199,6 +199,7 @@
 
 .command-mic:hover {
   color: var(--text);
+  border-color: var(--muted);
 }
 
 .command-mic[aria-pressed='true'] {
@@ -208,17 +209,19 @@
 }
 
 .command-mic:focus-visible {
-  outline: 1px solid var(--live);
+  outline: 2px solid var(--live);
   outline-offset: 2px;
 }
 
 .command-voice {
   margin: 0;
-  padding: calc(var(--grid) * 2) calc(var(--grid) * 4);
+  padding: calc(var(--grid) * 3) calc(var(--grid) * 4);
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
   color: var(--muted);
   font-size: var(--size-label);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .command-voice p {
@@ -227,6 +230,7 @@
 
 .command-voice[data-state='listening'] {
   color: var(--text);
+  border-left: 2px solid var(--live);
 }
 
 .command-voice[data-state='error'] {
@@ -242,6 +246,23 @@
 
 .command-voice-actions .chart-interval {
   border-color: var(--line);
+  min-height: 32px;
+}
+
+.command-voice-actions .chart-interval:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .command-mic {
+    width: 40px;
+    height: 40px;
+  }
+
+  .command-voice-actions .chart-interval {
+    min-height: 40px;
+  }
 }
 
 .command-result-enter {

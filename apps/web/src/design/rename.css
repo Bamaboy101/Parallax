@@ -4,16 +4,18 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
-  padding: 6px var(--pad);
+  gap: 8px 16px;
+  padding: 8px max(12px, var(--pad));
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--live) 6%, var(--panel));
   color: var(--text);
   font-size: var(--size-ui);
+  line-height: 1.5;
 }
 
 .rename-banner p {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .rename-banner a {
@@ -22,15 +24,18 @@
 }
 
 .rename-banner-move {
-  padding: 2px 10px;
+  min-height: 32px;
+  padding: 4px 12px;
   border: 1px solid var(--live);
   border-radius: var(--panel-radius);
   background: transparent;
   color: var(--live);
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 
+.rename-banner a:focus-visible,
 .rename-banner-move:focus-visible {
   outline: 2px solid var(--live);
   outline-offset: 2px;
@@ -40,4 +45,14 @@
   flex-basis: 100%;
   color: var(--muted);
   font-size: var(--size-label);
+}
+
+.rename-banner-move:hover {
+  background: color-mix(in srgb, var(--live) 10%, var(--panel));
+}
+
+@media (max-width: 760px) {
+  .rename-banner-move {
+    min-height: 40px;
+  }
 }

@@ -9,19 +9,25 @@
 
 .globe-toolbar {
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .globe-views {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 2px;
   margin-left: auto;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
 }
 
 .globe-stage {
   position: relative;
   flex: 1;
   min-height: 160px;
+  background: color-mix(in srgb, var(--bg) 40%, var(--panel));
 }
 
 .globe-canvas {
@@ -40,11 +46,12 @@
 .globe-legend {
   display: grid;
   flex-shrink: 0;
-  gap: 4px;
+  gap: 8px;
   margin: 0;
-  padding: 8px var(--pad);
+  padding: 12px var(--pad);
   border-top: 1px solid var(--line);
   font-size: var(--size-label);
+  background: color-mix(in srgb, var(--bg) 24%, var(--panel));
 }
 
 .globe-legend > div {
@@ -56,6 +63,25 @@
 
 .globe-legend dt {
   color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.globe-open-markets dt::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+
+[data-density='dense'] .globe-legend {
+  gap: 4px;
+  padding-block: 8px;
 }
 
 .globe-legend dd {
@@ -69,12 +95,14 @@
 .globe-move {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px 6px;
 }
 
 .globe-proxy {
   color: var(--muted);
   font-family: var(--font-num);
+  font-size: 10px;
 }
 
 .globe-panel > .panel-footnote {
@@ -87,7 +115,7 @@
     gap: 2px;
   }
 
-  .globe-proxy {
-    display: none;
+  .globe-move {
+    width: 100%;
   }
 }

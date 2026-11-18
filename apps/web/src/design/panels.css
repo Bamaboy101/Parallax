@@ -440,6 +440,7 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background: color-mix(in srgb, var(--bg) 30%, var(--panel));
 }
 
 .constellation-sky canvas {
@@ -454,7 +455,7 @@
 .constellation-gathering {
   position: absolute;
   margin: 0;
-  padding: 4px 8px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--panel);
@@ -465,6 +466,10 @@
 .constellation-tip {
   top: 8px;
   left: 8px;
+  right: 8px;
+  width: fit-content;
+  max-width: calc(100% - 16px);
+  overflow-wrap: anywhere;
   font-family: var(--font-num);
 }
 
@@ -490,11 +495,13 @@
 /* Instrument faces retain the same semantic colours as their textual readouts. */
 .constellation-readout {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 8px var(--pad);
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 24%, var(--panel));
 }
 
 .constellation-readout strong {

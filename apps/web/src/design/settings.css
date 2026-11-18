@@ -2,7 +2,7 @@
 .settings-panel {
   height: 100%;
   overflow: auto;
-  padding: var(--pad);
+  padding: max(12px, var(--pad));
   background: var(--panel);
   color: var(--text);
   scrollbar-color: var(--line) var(--panel);
@@ -19,19 +19,23 @@
 }
 
 .settings-heading:not(:first-child) {
-  margin-top: 20px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .settings-note {
-  margin: 0 0 8px;
+  max-width: 72ch;
+  margin: 0 0 12px;
   font-size: var(--size-ui);
-  line-height: 1.45;
+  line-height: 1.6;
 }
 
 .settings-muted,
 .settings-state {
   color: var(--muted);
   font-size: var(--size-label);
+  line-height: 1.5;
 }
 
 .settings-card {
@@ -44,6 +48,7 @@
 
 .settings-card-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
@@ -76,6 +81,7 @@
 
 .settings-field input {
   height: var(--row-h);
+  min-height: 32px;
   min-width: 0;
   padding-inline: 8px;
   border: 1px solid var(--line);
@@ -110,6 +116,7 @@
 
 .settings-button {
   height: var(--row-h);
+  min-height: 32px;
   padding-inline: 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -117,7 +124,6 @@
   color: var(--text);
   font-size: var(--size-label);
   cursor: pointer;
-  transition: border-color var(--motion-fast);
 }
 
 .settings-button:hover:not(:disabled) {
@@ -131,6 +137,24 @@
 
 .settings-button--primary:not(:disabled) {
   border-color: color-mix(in srgb, var(--live) 50%, var(--line));
+  color: var(--live);
+}
+
+.settings-button:focus-visible,
+.settings-panel .chart-interval:focus-visible,
+.settings-choice input:focus-visible,
+.settings-toggle input:focus-visible,
+.settings-sound input:focus-visible,
+.settings-card-head a:focus-visible {
+  outline: 2px solid var(--live);
+  outline-offset: 2px;
+}
+
+.settings-install {
+  min-height: 36px;
+  padding-inline: 16px;
+  border: 1px solid var(--live);
+  background: color-mix(in srgb, var(--live) 12%, var(--panel));
   color: var(--live);
 }
 
@@ -155,7 +179,7 @@
 .settings-choice {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 16px;
+  gap: 8px;
   margin: 0 0 12px;
   padding: 0;
   border: 0;
@@ -163,7 +187,7 @@
 }
 
 .settings-choice legend {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   padding: 0;
   color: var(--muted);
   font-size: var(--size-label);
@@ -173,6 +197,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.settings-choice label:has(input:checked) {
+  border-color: color-mix(in srgb, var(--live) 50%, var(--line));
+  background: color-mix(in srgb, var(--live) 8%, var(--panel));
 }
 
 .settings-choice input,
@@ -193,9 +228,21 @@
 
 .settings-sound input[type='range'] {
   width: 140px;
+  max-width: 100%;
+  min-height: 32px;
   accent-color: var(--live);
 }
 
 .settings-sound .chart-interval {
   border-color: var(--line);
+  min-height: 32px;
+}
+
+@media (pointer: coarse) {
+  .settings-button,
+  .settings-install,
+  .settings-choice label,
+  .settings-sound .chart-interval {
+    min-height: 40px;
+  }
 }
