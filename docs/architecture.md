@@ -470,8 +470,9 @@ labelled market odds, not forecasts. The footnote carries the New York Fed's req
 ## Energy (M4)
 
 The edge's `/eia` route (cached an hour) fetches nine EIA series by legacy series id from
-`api.eia.gov/v2/seriesid/` on the project's `EIA_API_KEY`: six years of the weekly ones, 45 days
-of the two daily spot prices; the key is spent on nothing else and never reaches the browser.
+`api.eia.gov/v2/seriesid/` on the project's `EIA_API_KEY`: the newest 318 weeks (six years) of the
+weekly ones and 32 days of the two spot prices, asked for newest first by length because the
+endpoint ignores `start`; the key is spent on nothing else and never reaches the browser.
 `store/energy.ts` (`useEnergy`, refreshed hourly; `fetchEnergy` for the co-pilot, which the edge
 cache answers) reads the answer, and `energyStat` gives each row its latest figure, its change and,
 for weekly series, that change minus the average change in the same week of the previous five

@@ -283,18 +283,22 @@ export const EIA_SERIES: Readonly<Record<string, 'weekly' | 'daily'>> = {
   'PET.RWTC.D': 'daily',
   'NG.RNGWHHD.D': 'daily',
 };
-/** Six years of weeks (the five-year comparison needs the same week five years back), a month of days. */
-const EIA_DAYS = { weekly: 6 * 366, daily: 45 } as const;
+/**
+ * Rows wanted per series, newest first: six years of weeks (the five-year comparison needs the
+ * same week five years back) and a month and a half of days. The seriesid endpoint ignores
+ * `start` (recorded 18 Nov 2026: it returned 1982 onwards), so the newest rows are asked for by
+ * sorting descending with a length.
+ */
+const EIA_ROWS = { weekly: 6 * 53, daily: 32 } as const;
 
-export async function eia(env: Env, now = Date.now()): Promise<RouteResult> {
+export async function eia(env: Env): Promise<RouteResult> {
   if (!env.EIA_API_KEY) throw new RouteError(503, 'EIA key not configured');
   const key = env.EIA_API_KEY;
   const entries = await Promise.all(
     Object.entries(EIA_SERIES).map(async ([id, cadence]) => {
-      const start = isoDate(now - EIA_DAYS[cadence] * 86_400_000);
       const url =
-        `https://api.eia.gov/v2/seriesid/${id}?start=${start}` +
-        '&sort[0][column]=period&sort[0][direction]=asc&length=5000' +
+        `https://api.eia.gov/v2/seriesid/${id}?length=${String(EIA_ROWS[cadence])}` +
+        '&sort[0][column]=period&sort[0][direction]=desc' +
         `&api_key=${encodeURIComponent(key)}`;
       const response = await fetch(url);
       if (!response.ok) throw upstreamError(`EIA ${id}`, response);
@@ -304,12 +308,15 @@ export async function eia(env: Env, now = Date.now()): Promise<RouteResult> {
       const rows = data.response?.data ?? [];
       const first = rows[0] ?? {};
       const text = (value: unknown) => (typeof value === 'string' ? value : '');
-      const observations = rows.flatMap((row) => {
-        const value = Number(row.value);
-        return typeof row.period === 'string' && row.value !== null && Number.isFinite(value)
-          ? [{ date: row.period, value }]
-          : [];
-      });
+      const observations = rows
+        .flatMap((row) => {
+          const value = Number(row.value);
+          return typeof row.period === 'string' && row.value !== null && Number.isFinite(value)
+            ? [{ date: row.period, value }]
+            : [];
+        })
+        // Oldest first, as every other series in the app.
+        .sort((a, b) => a.date.localeCompare(b.date));
       return [
         id,
         {
