@@ -1,11 +1,16 @@
 import { isObject } from '../feeds/adapters/parse';
 
 /**
- * The rename (18 Nov 2026): Open Terminal became Parallax, at a new address. The old address
- * serves the same app with a banner until 18 Dec 2026.
+ * The move (18 Nov 2026): Open Terminal became Parallax Terminal, at a new address. Both earlier
+ * addresses (the original open-terminal and the short-lived parallax-markets) serve the same app
+ * with a banner until 18 Dec 2026.
  */
-export const NEW_ORIGIN = 'https://parallax-markets.pages.dev';
-export const OLD_ORIGIN = 'https://open-terminal.pages.dev';
+export const NEW_ORIGIN = 'https://parallax-terminal.pages.dev';
+export const OPEN_TERMINAL_ORIGIN = 'https://open-terminal.pages.dev';
+export const OLD_ORIGINS: readonly string[] = [
+  OPEN_TERMINAL_ORIGIN,
+  'https://parallax-markets.pages.dev',
+];
 export const OLD_ADDRESS_CLOSES = '18 December 2026';
 
 const OLD_PREFIX = 'open-terminal:';
@@ -37,7 +42,7 @@ export function migrateStorage(storage: Storage): void {
 }
 
 export function isOldAddress(origin: string): boolean {
-  return origin === OLD_ORIGIN;
+  return OLD_ORIGINS.includes(origin);
 }
 
 /** This app's saved entries (layout, preferences, alerts, keys), to carry to the new address. */
@@ -97,7 +102,7 @@ export function receiveHandoff(win: Window = window): Promise<boolean> | null {
       resolve(moved);
     };
     const onMessage = (event: MessageEvent) => {
-      if (event.origin !== OLD_ORIGIN || event.source !== opener) return;
+      if (!OLD_ORIGINS.includes(event.origin) || event.source !== opener) return;
       const entries = handoffEntries(event.data);
       if (!entries) return;
       for (const [key, value] of entries) win.localStorage.setItem(key, value);
@@ -107,7 +112,8 @@ export function receiveHandoff(win: Window = window): Promise<boolean> | null {
     const timer = win.setTimeout(() => {
       finish(false);
     }, HANDOFF_TIMEOUT_MS);
-    opener.postMessage({ type: READY }, OLD_ORIGIN);
+    // The opener is one of the old addresses; each post reaches it only at its own origin.
+    for (const origin of OLD_ORIGINS) opener.postMessage({ type: READY }, origin);
   });
 }
 

@@ -830,21 +830,24 @@ meetings are not FRED releases and are not listed.
 
 ## Addresses and the rename
 
-Open Terminal became Parallax on 18 Nov 2026, at `https://parallax-markets.pages.dev`
-(`parallax.pages.dev` was taken). `deploy.yml` deploys the same build to two Pages projects,
-`parallax-markets` and the old `open-terminal`, until 18 Dec 2026; the Worker allows both origins
-until then. `app/rename.ts` holds the addresses and the two moves:
+Open Terminal became Parallax Terminal on 18 Nov 2026, at `https://parallax-terminal.pages.dev`
+(`parallax.pages.dev` was taken). For a few hours that day it lived at `parallax-markets.pages.dev`.
+`deploy.yml` deploys the same build to three Pages projects, `parallax-terminal` and the two
+earlier `open-terminal` and `parallax-markets`, until 18 Dec 2026; the Worker allows all three
+origins until then. `app/rename.ts` holds the addresses and the two moves:
 
 - **Same address.** `app/storageMigration.ts` is the first import of `main.tsx`, so before any
   store reads its saved state, every `open-terminal:*` entry in local storage becomes
   `parallax:*` (an entry already under the new name wins). The theme script in `index.html`
   reads the old theme key too, for the first paint. Workspace files and share links made before
   the rename (`app: 'open-terminal'`) still load.
-- **New address.** Storage belongs to one address, so the new site starts empty. At the old
-  address a banner above the top bar links to the new one and offers "Move my layout and keys":
-  it opens `parallax-markets.pages.dev/?handoff=1`, which (before rendering, so before anything
-  saves) posts "ready" to its opener at the old origin. The old page answers that window only, at
-  the new origin exactly, with its `parallax:*` entries; the new page accepts them only from its
-  opener at the old origin, only `parallax:*` keys with string values, saves them and reloads.
+- **New address.** Storage belongs to one address, so the new site starts empty. At either earlier
+  address a banner above the top bar links to the new one and offers "Move my layout and keys"
+  (at open-terminal it also gives the old name): it opens `parallax-terminal.pages.dev/?handoff=1`,
+  which (before rendering, so before anything saves) posts "ready" to its opener at each earlier
+  origin, so only the real opener's own origin receives it. The old page answers that window only,
+  at the new origin exactly, with its `parallax:*` entries; the new page accepts them only from
+  its opener at an earlier origin, only `parallax:*` keys with string values, saves them and
+  reloads.
   After 5 s without an answer it opens as usual. Keys move window to window inside the same
   browser and never cross the network.

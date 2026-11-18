@@ -6,9 +6,10 @@ compatibility_date = "2026-11-01"
 
 [vars]
 # Origins allowed to call the edge. `https://*.host` matches subdomains (Pages previews).
-# parallax-markets.pages.dev is the site (renamed from open-terminal on 18 Nov 2026).
-# open-terminal.pages.dev stays allowed until 18 Dec 2026, while the old address redirects people.
-ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,https://parallax-markets.pages.dev,https://*.parallax-markets.pages.dev,https://open-terminal.pages.dev,https://*.open-terminal.pages.dev"
+# parallax-terminal.pages.dev is the site (Parallax Terminal, from 18 Nov 2026). The two earlier
+# addresses, open-terminal and parallax-markets, stay allowed until 18 Dec 2026 while their banner
+# moves people over.
+ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,https://parallax-terminal.pages.dev,https://*.parallax-terminal.pages.dev,https://parallax-markets.pages.dev,https://*.parallax-markets.pages.dev,https://open-terminal.pages.dev,https://*.open-terminal.pages.dev"
 
 # Secrets, never in this file (set once with `wrangler secret put <NAME>`):
 # - FRED_API_KEY: the project's FRED key.

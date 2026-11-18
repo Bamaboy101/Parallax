@@ -182,7 +182,7 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   colour around a body, and on the tape a 2 px text-colour bar and bold weight on the row, with a
   muted summary line that turns text colour (and gains a ◆) while there is any. Neutral, never up
   or down, and static: nothing flashes or pulses when a whale prints.
-- At the pre-rename address only, a banner row above the top bar names the new address and
+- At the two earlier addresses only, a banner row above the top bar names the new address and
   offers "Move my layout and keys": a 6% mint tint over the panel (interface information), mint
   link and outlined button, no shadow or motion.
 - The Rundown (E1) is one calm page on `--bg`: sections are `--panel` cards with a hairline,
