@@ -26,8 +26,11 @@ const WORLD_BANK = [
 
 describe('world', () => {
   it("keeps this year's IMF figures and the World Bank's GDP for economies only", async () => {
-    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = input instanceof Request ? input.url : input.toString();
+      // As the IMF does: no user agent, no data.
+      if (!new Headers(init?.headers).get('User-Agent'))
+        return Promise.resolve(new Response('', { status: 403 }));
       if (url.startsWith('https://api.worldbank.org/'))
         return Promise.resolve(Response.json(WORLD_BANK));
       const last = url.split('/').at(-1) ?? '';
