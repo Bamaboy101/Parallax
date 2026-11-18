@@ -431,13 +431,15 @@ export function parseForm4(xml: string, filed: string, url: string): InsiderFili
     const shares = Number(valueOf(block, 'transactionShares'));
     if (!Number.isFinite(shares)) return [];
     const priceText = valueOf(block, 'transactionPricePerShare');
+    const price = Number(priceText);
     const afterText = valueOf(block, 'sharesOwnedFollowingTransaction');
     return [
       {
         date: valueOf(block, 'transactionDate'),
         code: tag(block, 'transactionCode'),
         shares,
-        price: priceText === '' || !Number.isFinite(Number(priceText)) ? null : Number(priceText),
+        // Gifts and grants report a price of 0: there was none.
+        price: priceText === '' || !Number.isFinite(price) || price === 0 ? null : price,
         acquired: valueOf(block, 'transactionAcquiredDisposedCode') === 'A',
         after: afterText === '' ? null : Number(afterText),
       },
