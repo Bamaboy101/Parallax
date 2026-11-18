@@ -7,6 +7,8 @@ export interface Env {
   ALLOWED_ORIGINS?: string;
   /** SEC asks every client to declare a name and contact email. */
   SEC_USER_AGENT?: string;
+  /** Project-owned EIA open-data key, set with `wrangler secret put EIA_API_KEY`. */
+  EIA_API_KEY?: string;
 }
 
 /** A route's answer, before CORS and caching headers. */
@@ -262,4 +264,62 @@ export async function sec(params: URLSearchParams, env: Env): Promise<RouteResul
     status: 200,
     body: { cik: number, name: data.name ?? '', tickers: data.tickers ?? [], filings },
   };
+}
+
+/**
+ * The Energy panel's EIA series (M4), by EIA's legacy series id: weekly petroleum and gas
+ * storage, crude production and refinery use, and the daily WTI and Henry Hub spot prices. U.S.
+ * government data, public domain (eia.gov/about/copyrights_reuse.php, checked 18 Nov 2026). The key
+ * is spent on nothing else.
+ */
+export const EIA_SERIES: Readonly<Record<string, 'weekly' | 'daily'>> = {
+  'PET.WCESTUS1.W': 'weekly',
+  'PET.WGTSTUS1.W': 'weekly',
+  'PET.WDISTUS1.W': 'weekly',
+  'PET.WCSSTUS1.W': 'weekly',
+  'NG.NW2_EPG0_SWO_R48_BCF.W': 'weekly',
+  'PET.WCRFPUS2.W': 'weekly',
+  'PET.WPULEUS3.W': 'weekly',
+  'PET.RWTC.D': 'daily',
+  'NG.RNGWHHD.D': 'daily',
+};
+/** Six years of weeks (the five-year comparison needs the same week five years back), a month of days. */
+const EIA_DAYS = { weekly: 6 * 366, daily: 45 } as const;
+
+export async function eia(env: Env, now = Date.now()): Promise<RouteResult> {
+  if (!env.EIA_API_KEY) throw new RouteError(503, 'EIA key not configured');
+  const key = env.EIA_API_KEY;
+  const entries = await Promise.all(
+    Object.entries(EIA_SERIES).map(async ([id, cadence]) => {
+      const start = isoDate(now - EIA_DAYS[cadence] * 86_400_000);
+      const url =
+        `https://api.eia.gov/v2/seriesid/${id}?start=${start}` +
+        '&sort[0][column]=period&sort[0][direction]=asc&length=5000' +
+        `&api_key=${encodeURIComponent(key)}`;
+      const response = await fetch(url);
+      if (!response.ok) throw upstreamError(`EIA ${id}`, response);
+      const data: {
+        response?: { data?: Record<string, unknown>[] };
+      } = await response.json();
+      const rows = data.response?.data ?? [];
+      const first = rows[0] ?? {};
+      const text = (value: unknown) => (typeof value === 'string' ? value : '');
+      const observations = rows.flatMap((row) => {
+        const value = Number(row.value);
+        return typeof row.period === 'string' && row.value !== null && Number.isFinite(value)
+          ? [{ date: row.period, value }]
+          : [];
+      });
+      return [
+        id,
+        {
+          cadence,
+          description: text(first['series-description']),
+          units: text(first.units) || text(first.unit),
+          observations,
+        },
+      ] as const;
+    }),
+  );
+  return { status: 200, body: { series: Object.fromEntries(entries) } };
 }

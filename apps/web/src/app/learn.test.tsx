@@ -72,6 +72,7 @@ describe('learn mode', () => {
       'europe',
       'asia-pacific',
       'macro',
+      'energy',
     ]) {
       const View = DOCK_COMPONENTS[id];
       if (!View) throw new Error(`no ${id} widget`);

@@ -1,6 +1,7 @@
 import {
   allNews,
   calendar,
+  eia,
   filterNews,
   fred,
   isNewsBody,
@@ -12,9 +13,15 @@ import {
 
 /**
  * Seconds each route's answer is cached at the edge (plan: news 2 min, FRED 1 h, SEC 10 min;
- * the release calendar changes rarely, 6 h).
+ * the release calendar changes rarely, 6 h; EIA publishes weekly, so an hour is plenty).
  */
-export const CACHE_SECONDS = { news: 120, fred: 3600, sec: 600, calendar: 21_600 } as const;
+export const CACHE_SECONDS = {
+  news: 120,
+  fred: 3600,
+  sec: 600,
+  calendar: 21_600,
+  eia: 3600,
+} as const;
 
 type Route = keyof typeof CACHE_SECONDS;
 
@@ -123,6 +130,8 @@ export async function handle(request: Request, env: Env): Promise<Response> {
           await cached('calendar', new URL('/calendar', url), () => calendar(env)),
           origin,
         );
+      case 'eia':
+        return withCors(await cached('eia', new URL('/eia', url), () => eia(env)), origin);
       default:
         return withCors(json(404, { error: 'unknown route' }), origin);
     }

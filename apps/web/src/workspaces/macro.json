@@ -1,7 +1,7 @@
 {
   "id": "macro",
   "title": "Macro",
-  "description": "Rates, inflation and jobs from FRED, with FX, gold and central-bank news.",
+  "description": "Rates, inflation and jobs from FRED, oil and gas from EIA, with FX, gold and central-bank news.",
   "panels": [
     { "id": "macro", "component": "macro", "params": {} },
     {
@@ -9,6 +9,13 @@
       "component": "rates",
       "params": {},
       "position": { "referencePanel": "macro", "direction": "within" }
+    },
+    {
+      "id": "energy",
+      "component": "energy",
+      "params": {},
+      "position": { "referencePanel": "macro", "direction": "within" },
+      "inactive": true
     },
     {
       "id": "watchlist",

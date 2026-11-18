@@ -1,0 +1,34 @@
+/* Energy panel (M4): EIA storage, supply and spot prices. Tokens only; no shadows, no motion. */
+
+.energy-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.energy-columns {
+  grid-template-columns: minmax(0, 1fr) 72px 64px 64px 44px;
+}
+
+.energy-columns > :nth-child(n + 2) {
+  text-align: right;
+}
+
+.energy-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.energy-unit,
+.energy-asof {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.energy-panel > .panel-footnote {
+  margin-top: auto;
+}

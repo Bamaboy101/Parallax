@@ -4,7 +4,11 @@ export type Freshness =
   | { kind: 'delayed'; minutes: number }
   /** Fetched on a timer instead of streamed (a REST snapshot every `everyMs`). */
   | { kind: 'polled'; everyMs: number }
-  | { kind: 'eod' }
+  /**
+   * Published on a schedule, not traded: daily by default, or weekly (EIA storage) or annual
+   * (World Bank, IMF). The badge reads EOD, WEEKLY or ANNUAL.
+   */
+  | { kind: 'eod'; cadence?: 'weekly' | 'annual' }
   /** First connection in progress; nothing has arrived yet. */
   | { kind: 'connecting' }
   /** The provider asked us to slow down (HTTP 429); retrying later. */
@@ -33,7 +37,7 @@ export function badgeLabel(freshness: Freshness): string {
     case 'polled':
       return `POLLED ${formatAge(freshness.everyMs).replace(/\.0s$/, 's')}`;
     case 'eod':
-      return 'EOD';
+      return freshness.cadence === undefined ? 'EOD' : freshness.cadence.toUpperCase();
     case 'connecting':
       return 'CONNECTING';
     case 'rate-limited':
