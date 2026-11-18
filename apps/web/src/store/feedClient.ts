@@ -2,6 +2,7 @@ import type { HubMessage, HubRequest, VerifyOutcome } from '../feeds/protocol';
 import type { Bar, BarInterval, Channel, NewsItem, SymbolRef } from '../feeds/types';
 import { hubRequestError } from './failure';
 import { useKeyVault } from './keys';
+import { captureEvents, isReplaying } from './recorder';
 import { ingest, setStatuses } from './ticks';
 
 /** The worker as the app sees it; tests pass an in-memory port. */
@@ -37,6 +38,10 @@ function nextId(): number {
 function handle(message: HubMessage): void {
   switch (message.type) {
     case 'events':
+      // F10: while a recorded session replays, live market events are set aside (the page
+      // reloads when the replay ends); while recording, they are kept for the file too.
+      if (isReplaying()) break;
+      captureEvents(message.events);
       ingest(message.events);
       break;
     case 'status':

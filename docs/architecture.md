@@ -627,11 +627,28 @@ at or before it. Live data keeps flowing into history while rewound.
 
 **Rewind scrubber** (`app/RewindScrubber.tsx`, top bar): a range from the later of page open and
 an hour ago, to now, in 5-second steps. The right end, or "Back to live", returns to live. The
-chart, book, tape, watchlist, Constellation and market weather all follow the cursor.
+chart, book, tape, watchlist, Constellation and market weather all follow the cursor. During a
+session replay (F10) the range starts at the replay's start.
 
 **Sampling** (`store/sampling.ts`): `sampleAt` reads the last value at or before evenly spaced
 moments by binary search in the ring buffers, so statistics never copy an hour of trades.
 `priceGrid` uses the trade price, or the bid/ask mid for FX.
+
+**Session recorder (F10)** (`store/recorder.ts`, `widgets/recorder/`): while recording, the feed
+client hands every hub batch to `captureEvents` before `ingest`; recording starts with a book
+snapshot made from each book the store holds, so a replay's books start whole, and stops by
+itself at an hour (Rewind's reach) or 500,000 events. A recording is market events only, with
+their sources and times. Save writes `{ app: 'parallax', kind: 'session', v: 1, from, to,
+events }` as gzipped JSON (`CompressionStream`); Open reads gzipped or plain files and checks
+every event (`parseRecording`). Replay empties the tick store (keeping the feeds' statuses),
+sets live events aside in the feed client, loads the recording with its times shifted so it ends
+at the moment the replay starts, and puts the Rewind cursor at its start; the scrubber reaches
+back to the replay's start even before the page opened. Play moves the cursor every 250 ms at
+1×, 4× or 16× up to the end. During a replay `useFreshness` reports `replay` for hub feeds (badge
+`REPLAY`), a banner names the recording, alerts are not checked and whale cues stay silent;
+news, macro and other REST panels stay current. "Back to live" reloads the page: books missed
+their deltas while live events were set aside, and a reload resubscribes every feed from a
+snapshot. The co-pilot is told the session is a replay and which figures come from it.
 
 ## Constellation and market weather
 

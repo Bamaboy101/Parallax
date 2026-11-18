@@ -125,7 +125,8 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
   a key or offline. Alternative palettes use yellow/ochre warnings. Each state also has its own
   static glyph before the label (V4), so states sharing a colour still differ at a glance: a dot
   when live or delayed, a dashed ring connecting, an open square without a key, a cross for a
-  rejected key, two bars when rate limited, a flat line offline.
+  rejected key, two bars when rate limited, a flat line offline, a small play triangle for
+  `REPLAY` (amber: a recorded session, F10).
 - `PanelNotice`: a panel's empty, no-key, rate-limited or offline state (T18): a title, one line
   on what happens next, and "Open Settings" when a key would fix it. It reads as part of the
   panel, not an error box (V4): hairlines above and below, no fill, and a small mark in place of a
@@ -185,6 +186,9 @@ figures everywhere. Both are SIL Open Font License 1.1 and self-hosted through F
 - At the two earlier addresses only, a banner row above the top bar names the new address and
   offers "Move my layout and keys": a 6% mint tint over the panel (interface information), mint
   link and outlined button, no shadow or motion.
+- During a session replay (F10) a banner row above the top bar names the recording on an 8%
+  amber tint (`--warn`, data that is not live), "Replay" in amber, and a mint outlined "Back to
+  live". The recorder panel's controls are mint outlined buttons; its recording dot is static.
 - The Rundown (E1) is one calm page on `--bg`: sections are `--panel` cards with a hairline,
   their titles in muted small caps with the section's truth badge on the right. Big numbers are
   JetBrains Mono at 22–30 px in `--text`; changes keep their sign and the up/down colours; open

@@ -54,6 +54,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
   Drag the scrubber in the top bar and the whole desk — chart, book, tape,
   constellation, news — replays in sync. "What happened at 14:32?" is one
   drag.
+- **Session recorder.** Record what the markets did while you watched, save it
+  as a file, and replay it later through Rewind at 1×, 4× or 16×. Market data
+  only: no keys or settings go into the file.
 - **Terminal as a link.** A workspace, its symbols and even a Rewind moment
   encode into the URL. Send the link; the other person opens your exact
   screen, live, with no account.

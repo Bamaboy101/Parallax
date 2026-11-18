@@ -15,6 +15,8 @@ import { LearnLayer } from './LearnLayer';
 import { LearnSwitch } from './LearnSwitch';
 import { ModeSwitch } from './ModeSwitch';
 import { RenameBanner } from './RenameBanner';
+import { ReplayBanner } from './ReplayBanner';
+import { useRecorder } from '../store/recorder';
 import { isOldAddress } from './rename';
 import { RewindScrubber } from './RewindScrubber';
 import { Rundown } from './Rundown';
@@ -51,6 +53,7 @@ export function Shell() {
   }, []);
   const view = usePrefs((state) => state.view);
   const mode = usePrefs((state) => state.mode);
+  const replaying = useRecorder((state) => state.mode === 'replaying');
   // E5: Simple on a phone is one full-width group of tabs; Pro keeps its wide, swipeable desk.
   const narrow = useNarrow();
   const slot: LayoutSlot = mode === 'pro' ? 'pro' : narrow ? 'phone' : 'simple';
@@ -76,11 +79,18 @@ export function Shell() {
     }
   };
 
+  // A banner row above the top bar: the old-address notice, or a session replay (F10).
+  const banner = OLD_ADDRESS || replaying;
   return (
     <div
-      className={`shell grid h-dvh bg-bg ${OLD_ADDRESS ? 'grid-rows-[auto_auto_minmax(0,1fr)_auto]' : 'grid-rows-[auto_minmax(0,1fr)_auto]'}`}
+      className={`shell grid h-dvh bg-bg ${banner ? 'grid-rows-[auto_auto_minmax(0,1fr)_auto]' : 'grid-rows-[auto_minmax(0,1fr)_auto]'}`}
     >
-      {OLD_ADDRESS && <RenameBanner />}
+      {banner && (
+        <div className="shell-banners">
+          {replaying && <ReplayBanner />}
+          {OLD_ADDRESS && <RenameBanner />}
+        </div>
+      )}
       <header className="shell-topbar">
         <div className="shell-brand">
           <ParallaxMark />

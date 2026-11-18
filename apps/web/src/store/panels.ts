@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import type { Freshness } from '../design/format';
 import type { SourceStatus } from '../feeds/protocol';
 import type { Failure } from './failure';
+import { useRecorder } from './recorder';
 import { useTickStore } from './ticks';
 
 const EMPTY: readonly string[] = [];
@@ -72,12 +73,17 @@ function freshnessOf(status: SourceStatus): Freshness {
 export const freshnessOfFailure = (failure: Failure): Freshness =>
   failure.kind === 'rate-limited' ? { kind: 'rate-limited' } : { kind: 'offline' };
 
-/** Freshness per source: from the hub's status for feeds, as reported for REST sources. */
+/**
+ * Freshness per source: from the hub's status for feeds, as reported for REST sources. During a
+ * session replay (F10) the feeds' figures come from the recording, so their badges say REPLAY.
+ */
 export function useFreshness(sources: readonly string[]): Freshness[] {
   const statuses = useTickStore(useShallow((state) => sources.map((s) => state.status[s])));
   const rest = useRestStore(useShallow((state) => sources.map((source) => state[source])));
+  const replaying = useRecorder((state) => state.mode === 'replaying');
   return sources.map((_, index) => {
     const status = statuses[index];
+    if (status && replaying) return { kind: 'replay' };
     return status ? freshnessOf(status) : (rest[index] ?? { kind: 'offline' });
   });
 }

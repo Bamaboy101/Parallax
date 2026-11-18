@@ -24,6 +24,7 @@ import { usePredictionStore } from '../predictions/store';
 import { useKeyVault } from '../keys';
 import { INSTRUMENTS, instrument } from '../symbols';
 import { useTickStore } from '../ticks';
+import { useRecorder } from '../recorder';
 import { fetchWorld, type WorldData } from '../world';
 import {
   buildContext,
@@ -31,6 +32,7 @@ import {
   type ContextItem,
   type CorporateFacts,
   type PanelRef,
+  type RecorderSummary,
 } from './context';
 import {
   ADVICE_REFUSAL,
@@ -188,6 +190,18 @@ async function corporateFacts(
   return Object.fromEntries(entries);
 }
 
+/** What the Session recorder panel shows, for the co-pilot. */
+function recorderSummary(): RecorderSummary {
+  const { mode, startedAt, count, recording, replay } = useRecorder.getState();
+  if (mode === 'recording') return { mode, from: startedAt, to: null, events: count };
+  return {
+    mode,
+    from: replay?.from ?? recording?.from ?? null,
+    to: replay?.to ?? recording?.to ?? null,
+    events: recording?.events.length ?? 0,
+  };
+}
+
 /** Ask the co-pilot. Explains from what is on screen; never recommends. */
 export async function askCopilot(
   question: string,
@@ -229,15 +243,17 @@ export async function askCopilot(
     energy,
     corporate,
     world,
+    recorder: recorderSummary(),
     now,
   });
+  const replay = useRecorder.getState().replay;
   try {
     const text = await askProvider(
       provider,
       key,
       model,
       SYSTEM_PROMPT,
-      contextMessage(context, trimmed, now, ticks.cursor),
+      contextMessage(context, trimmed, now, ticks.cursor, replay),
     );
     if (givesAdvice(text)) return { status: 'withheld', message: ADVICE_WITHHELD };
     const byId = new Map(context.map((item) => [item.id, item]));

@@ -16,7 +16,9 @@ export type Freshness =
   /** The source needs a key: none stored, or the provider rejected it. */
   | { kind: 'no-key' }
   | { kind: 'key-rejected' }
-  | { kind: 'offline' };
+  | { kind: 'offline' }
+  /** F10: the figures come from a recorded session being replayed, not from the feed now. */
+  | { kind: 'replay' };
 
 export type BadgeTone = 'live' | 'warn' | 'offline';
 
@@ -48,6 +50,8 @@ export function badgeLabel(freshness: Freshness): string {
       return 'KEY REJECTED';
     case 'offline':
       return 'OFFLINE';
+    case 'replay':
+      return 'REPLAY';
   }
 }
 
@@ -62,6 +66,7 @@ export function badgeTone(freshness: Freshness): BadgeTone {
     case 'delayed':
     case 'polled':
     case 'eod':
+    case 'replay':
     case 'rate-limited':
     case 'key-rejected':
       return 'warn';
@@ -118,6 +123,7 @@ export function badgeSeverity(freshness: Freshness): number {
     case 'rate-limited':
       return Number.MAX_SAFE_INTEGER / 1.5;
     case 'eod':
+    case 'replay':
     case 'delayed':
       return Number.MAX_SAFE_INTEGER / 3;
     case 'polled':
