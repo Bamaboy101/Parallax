@@ -10,6 +10,7 @@ import {
   sec,
   type Env,
   type RouteResult,
+  world,
 } from './routes';
 
 /**
@@ -23,6 +24,7 @@ export const CACHE_SECONDS = {
   calendar: 21_600,
   eia: 3600,
   insiders: 600,
+  world: 86_400,
 } as const;
 
 type Route = keyof typeof CACHE_SECONDS;
@@ -142,6 +144,8 @@ export async function handle(request: Request, env: Env): Promise<Response> {
           origin,
         );
       }
+      case 'world':
+        return withCors(await cached('world', new URL('/world', url), () => world()), origin);
       default:
         return withCors(json(404, { error: 'unknown route' }), origin);
     }

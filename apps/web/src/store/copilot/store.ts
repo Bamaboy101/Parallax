@@ -24,6 +24,7 @@ import { usePredictionStore } from '../predictions/store';
 import { useKeyVault } from '../keys';
 import { INSTRUMENTS, instrument } from '../symbols';
 import { useTickStore } from '../ticks';
+import { fetchWorld, type WorldData } from '../world';
 import {
   buildContext,
   contextMessage,
@@ -147,6 +148,15 @@ async function energySeries(): Promise<EnergyMap | null> {
   }
 }
 
+/** The Global macro panel's figures, through the same edge request (its cache answers). */
+async function worldFigures(): Promise<WorldData | null> {
+  try {
+    return await fetchWorld();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * What each open Corporate events panel shows, fetched as the panel does: earnings from Finnhub on
  * the user's own key, SEC filings through the edge (whose cache answers).
@@ -196,12 +206,13 @@ export async function askCopilot(
   const predictions = usePredictionStore.getState();
   const open = (component: string) => panels.some((panel) => panel.component === component);
   const now = Date.now();
-  const [headlines, fred, releases, energy, corporate] = await Promise.all([
+  const [headlines, fred, releases, energy, corporate, world] = await Promise.all([
     headlinesFor(trimmed),
     open('macro') ? macroSeries(now) : null,
     open('calendar') ? calendarReleases() : null,
     open('energy') ? energySeries() : null,
     corporateFacts(panels),
+    open('worldmacro') ? worldFigures() : null,
   ]);
   const context = buildContext({
     panels,
@@ -217,6 +228,7 @@ export async function askCopilot(
     rates: useRatesStore.getState(),
     energy,
     corporate,
+    world,
     now,
   });
   try {

@@ -499,6 +499,22 @@ second. The panel (commands `earnings`, `insiders`, `holders`, `corporate`, `for
 earnings`) shows trades in neutral colours with SEC's transaction codes in words (plainer in
 Simple), and the co-pilot gets the same rows.
 
+## Global macro (M8)
+
+The edge's `/world` route (cached a day) makes six requests: the IMF DataMapper API's country
+names, indicator list (for the WEO edition's name) and three indicators (`NGDP_RPCH`, `PCPIPCH`,
+`GGXWDG_NGDP`, each every year for every economy; the edge keeps the current year's value), and
+the World Bank's `NY.GDP.MKTP.CD` latest value per economy. IMF economies only are kept, which
+also drops the World Bank's regional aggregates. `store/world.ts` (`useWorld`, every six hours;
+`fetchWorld` for the co-pilot) reads the 25 KB answer; `largestEconomies` makes the table and
+`quintiles` the map's five shades, each holding about a fifth of the economies with data.
+The `worldmacro` widget (commands `global`, `gdp`, `inflation`, `debt`, `imf`, `worldbank`; a
+background tab in the Macro workspace) draws Natural Earth's 1:110m countries once, in the Equal
+Earth projection, as static SVG (no motion); `store/worldIso.ts` maps world-atlas's ISO numeric ids
+to the alpha-3 codes both sources use. Shading is the text colour at five strengths (these are
+not price moves); mint marks only the country picked on the map or in the table. Badges read
+`ANNUAL` for `imf` and `worldbank`.
+
 ## Liquidity heatmap (F2)
 
 A chart of a symbol with an order-book feed (crypto and FX; the free US stock feeds carry no

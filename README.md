@@ -112,6 +112,9 @@ FX, perpetual futures, macro and news work the moment the page loads.
 - **Corporate events.** A company's next earnings date and estimates (with a
   free Finnhub key), the shares its insiders bought and sold (SEC Form 4),
   and the investors holding more than 5% (Schedules 13D and 13G).
+- **Global macro.** A world map of this year's growth, inflation or government
+  debt (IMF estimates), and the 50 largest economies with their size in US
+  dollars (World Bank).
 - **Voice commands.** Press the microphone in the command bar and say
   "Bitcoin chart one hour" or "alert Ether below 1,800". Recognition runs on
   your device where the browser can; its online speech service is used only

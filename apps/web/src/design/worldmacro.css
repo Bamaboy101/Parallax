@@ -1,0 +1,135 @@
+/* Global macro (M8). Tokens only; no shadows, no motion. The map's shading is neutral (the text
+   colour at five strengths): growth, inflation and debt are not price moves. Mint marks only the
+   chosen country (interface state). */
+
+.worldmacro-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.worldmacro-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px var(--pad);
+}
+
+.worldmacro-map {
+  margin: 0;
+  padding: 0 var(--pad) 8px;
+}
+
+.worldmacro-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.worldmacro-sphere {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.75;
+}
+
+.worldmacro-country {
+  stroke: var(--panel);
+  stroke-width: 0.4;
+  cursor: pointer;
+}
+
+.worldmacro-country[aria-selected='true'] {
+  stroke: var(--live);
+  stroke-width: 1.5;
+}
+
+.worldmacro-country[data-step='none'],
+.worldmacro-swatch[data-step='none'] {
+  fill: color-mix(in srgb, var(--line) 60%, transparent);
+  background: color-mix(in srgb, var(--line) 60%, transparent);
+}
+
+.worldmacro-country[data-step='0'],
+.worldmacro-swatch[data-step='0'] {
+  fill: color-mix(in srgb, var(--text) 14%, transparent);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+}
+
+.worldmacro-country[data-step='1'],
+.worldmacro-swatch[data-step='1'] {
+  fill: color-mix(in srgb, var(--text) 28%, transparent);
+  background: color-mix(in srgb, var(--text) 28%, transparent);
+}
+
+.worldmacro-country[data-step='2'],
+.worldmacro-swatch[data-step='2'] {
+  fill: color-mix(in srgb, var(--text) 42%, transparent);
+  background: color-mix(in srgb, var(--text) 42%, transparent);
+}
+
+.worldmacro-country[data-step='3'],
+.worldmacro-swatch[data-step='3'] {
+  fill: color-mix(in srgb, var(--text) 58%, transparent);
+  background: color-mix(in srgb, var(--text) 58%, transparent);
+}
+
+.worldmacro-country[data-step='4'],
+.worldmacro-swatch[data-step='4'] {
+  fill: color-mix(in srgb, var(--text) 76%, transparent);
+  background: color-mix(in srgb, var(--text) 76%, transparent);
+}
+
+.worldmacro-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.worldmacro-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-num);
+}
+
+.worldmacro-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.worldmacro-chosen {
+  margin: 0;
+  padding: 6px var(--pad);
+  border-top: 1px solid var(--line);
+  color: var(--text);
+  font-size: var(--size-ui);
+}
+
+.worldmacro-columns {
+  grid-template-columns: minmax(0, 1fr) 72px 64px 72px 64px;
+}
+
+.worldmacro-columns > :nth-child(n + 2) {
+  text-align: right;
+}
+
+.worldmacro-columns[aria-selected='true'] {
+  background: color-mix(in srgb, var(--live) 8%, transparent);
+}
+
+.worldmacro-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worldmacro-panel > .panel-footnote {
+  margin-top: auto;
+}

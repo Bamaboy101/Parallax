@@ -37,13 +37,15 @@ export function DockArea({ slot }: { slot: LayoutSlot }) {
   const surface = useRef<HTMLDivElement>(null);
   const bootHint = useRef<HTMLButtonElement>(null);
   useLinkFollower(api);
-  // The Rundown unmounts the dock; commands then wait for it (see runCommand).
-  useEffect(
-    () => () => {
+  // Commands reach the dock through `dockApi()`. The Rundown unmounts the dock, and commands then
+  // wait for it (see runCommand). Set from state, so React's development double mount (StrictMode
+  // runs the cleanup, then the effect again) cannot leave it unset.
+  useEffect(() => {
+    if (api) setDockApi(api);
+    return () => {
       setDockApi(null);
-    },
-    [],
-  );
+    };
+  }, [api]);
 
   const onReady = (event: DockviewReadyEvent) => {
     setTabbedPresets(slot === 'phone');
