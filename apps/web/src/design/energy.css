@@ -3,32 +3,157 @@
 .energy-panel {
   display: flex;
   flex-direction: column;
+  container: energy-board / inline-size;
   min-height: 0;
   overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
 }
 
-.energy-columns {
-  grid-template-columns: minmax(0, 1fr) 72px 64px 64px 44px;
+.energy-context,
+.energy-comparison {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 8px var(--pad);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.energy-context-label {
+  color: var(--text);
+  font-size: var(--size-ui);
+  font-weight: 600;
+}
+
+.energy-comparison {
+  padding-block: 4px;
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
+}
+
+.energy-comparison-label {
+  font-family: var(--font-num);
+  white-space: nowrap;
+}
+
+.energy-panel .energy-columns {
+  grid-template-columns: minmax(140px, 1fr) 80px 72px 72px 48px;
+  column-gap: 12px;
 }
 
 .energy-columns > :nth-child(n + 2) {
   text-align: right;
 }
 
+.energy-group {
+  flex-shrink: 0;
+}
+
+.energy-group .markets-group {
+  padding-block: 8px;
+  background: color-mix(in srgb, var(--bg) 25%, var(--panel));
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.energy-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.energy-panel .market-row {
+  min-height: calc(var(--row-h) + 20px);
+  padding-block: 8px;
+}
+
 .energy-label {
   display: flex;
   flex-direction: column;
+  gap: 4px;
   min-width: 0;
+}
+
+.energy-name {
   overflow: hidden;
+  font-size: var(--size-ui);
+  font-weight: 500;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.energy-metric {
+  min-width: 0;
+  font-family: var(--font-num);
+  font-size: var(--size-num);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.energy-metric-label {
+  display: none;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: var(--size-label);
+  font-weight: 400;
 }
 
 .energy-unit,
-.energy-asof {
+.energy-asof,
+.energy-not-applicable {
   color: var(--muted);
   font-size: var(--size-label);
 }
 
+.energy-unit {
+  font-family: var(--font-num);
+  white-space: nowrap;
+}
+
 .energy-panel > .panel-footnote {
   margin-top: auto;
+}
+
+/* Keep all four numeric rails visible when the label needs its own line. */
+@container energy-board (max-width: 560px) {
+  .energy-panel .market-columns {
+    display: none;
+  }
+
+  .energy-panel .market-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 48px;
+    gap: 8px;
+    padding-block: var(--pad);
+  }
+
+  .energy-label {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .energy-unit {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .energy-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+
+  .energy-metric-label {
+    display: block;
+  }
 }

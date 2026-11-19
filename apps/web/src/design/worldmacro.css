@@ -7,6 +7,7 @@
   flex-direction: column;
   min-height: 0;
   overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
 }
 
 .worldmacro-toolbar {
@@ -14,21 +15,26 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 8px var(--pad);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 35%, var(--panel));
 }
 
 .worldmacro-map {
   margin: 0;
-  padding: 0 var(--pad) 8px;
+  padding: var(--pad);
+  flex-shrink: 0;
 }
 
 .worldmacro-map svg {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 280px;
 }
 
 .worldmacro-sphere {
-  fill: none;
+  fill: var(--bg);
   stroke: var(--line);
   stroke-width: 0.75;
 }
@@ -37,6 +43,7 @@
   stroke: var(--panel);
   stroke-width: 0.4;
   cursor: pointer;
+  vector-effect: non-scaling-stroke;
 }
 
 .worldmacro-country[aria-selected='true'] {
@@ -46,38 +53,43 @@
 
 .worldmacro-country[data-step='none'],
 .worldmacro-swatch[data-step='none'] {
-  fill: color-mix(in srgb, var(--line) 60%, transparent);
-  background: color-mix(in srgb, var(--line) 60%, transparent);
+  fill: var(--panel);
+  background: var(--panel);
+}
+
+.worldmacro-country[data-step='none']:not([aria-selected='true']) {
+  stroke: var(--muted);
+  stroke-dasharray: 1 1;
 }
 
 .worldmacro-country[data-step='0'],
 .worldmacro-swatch[data-step='0'] {
-  fill: color-mix(in srgb, var(--text) 14%, transparent);
-  background: color-mix(in srgb, var(--text) 14%, transparent);
+  fill: color-mix(in srgb, var(--text) 22%, var(--panel));
+  background: color-mix(in srgb, var(--text) 22%, var(--panel));
 }
 
 .worldmacro-country[data-step='1'],
 .worldmacro-swatch[data-step='1'] {
-  fill: color-mix(in srgb, var(--text) 28%, transparent);
-  background: color-mix(in srgb, var(--text) 28%, transparent);
+  fill: color-mix(in srgb, var(--text) 36%, var(--panel));
+  background: color-mix(in srgb, var(--text) 36%, var(--panel));
 }
 
 .worldmacro-country[data-step='2'],
 .worldmacro-swatch[data-step='2'] {
-  fill: color-mix(in srgb, var(--text) 42%, transparent);
-  background: color-mix(in srgb, var(--text) 42%, transparent);
+  fill: color-mix(in srgb, var(--text) 50%, var(--panel));
+  background: color-mix(in srgb, var(--text) 50%, var(--panel));
 }
 
 .worldmacro-country[data-step='3'],
 .worldmacro-swatch[data-step='3'] {
-  fill: color-mix(in srgb, var(--text) 58%, transparent);
-  background: color-mix(in srgb, var(--text) 58%, transparent);
+  fill: color-mix(in srgb, var(--text) 66%, var(--panel));
+  background: color-mix(in srgb, var(--text) 66%, var(--panel));
 }
 
 .worldmacro-country[data-step='4'],
 .worldmacro-swatch[data-step='4'] {
-  fill: color-mix(in srgb, var(--text) 76%, transparent);
-  background: color-mix(in srgb, var(--text) 76%, transparent);
+  fill: color-mix(in srgb, var(--text) 82%, var(--panel));
+  background: color-mix(in srgb, var(--text) 82%, var(--panel));
 }
 
 .worldmacro-legend {
@@ -85,7 +97,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 12px;
-  margin-top: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: var(--size-label);
 }
@@ -97,11 +111,23 @@
   font-family: var(--font-num);
 }
 
+.worldmacro-legend-title {
+  flex-basis: 100%;
+  color: var(--text);
+  font-weight: 600;
+}
+
 .worldmacro-swatch {
   display: inline-block;
-  width: 12px;
-  height: 8px;
+  width: 16px;
+  height: 10px;
+  flex-shrink: 0;
+  border: 1px solid var(--muted);
   border-radius: 2px;
+}
+
+.worldmacro-swatch[data-step='none'] {
+  border-style: dashed;
 }
 
 .worldmacro-chosen {
@@ -110,10 +136,28 @@
   border-top: 1px solid var(--line);
   color: var(--text);
   font-size: var(--size-ui);
+  line-height: 1.6;
+  border-left: 2px solid var(--live);
+}
+
+.worldmacro-table {
+  flex: 0 0 auto;
+  max-height: calc(var(--row-h) * 11);
+  overflow: auto;
+  border-block: 1px solid var(--line);
+  scrollbar-color: var(--line) var(--panel);
+}
+
+.worldmacro-table > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .worldmacro-columns {
-  grid-template-columns: minmax(0, 1fr) 72px 64px 72px 64px;
+  grid-template-columns: minmax(100px, 1fr) 72px 64px 72px 64px;
+  min-width: 420px;
+  column-gap: 8px;
 }
 
 .worldmacro-columns > :nth-child(n + 2) {
@@ -124,6 +168,16 @@
   background: color-mix(in srgb, var(--live) 8%, transparent);
 }
 
+.worldmacro-table .market-row {
+  font-size: var(--size-ui);
+  cursor: pointer;
+}
+
+.worldmacro-table .market-row[aria-selected='true'] {
+  border-left: 2px solid var(--live);
+  padding-left: calc(var(--pad) - 2px);
+}
+
 .worldmacro-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -132,4 +186,28 @@
 
 .worldmacro-panel > .panel-footnote {
   margin-top: auto;
+  flex-shrink: 0;
+  padding: var(--pad);
+  color: var(--muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.worldmacro-panel > .panel-footnote a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.worldmacro-panel > .panel-footnote a:hover,
+.worldmacro-panel > .panel-footnote a:focus-visible {
+  color: var(--live);
+}
+
+:root[data-density='dense'] .worldmacro-map svg {
+  max-height: 220px;
+}
+
+:root[data-density='dense'] .worldmacro-toolbar {
+  padding-block: 4px;
 }

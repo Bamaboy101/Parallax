@@ -57,11 +57,17 @@ export default function Recorder() {
 
   return (
     <div className="recorder-panel">
+      <header className="recorder-heading">
+        <span className="recorder-eyebrow">Session recorder</span>
+        <span className="recorder-heading-note">Capture · Save · Replay</span>
+      </header>
       {mode === 'recording' && startedAt !== null && (
-        <section className="recorder-state" aria-label="Recording">
+        <section className="recorder-state recorder-state--recording" aria-label="Recording">
           <p className="recorder-status" data-term="Recording">
             <span className="recorder-dot" aria-hidden="true" />
-            Recording · {length(now - startedAt)} · {count.toLocaleString()} market events
+            <span>
+              Recording · {length(now - startedAt)} · {count.toLocaleString()} market events
+            </span>
           </p>
           <button
             type="button"
@@ -76,7 +82,8 @@ export default function Recorder() {
       )}
 
       {mode === 'replaying' && replay && (
-        <section className="recorder-state" aria-label="Replay">
+        <section className="recorder-state recorder-state--replay" aria-label="Replay">
+          <span className="recorder-replay-label">Replay · Recorded session</span>
           <p className="recorder-status" data-term="Replay">
             Replaying {when.format(replay.from)} to {when.format(replay.to)}.{' '}
             {replay.playing
@@ -90,7 +97,7 @@ export default function Recorder() {
               <button
                 key={speed}
                 type="button"
-                className="chart-interval"
+                className="recorder-button recorder-speed"
                 aria-pressed={replay.playing && replay.speed === speed}
                 onClick={() => {
                   playReplay(speed);
@@ -101,7 +108,7 @@ export default function Recorder() {
             ))}
             <button
               type="button"
-              className="chart-interval"
+              className="recorder-button recorder-speed"
               disabled={!replay.playing}
               onClick={pauseReplay}
             >
@@ -122,9 +129,10 @@ export default function Recorder() {
 
       {mode === 'idle' && (
         <section className="recorder-state" aria-label="Record">
+          <h3 className="recorder-section-title">Capture this session</h3>
           <button
             type="button"
-            className="recorder-button"
+            className="recorder-button recorder-button--primary"
             onClick={() => {
               startRecording();
             }}
@@ -140,6 +148,7 @@ export default function Recorder() {
 
       {mode === 'idle' && recording && (
         <section className="recorder-state" aria-label="Recording ready">
+          <h3 className="recorder-section-title">Recording ready</h3>
           <p className="recorder-status" data-term="Session file">
             Ready: {when.format(recording.from)}, {length(recording.to - recording.from)} long,{' '}
             {recording.events.length.toLocaleString()} market events.
@@ -172,6 +181,7 @@ export default function Recorder() {
 
       {mode === 'idle' && (
         <section className="recorder-state" aria-label="Open a file">
+          <h3 className="recorder-section-title">From your files</h3>
           <button
             type="button"
             className="recorder-button recorder-button--quiet"
