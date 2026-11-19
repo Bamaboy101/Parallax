@@ -355,6 +355,11 @@ export default function Copilot({ params, containerApi }: IDockviewPanelProps<Co
                 <Source key={item.id} item={item} anchor={false} />
               ))}
             </ul>
+            {answer.finnhubLeftOut && (
+              <p className="copilot-left-out">
+                Finnhub data isn&apos;t shared with your AI provider
+              </p>
+            )}
           </details>
         </article>
       )}

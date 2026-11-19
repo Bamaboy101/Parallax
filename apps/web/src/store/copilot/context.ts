@@ -2,7 +2,7 @@ import { formatCompact, formatNumber } from '../../design/format';
 import { sourceName } from '../../design/sources';
 import type { Bar, NewsItem } from '../../feeds/types';
 import type { Release } from '../calendar';
-import { TRADE_CODES, type Earnings, type Ownership } from '../corporate';
+import { TRADE_CODES, type Ownership } from '../corporate';
 import { lastPriceOf, priceChannel, priceLine } from '../hooks';
 import { energyStat, PRICE_ROWS, STOCK_ROWS, SUPPLY_ROWS, type EnergyMap } from '../energy';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
@@ -15,7 +15,7 @@ import { PERPS } from '../perps';
 import { instrument, type Instrument } from '../symbols';
 import { valueAt, type TickState } from '../ticks';
 import { largestEconomies, type WorldData } from '../world';
-import { computeMovers } from '../movers';
+import { computeMovers, MOVERS_TOP } from '../movers';
 
 /** One thing the co-pilot can cite: a panel on screen, an event's odds or a headline. */
 export interface ContextItem {
@@ -55,10 +55,7 @@ export interface ContextInput {
   rates: Pick<RatesState, 'curve' | 'sofr' | 'effr'>;
   /** EIA series the Energy panel shows, when it is open. */
   energy?: EnergyMap | null;
-  /**
-   * What each open Corporate events panel shows, by its ticker ('' for the market-wide earnings
-   * list): earnings from Finnhub (null without a key), insiders and holders from SEC EDGAR.
-   */
+  /** Insiders and holders from SEC EDGAR for each open Corporate events panel's US stock. */
   corporate?: Readonly<Record<string, CorporateFacts>> | null;
   /** IMF and World Bank figures the Global macro panel shows, when it is open. */
   world?: WorldData | null;
@@ -75,8 +72,8 @@ export interface RecorderSummary {
   events: number;
 }
 
+/** SEC filings only: the panel's earnings dates are Finnhub's, so they are never sent. */
 export interface CorporateFacts {
-  earnings: readonly Earnings[] | null;
   ownership: Ownership | null;
 }
 
@@ -98,21 +95,36 @@ function worldDetail(world: WorldData): string | null {
 const pct = (value: number | undefined) =>
   value === undefined ? 'change unknown' : `${formatNumber(value, 2, true)}%`;
 
+/**
+ * Finnhub's terms bar passing its data to any third party, the user's AI provider included: its
+ * prices are left out of the context, and `out.finnhub` records that something was.
+ */
+export const FINNHUB_SOURCE = 'finnhub';
+
+/** What the context left out, for "what it saw". */
+export interface LeftOut {
+  finnhub: boolean;
+}
+
 /** "BTC/USD 64,702.44 (−0.28% over 24 h, live from Coinbase)" or nothing without a price. */
-function priceFact(input: ContextInput, item: Instrument): string | null {
+function priceFact(input: ContextInput, item: Instrument, out: LeftOut): string | null {
   const tick = valueAt(input.ticks, priceChannel(item), item.id);
   if (!tick) return null;
   const last = lastPriceOf(tick);
+  if (last.source === FINNHUB_SOURCE) {
+    out.finnhub = true;
+    return null;
+  }
   const line = priceLine(item, last, input.barsOf(item) ?? []);
   const window = item.kind === 'equity' ? 'since the previous close' : 'over 24 h';
   const note = item.note ? `, ${item.note}` : '';
   return `${item.label} ${formatNumber(last.price, item.decimals)} (${pct(line.changePct)} ${window}, from ${sourceName(last.source)}${note})`;
 }
 
-const facts = (input: ContextInput, ids: readonly string[]) =>
+const facts = (input: ContextInput, ids: readonly string[], out: LeftOut) =>
   ids.flatMap((id) => {
     const item = instrument(id);
-    const fact = item ? priceFact(input, item) : null;
+    const fact = item ? priceFact(input, item, out) : null;
     return fact ? [fact] : [];
   });
 
@@ -120,31 +132,41 @@ const stringList = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 
 /** What a panel shows, in figures, or null when it has nothing to say. */
-function panelDetail(input: ContextInput, panel: PanelRef): string | null {
+function panelDetail(input: ContextInput, panel: PanelRef, out: LeftOut): string | null {
   const symbol = typeof panel.params.symbol === 'string' ? panel.params.symbol : undefined;
   switch (panel.component) {
     case 'watchlist':
     case 'constellation': {
-      const lines = facts(input, stringList(panel.params.symbols));
+      const lines = facts(input, stringList(panel.params.symbols), out);
       return lines.length > 0 ? lines.join('; ') : null;
     }
     case 'chart':
     case 'book':
     case 'tape':
-      return symbol ? (facts(input, [symbol])[0] ?? null) : null;
+      return symbol ? (facts(input, [symbol], out)[0] ?? null) : null;
     case 'markets':
     case 'europe':
     case 'asia-pacific':
     case 'fx': {
-      const lines = facts(input, panel.symbols ?? []).slice(0, 30);
+      const lines = facts(input, panel.symbols ?? [], out).slice(0, 30);
       return lines.length > 0 ? lines.join('; ') : null;
     }
     case 'movers': {
-      const view = computeMovers(input.ticks, input.barsOf, input.now);
-      if (view.universe.length === 0) return null;
-      const list = (movers: typeof view.gainers) =>
-        movers.map((mover) => `${mover.item.label} ${pct(mover.changePct)}`).join(', ') || 'none';
-      return `Breadth ${String(view.breadth.up)} up, ${String(view.breadth.down)} down. Top gainers: ${list(view.gainers)}. Top losers: ${list(view.losers)}.`;
+      // Ranked again without Finnhub's prices, so no list or count is derived from them.
+      const all = computeMovers(input.ticks, input.barsOf, input.now).universe;
+      const universe = all.filter((mover) => mover.source !== FINNHUB_SOURCE);
+      if (universe.length < all.length) out.finnhub = true;
+      const moved = universe.filter((mover) => mover.changePct !== undefined);
+      if (moved.length === 0) return null;
+      const byChange = [...moved].sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0));
+      const gainers = byChange.filter((mover) => (mover.changePct ?? 0) > 0);
+      const losers = byChange.filter((mover) => (mover.changePct ?? 0) < 0).reverse();
+      const list = (movers: typeof moved) =>
+        movers
+          .slice(0, MOVERS_TOP)
+          .map((mover) => `${mover.item.label} ${pct(mover.changePct)}`)
+          .join(', ') || 'none';
+      return `Breadth ${String(gainers.length)} up, ${String(losers.length)} down. Top gainers: ${list(gainers)}. Top losers: ${list(losers)}.`;
     }
     case 'derivs': {
       const lines = PERPS.flatMap((perp) => {
@@ -245,59 +267,35 @@ function macroDetail(fred: SeriesMap): string | null {
   return lines.length > 0 ? `Official FRED data, daily or monthly: ${lines.join('; ')}` : null;
 }
 
-const HOUR_WORDS: Readonly<Record<Earnings['hour'], string>> = {
-  bmo: 'before the open',
-  amc: 'after the close',
-  dmh: 'during market hours',
-  '': 'time not given',
-};
-
-/** The Corporate events panel: earnings dates, insider trades and large holders, as shown. */
+/** The Corporate events panel's SEC filings: insider trades and large holders, as shown. */
 function corporateDetail(ticker: string, facts: CorporateFacts): string | null {
-  const parts: string[] = [];
-  const earnings = (facts.earnings ?? []).slice(0, ticker === '' ? 25 : 2);
-  if (earnings.length > 0) {
+  const ownership = facts.ownership;
+  if (!ownership) return null;
+  const trades = ownership.insiders
+    .flatMap((filing) =>
+      filing.trades.map(
+        (trade) =>
+          `${trade.date} ${filing.owner}${filing.role ? ` (${filing.role})` : ''} ${TRADE_CODES[trade.code]?.label.toLowerCase() ?? trade.code} ${formatNumber(trade.shares, 0)} shares${trade.price === null ? '' : ` at ${formatNumber(trade.price, 2)}`}${filing.plan ? ', under a pre-arranged 10b5-1 plan' : ''}`,
+      ),
+    )
+    .slice(0, 12);
+  const parts = [
+    trades.length > 0
+      ? `${ticker} insider trades (SEC Form 4, latest filings): ${trades.join('; ')}`
+      : `${ticker}: no insider trades in the latest Form 4 filings`,
+  ];
+  const holders = ownership.holders.filter((filing) => filing.holder !== null);
+  if (holders.length > 0) {
     parts.push(
-      `Earnings dates (Finnhub): ${earnings
+      `${ticker} large holders (SEC Schedule 13D/13G): ${holders
         .map(
-          (entry) =>
-            `${entry.symbol} ${entry.date} ${HOUR_WORDS[entry.hour]}${entry.epsEstimate === null ? '' : `, EPS estimate ${formatNumber(entry.epsEstimate, 2)}`}`,
+          (filing) =>
+            `${filing.holder ?? ''}${filing.percent === null ? '' : ` ${formatNumber(filing.percent, 2)}%`} (${filing.form}, filed ${filing.filed})`,
         )
         .join('; ')}`,
     );
-  } else if (facts.earnings !== null) {
-    parts.push(
-      `No earnings date${ticker === '' ? 's for the catalogue' : ` for ${ticker}`} in the next two weeks (Finnhub)`,
-    );
   }
-  const ownership = facts.ownership;
-  if (ownership) {
-    const trades = ownership.insiders
-      .flatMap((filing) =>
-        filing.trades.map(
-          (trade) =>
-            `${trade.date} ${filing.owner}${filing.role ? ` (${filing.role})` : ''} ${TRADE_CODES[trade.code]?.label.toLowerCase() ?? trade.code} ${formatNumber(trade.shares, 0)} shares${trade.price === null ? '' : ` at ${formatNumber(trade.price, 2)}`}${filing.plan ? ', under a pre-arranged 10b5-1 plan' : ''}`,
-        ),
-      )
-      .slice(0, 12);
-    parts.push(
-      trades.length > 0
-        ? `${ticker} insider trades (SEC Form 4, latest filings): ${trades.join('; ')}`
-        : `${ticker}: no insider trades in the latest Form 4 filings`,
-    );
-    const holders = ownership.holders.filter((filing) => filing.holder !== null);
-    if (holders.length > 0) {
-      parts.push(
-        `${ticker} large holders (SEC Schedule 13D/13G): ${holders
-          .map(
-            (filing) =>
-              `${filing.holder ?? ''}${filing.percent === null ? '' : ` ${formatNumber(filing.percent, 2)}%`} (${filing.form}, filed ${filing.filed})`,
-          )
-          .join('; ')}`,
-      );
-    }
-  }
-  return parts.length > 0 ? parts.join('. ') : null;
+  return parts.join('. ');
 }
 /** The Energy panel's rows: latest, weekly change and change against the five-year norm. */
 function energyDetail(energy: EnergyMap): string | null {
@@ -371,13 +369,20 @@ function oddsItems(input: ContextInput, start: number): ContextItem[] {
   });
 }
 
+export interface CopilotContext {
+  items: ContextItem[];
+  leftOut: LeftOut;
+}
+
 /**
  * What is on the user's screen, as citable items: each panel with its latest figures, the
- * market-moving event odds when an Event odds panel is open, and recent headlines.
+ * market-moving event odds when an Event odds panel is open, and recent headlines. Finnhub's
+ * prices are left out (see `FINNHUB_SOURCE`).
  */
-export function buildContext(input: ContextInput): ContextItem[] {
+export function buildContext(input: ContextInput): CopilotContext {
+  const leftOut: LeftOut = { finnhub: false };
   const panels = input.panels.flatMap((panel) => {
-    const detail = panelDetail(input, panel);
+    const detail = panelDetail(input, panel, leftOut);
     return detail ? [{ panel, detail }] : [];
   });
   const items: ContextItem[] = panels.map(({ panel, detail }, index) => ({
@@ -397,7 +402,7 @@ export function buildContext(input: ContextInput): ContextItem[] {
       url: headline.url,
     });
   });
-  return items;
+  return { items, leftOut };
 }
 
 /** The user message: the context, then the question. */

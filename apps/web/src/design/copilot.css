@@ -242,6 +242,13 @@
   margin-bottom: 8px;
 }
 
+/* Something on screen was not sent (Finnhub's terms): a plain muted note, not a warning. */
+.copilot-left-out {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
 .copilot-source-kind {
   font-family: var(--font-num);
 }

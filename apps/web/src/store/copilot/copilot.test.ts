@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FeedEvent } from '../../feeds/types';
 import { EDGE_URL } from '../edge';
+import { useKeyVault } from '../keys';
 import { parseRefRates, parseTreasuryCsv } from '../rates/parse';
 import effrFixture from '../rates/fixtures/effr.json';
 import treasuryCsv from '../rates/fixtures/treasury-2026.csv?raw';
@@ -21,7 +22,7 @@ import { askCopilot } from './store';
 
 describe('buildContext', () => {
   it('gives Macro, Calendar and Options the figures their panels show, and skips panels without any', () => {
-    const items = buildContext({
+    const { items } = buildContext({
       panels: [
         { component: 'macro', title: 'Macro', params: {} },
         { component: 'calendar', title: 'Calendar', params: {} },
@@ -70,7 +71,9 @@ describe('buildContext', () => {
   });
 
   it('gives the rates desk its curve, spread and overnight rates', () => {
-    const [item] = buildContext({
+    const {
+      items: [item],
+    } = buildContext({
       panels: [{ component: 'rates', title: 'Rates desk', params: {} }],
       ticks: useTickStore.getState(),
       barsOf: () => undefined,
@@ -314,6 +317,38 @@ describe('askCopilot', () => {
     }
     const sent = JSON.parse(calls[1]?.body ?? 'null') as { messages: { content: string }[] };
     expect(sent.messages[0]?.content).toMatch(/\[P1\] Panel “Watchlist”: BTC\/USD 64,000/);
+    expect(result.answer.finnhubLeftOut).toBe(false);
+  });
+
+  it('never sends Finnhub prices or earnings to the AI provider, and says so', async () => {
+    useKeyVault.setState({ keys: { finnhub: 'finnhub-token' } });
+    ingest([{ ...trade('AAPL', 351.36), source: 'finnhub' }]);
+    const fetchMock = vi.fn((url: URL | string) =>
+      Promise.resolve(
+        String(url).startsWith(EDGE_URL)
+          ? json({ items: [], sources: [] })
+          : json(anthropicAnswer('BTC trades at 64,000 [P1].')),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await askCopilot('Brief me on today', [
+      { component: 'watchlist', title: 'Watchlist', params: { symbols: ['BTC-USD', 'AAPL'] } },
+      { component: 'movers', title: 'Movers', params: {} },
+      { component: 'corporate', title: 'Corporate events', params: {} },
+    ]);
+    useKeyVault.setState({ keys: {} });
+
+    expect(result.status).toBe('answered');
+    if (result.status !== 'answered') return;
+    expect(result.answer.finnhubLeftOut).toBe(true);
+    const calls = fetchMock.mock.calls.map((call) => requestOf(call));
+    expect(calls.some((call) => call.url.includes('finnhub'))).toBe(false);
+    const sent = calls.find((call) => call.url.startsWith('https://api.anthropic.com/'));
+    const message = (JSON.parse(sent?.body ?? 'null') as { messages: { content: string }[] })
+      .messages[0]?.content;
+    expect(message).toContain('BTC/USD 64,000');
+    expect(message).not.toMatch(/AAPL|Apple|351\.36|Finnhub/);
   });
 
   it('refuses advice without sending anything', async () => {
