@@ -6,25 +6,27 @@
   flex-direction: column;
   min-height: 0;
   overflow: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
 }
 
 .corporate-earnings {
-  grid-template-columns: 96px minmax(0, 1fr) 72px 88px;
+  grid-template-columns: 160px minmax(120px, 1fr) 72px 96px;
 }
 
 .corporate-earnings.is-market {
-  grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 72px;
+  grid-template-columns: 104px minmax(120px, 1fr) minmax(120px, 1fr) 72px;
 }
 
 .corporate-insiders {
-  grid-template-columns: 48px minmax(0, 1.4fr) minmax(0, 1fr) 80px 64px;
+  grid-template-columns: 56px minmax(152px, 1.4fr) minmax(136px, 1fr) 96px 80px;
 }
 
 .corporate-holders {
-  grid-template-columns: minmax(0, 1fr) 60px 112px 88px;
+  grid-template-columns: minmax(180px, 1fr) 72px 104px 96px;
 }
 
-.corporate-earnings > :nth-last-child(-n + 1),
+.corporate-earnings > :nth-last-child(-n + 2),
 .corporate-insiders > :nth-last-child(-n + 2) {
   text-align: right;
 }
@@ -39,10 +41,14 @@
   white-space: nowrap;
 }
 
-a.corporate-name:hover,
+a.corporate-name:hover {
+  color: var(--live);
+}
+
 a.corporate-name:focus-visible {
   color: var(--live);
-  outline: none;
+  outline: 1px solid var(--live);
+  outline-offset: -1px;
 }
 
 .corporate-role,
@@ -55,7 +61,8 @@ a.corporate-name:focus-visible {
 }
 
 .corporate-plan {
-  margin-left: 6px;
+  display: inline-block;
+  margin-left: 4px;
   padding: 0 4px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -65,4 +72,130 @@ a.corporate-name:focus-visible {
 
 .corporate-panel > .panel-footnote {
   margin-top: auto;
+}
+
+.corporate-section {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-bottom: var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.corporate-panel .markets-group {
+  margin: 0;
+  padding: 12px var(--pad) 8px;
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.corporate-table {
+  --corporate-width: 496px;
+  overflow-x: auto;
+  scrollbar-color: var(--line) var(--panel);
+  scrollbar-width: thin;
+}
+
+.corporate-table:focus-visible {
+  outline: 1px solid var(--live);
+  outline-offset: -1px;
+}
+
+.corporate-table > ul {
+  width: 100%;
+  min-width: max(100%, var(--corporate-width));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.corporate-table > .market-columns {
+  position: static;
+  width: 100%;
+  min-width: max(100%, var(--corporate-width));
+  min-height: var(--row-h);
+  font-size: var(--size-label);
+}
+
+.corporate-table .market-row {
+  min-height: calc(var(--row-h) + 12px);
+  padding-block: 8px;
+  font-size: var(--size-label);
+  line-height: 1.5;
+}
+
+.corporate-table .market-row:nth-child(even) {
+  background: color-mix(in srgb, var(--bg) 24%, var(--panel));
+}
+
+.corporate-table .market-row:hover {
+  background: color-mix(in srgb, var(--muted) 8%, var(--panel));
+}
+
+.corporate-table .market-row > * {
+  min-width: 0;
+}
+
+.corporate-table .corporate-name {
+  font-weight: 500;
+}
+
+.corporate-table .corporate-role {
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.corporate-table .corporate-earnings:not(.is-market):first-child {
+  min-height: calc(var(--row-h) + 32px);
+}
+
+.corporate-earnings:not(.is-market):first-child .corporate-date {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.corporate-earnings.is-market > :nth-child(3) {
+  color: var(--muted);
+  text-align: left;
+  white-space: normal;
+}
+
+.corporate-earnings.is-market > :last-child,
+.corporate-holders > :nth-child(2),
+.corporate-holders > :last-child {
+  text-align: right;
+}
+
+.corporate-table .font-mono {
+  white-space: nowrap;
+}
+
+.corporate-panel > .panel-footnote {
+  padding: 12px var(--pad);
+  line-height: 1.6;
+}
+
+[data-density='dense'] .corporate-panel .markets-group {
+  padding-block: 8px 4px;
+}
+
+[data-density='dense'] .corporate-table .market-row {
+  min-height: var(--row-h);
+  padding-block: 4px;
+}
+
+[data-density='dense'] .corporate-earnings:not(.is-market):first-child .corporate-date {
+  font-size: 20px;
+}
+
+.corporate-table:has(.corporate-insiders) {
+  --corporate-width: 584px;
+}
+
+.corporate-table:has(.corporate-holders) {
+  --corporate-width: 500px;
 }

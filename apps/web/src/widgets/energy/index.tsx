@@ -43,25 +43,44 @@ function Row({
   return (
     <li className="market-row energy-columns" title={series[row.id]?.description}>
       <span className="energy-label" data-term={row.label}>
-        {label}
+        <span className="energy-name" title={label}>
+          {label}
+        </span>
         <span className="energy-unit">{row.unit}</span>
       </span>
-      <Cell value={scaled(stat?.value)} decimals={row.decimals} />
-      <Cell value={scaled(stat?.change)} decimals={row.decimals} signed tone={tone} />
+      <span className="energy-metric">
+        <span className="energy-metric-label">Latest</span>
+        <Cell value={scaled(stat?.value)} decimals={row.decimals} />
+      </span>
+      <span className="energy-metric">
+        <span className="energy-metric-label">Week</span>
+        <Cell value={scaled(stat?.change)} decimals={row.decimals} signed tone={tone} />
+      </span>
       {norm ? (
         <span
+          className="energy-metric"
           title={
             stat && stat.normYears > 0
               ? `Against the average change in the same week of the previous ${String(stat.normYears)} years`
               : 'Not enough earlier years on record'
           }
         >
+          <span className="energy-metric-label">vs 5-yr</span>
           <Cell value={scaled(stat?.vsNorm)} decimals={row.decimals} signed />
         </span>
       ) : (
-        <span />
+        <span
+          className="energy-metric energy-not-applicable"
+          title="Seasonal comparison does not apply to spot prices"
+        >
+          <span className="energy-metric-label">vs 5-yr</span>
+          <span>—</span>
+        </span>
       )}
-      <span className="energy-asof font-mono">{stat?.asOf.slice(5) ?? ''}</span>
+      <span className="energy-metric energy-asof font-mono">
+        <span className="energy-metric-label">As of</span>
+        <span>{stat?.asOf.slice(5) ?? ''}</span>
+      </span>
     </li>
   );
 }
@@ -82,7 +101,7 @@ function Group({
   norm: boolean;
 }) {
   return (
-    <section aria-label={title}>
+    <section className="energy-group" aria-label={title}>
       <h3 className="markets-group" data-term={term}>
         {title}
       </h3>
@@ -103,6 +122,14 @@ export default function Energy({ api }: IDockviewPanelProps) {
 
   return (
     <div className="market-panel energy-panel">
+      <p className="energy-context">
+        <span className="energy-context-label">U.S. energy</span>
+        <span>Storage · supply · spot prices</span>
+      </p>
+      <p className="energy-comparison">
+        <span className="energy-comparison-label">vs 5-yr</span>
+        <span>seasonal norm, not a forecast</span>
+      </p>
       <div className="market-columns energy-columns">
         <span>Measure</span>
         <span>Latest</span>

@@ -5,7 +5,7 @@
 .recorder-panel {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-height: 0;
   padding: var(--pad);
   overflow: auto;
@@ -15,8 +15,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding-block: 8px;
+  gap: 12px;
+  padding-block: 12px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -27,11 +27,15 @@
   margin: 0;
   color: var(--text);
   font-size: var(--size-ui);
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .recorder-dot {
   width: 8px;
   height: 8px;
+  flex: 0 0 8px;
   border-radius: 50%;
   background: var(--live);
 }
@@ -39,12 +43,13 @@
 .recorder-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .recorder-button {
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 36px;
+  max-width: 100%;
+  padding: 8px 12px;
   border: 1px solid var(--live);
   border-radius: var(--panel-radius);
   background: transparent;
@@ -52,6 +57,8 @@
   font: inherit;
   font-size: var(--size-ui);
   cursor: pointer;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .recorder-button:disabled {
@@ -75,14 +82,19 @@
   margin: 0;
   color: var(--muted);
   font-size: var(--size-label);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .recorder-notice {
   color: var(--warn);
+  padding: 8px 0;
+  border-block: 1px solid var(--line);
 }
 
 .recorder-panel > .panel-footnote {
   margin-top: auto;
+  padding-top: 12px;
 }
 
 .shell-banners {
@@ -95,24 +107,39 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding: 6px var(--pad);
-  border-bottom: 1px solid var(--line);
+  padding: 12px var(--pad);
+  border-bottom: 2px solid var(--warn);
   background: color-mix(in srgb, var(--warn) 8%, var(--panel));
   color: var(--text);
   font-size: var(--size-ui);
+  line-height: 1.6;
 }
 
 .replay-banner p {
   margin: 0;
+  flex: 1 1 440px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .replay-banner strong {
   color: var(--warn);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: var(--size-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .replay-live {
-  min-height: 28px;
-  padding: 0 10px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 12px;
   border: 1px solid var(--live);
   border-radius: var(--panel-radius);
   background: transparent;
@@ -134,4 +161,95 @@
   border-left: 5px solid currentColor;
   border-radius: 0;
   background: none;
+}
+
+.recorder-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.recorder-eyebrow,
+.recorder-section-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recorder-heading-note {
+  color: var(--muted);
+  font-size: var(--size-label);
+}
+
+.recorder-state--recording,
+.recorder-state--replay {
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--live);
+  border-radius: var(--panel-radius);
+}
+
+.recorder-state--replay {
+  border-left-color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 5%, transparent);
+}
+
+.recorder-replay-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--warn);
+  border-radius: 4px;
+  color: var(--warn);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.recorder-replay-label::before,
+.replay-banner strong::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-block: 4px solid transparent;
+  border-left: 6px solid currentColor;
+}
+
+.recorder-button--primary,
+.recorder-speed[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--live) 12%, transparent);
+  font-weight: 600;
+}
+
+.recorder-speed {
+  font-variant-numeric: tabular-nums;
+}
+
+.recorder-button:hover:not(:disabled),
+.replay-live:hover {
+  background: color-mix(in srgb, var(--live) 12%, transparent);
+}
+
+:root[data-density='dense'] .recorder-state {
+  gap: 8px;
+  padding-block: 8px;
+}
+
+:root[data-density='dense'] .recorder-button,
+:root[data-density='dense'] .replay-live {
+  min-height: 28px;
+  padding: 4px 8px;
+}
+
+:root[data-density='dense'] .replay-banner {
+  padding-block: 8px;
 }

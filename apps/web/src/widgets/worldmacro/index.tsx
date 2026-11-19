@@ -134,7 +134,7 @@ export default function WorldMacro({ api }: IDockviewPanelProps) {
               })}
             </svg>
             <figcaption className="worldmacro-legend" data-term="Map shading">
-              <span>
+              <span className="worldmacro-legend-title">
                 {simple ? current.plain : current.label}, {year}
               </span>
               {[0, 1, 2, 3, 4].map((step) => {
@@ -168,35 +168,37 @@ export default function WorldMacro({ api }: IDockviewPanelProps) {
                 `, GDP $${formatCompact(chosen.gdpUsd)} (${chosen.gdpYear ?? ''})`}
             </p>
           )}
-          <div className="market-columns worldmacro-columns">
-            <span>Country</span>
-            <span>GDP</span>
-            <span>Growth</span>
-            <span>Inflation</span>
-            <span>Debt</span>
+          <div className="worldmacro-table">
+            <div className="market-columns worldmacro-columns">
+              <span>Country</span>
+              <span>GDP</span>
+              <span>Growth</span>
+              <span>Inflation</span>
+              <span>Debt</span>
+            </div>
+            <ul aria-label={`The ${String(table.length)} largest economies`}>
+              {table.map((country) => (
+                <li
+                  key={country.iso3}
+                  className="market-row worldmacro-columns"
+                  aria-selected={country.iso3 === selected}
+                  onClick={() => {
+                    setSelected(country.iso3);
+                  }}
+                >
+                  <span className="worldmacro-name" title={country.name}>
+                    {country.name}
+                  </span>
+                  <span className="text-right font-mono">
+                    {country.gdpUsd === null ? '—' : `$${formatCompact(country.gdpUsd)}`}
+                  </span>
+                  <MetricValue value={country.growth} metric="growth" />
+                  <MetricValue value={country.inflation} metric="inflation" />
+                  <MetricValue value={country.debt} metric="debt" />
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul aria-label={`The ${String(table.length)} largest economies`}>
-            {table.map((country) => (
-              <li
-                key={country.iso3}
-                className="market-row worldmacro-columns"
-                aria-selected={country.iso3 === selected}
-                onClick={() => {
-                  setSelected(country.iso3);
-                }}
-              >
-                <span className="worldmacro-name" title={country.name}>
-                  {country.name}
-                </span>
-                <span className="text-right font-mono">
-                  {country.gdpUsd === null ? '—' : `$${formatCompact(country.gdpUsd)}`}
-                </span>
-                <MetricValue value={country.growth} metric="growth" />
-                <MetricValue value={country.inflation} metric="inflation" />
-                <MetricValue value={country.debt} metric="debt" />
-              </li>
-            ))}
-          </ul>
         </>
       )}
       <p className="panel-footnote">

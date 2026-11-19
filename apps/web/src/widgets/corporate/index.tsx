@@ -75,7 +75,7 @@ function EarningsRow({
   const when = HOURS[entry.hour];
   return (
     <li className={`market-row corporate-earnings${market ? ' is-market' : ''}`}>
-      <span className="font-mono">{day(entry.date)}</span>
+      <span className="corporate-date font-mono">{day(entry.date)}</span>
       {market && (
         <span className="corporate-name" title={item?.name}>
           {simple && item ? plainName(item) : entry.symbol}
@@ -111,7 +111,7 @@ function InsiderRows({ filings, simple }: { filings: readonly InsiderFiling[]; s
   if (rows.length === 0)
     return <p className="panel-empty">No insider trades in the latest Form 4 filings.</p>;
   return (
-    <>
+    <div className="corporate-table" tabIndex={0} aria-label="Insider trades table">
       <div className="market-columns corporate-insiders">
         <span>Date</span>
         <span>Who</span>
@@ -150,7 +150,7 @@ function InsiderRows({ filings, simple }: { filings: readonly InsiderFiling[]; s
           );
         })}
       </ul>
-    </>
+    </div>
   );
 }
 
@@ -158,7 +158,7 @@ function HolderRows({ holders }: { holders: readonly HolderFiling[] }) {
   if (holders.length === 0)
     return <p className="panel-empty">No Schedule 13D or 13G filings on record.</p>;
   return (
-    <>
+    <div className="corporate-table" tabIndex={0} aria-label="Large holders table">
       <div className="market-columns corporate-holders">
         <span>Holder</span>
         <span>Stake</span>
@@ -179,7 +179,7 @@ function HolderRows({ holders }: { holders: readonly HolderFiling[] }) {
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }
 
@@ -204,7 +204,7 @@ export default function Corporate({ api, params }: IDockviewPanelProps<Corporate
           earnings calendar.
         </p>
       )}
-      <section aria-label="Earnings">
+      <section className="corporate-section" aria-label="Earnings">
         <h3 className="markets-group" data-term="Earnings">
           {market
             ? `${simple ? 'Results dates' : 'Earnings'} · largest ${String(MARKET_EARNINGS)}, next ${String(EARNINGS_DAYS)} days`
@@ -218,17 +218,19 @@ export default function Corporate({ api, params }: IDockviewPanelProps<Corporate
             compact={earnings.length > 0}
           />
         )}
-        <EarningsHead market={market} />
-        <ul>
-          {earnings.slice(0, market ? MARKET_EARNINGS : 2).map((entry) => (
-            <EarningsRow
-              key={`${entry.symbol}-${entry.date}`}
-              entry={entry}
-              simple={simple}
-              market={market}
-            />
-          ))}
-        </ul>
+        <div className="corporate-table" tabIndex={0} aria-label="Earnings calendar">
+          <EarningsHead market={market} />
+          <ul>
+            {earnings.slice(0, market ? MARKET_EARNINGS : 2).map((entry) => (
+              <EarningsRow
+                key={`${entry.symbol}-${entry.date}`}
+                entry={entry}
+                simple={simple}
+                market={market}
+              />
+            ))}
+          </ul>
+        </div>
         {corporate.earnings !== null && earnings.length === 0 && (
           <p className="panel-empty">
             {market
@@ -240,7 +242,7 @@ export default function Corporate({ api, params }: IDockviewPanelProps<Corporate
 
       {ticker && (
         <>
-          <section aria-label="Insider trades">
+          <section className="corporate-section" aria-label="Insider trades">
             <h3 className="markets-group" data-term="Insider trades">
               {simple ? 'Company insiders buying or selling' : 'Insider trades · Form 4'}
             </h3>
@@ -257,7 +259,7 @@ export default function Corporate({ api, params }: IDockviewPanelProps<Corporate
               <InsiderRows filings={corporate.ownership.insiders} simple={simple} />
             )}
           </section>
-          <section aria-label="Large holders">
+          <section className="corporate-section" aria-label="Large holders">
             <h3 className="markets-group" data-term="Large holders">
               {simple ? 'Big shareholders (over 5%)' : 'Large holders · 13D / 13G'}
             </h3>
