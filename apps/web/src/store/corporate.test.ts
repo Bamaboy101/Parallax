@@ -109,7 +109,9 @@ describe('ownership', () => {
   it("reads the edge's answer and gives the co-pilot what the panel shows", () => {
     const ownership = parseOwnership(OWNERSHIP);
     expect(ownership?.holders[1]).toMatchObject({ holder: null, percent: null });
-    const [item] = buildContext({
+    const {
+      items: [item],
+    } = buildContext({
       panels: [
         { component: 'corporate', title: 'Corporate events · AAPL', params: { symbol: 'AAPL' } },
       ],
@@ -123,10 +125,11 @@ describe('ownership', () => {
       releases: null,
       options: {},
       rates: { curve: [], sofr: [], effr: [] },
-      corporate: { AAPL: { earnings: [], ownership } },
+      corporate: { AAPL: { ownership } },
       now: Date.now(),
     });
-    expect(item?.detail).toContain('No earnings date for AAPL in the next two weeks (Finnhub)');
+    // Earnings dates are Finnhub's: never sent to the AI provider.
+    expect(item?.detail).not.toMatch(/earnings|Finnhub/i);
     expect(item?.detail).toContain(
       '2026-11-10 Newstead Jennifer (SVP, GC and Government Affairs) sell 2,399 shares at 351.36, under a pre-arranged 10b5-1 plan',
     );

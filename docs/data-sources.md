@@ -100,9 +100,9 @@ Needs the user's free key.
   `{symbol, date, hour: bmo|amc|dmh|'', quarter, year, epsEstimate, epsActual, revenueEstimate,
 revenueActual}`). Finnhub's terms (finnhub.io/terms-of-service, checked 18 Nov 2026) make every
   plan "strictly for personal use" and bar redistributing or sharing its data "with anyone or any
-  3rd party": the panel fetches on the user's own key, shows it in the user's browser only, and the
-  co-pilot passes it to the user's own AI provider only when the user asks it a question, as it
-  already does for Finnhub stock prices.
+  3rd party": the panel fetches on the user's own key and shows it in the user's browser only.
+  The co-pilot sends no Finnhub data (prices or earnings) to the user's AI provider (changed
+  19 Nov 2026; see architecture.md, Co-pilot).
 
 ## Alpaca paper trading (`store/paper/`)
 

@@ -71,7 +71,9 @@ describe('energyStat', () => {
   });
 
   it('hands the co-pilot the rows the panel shows, scaled to its units', () => {
-    const [item] = buildContext({
+    const {
+      items: [item],
+    } = buildContext({
       panels: [{ component: 'energy', title: 'Energy', params: {} }],
       ticks: useTickStore.getState(),
       barsOf: () => undefined,

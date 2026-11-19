@@ -81,7 +81,9 @@ describe('global macro', () => {
   });
 
   it('hands the co-pilot the table the panel shows', () => {
-    const [item] = buildContext({
+    const {
+      items: [item],
+    } = buildContext({
       panels: [{ component: 'worldmacro', title: 'Global macro', params: {} }],
       ticks: useTickStore.getState(),
       barsOf: () => undefined,

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { NewsItem } from '../../feeds/types';
 import { parseCalendar, type Release } from '../calendar';
-import { fetchEarnings, fetchOwnership } from '../corporate';
+import { fetchOwnership } from '../corporate';
 import { edgeJson } from '../edge';
 import { fetchEnergy, type EnergyMap } from '../energy';
 import { failureOf } from '../failure';
@@ -52,6 +52,8 @@ export interface CopilotAnswer {
   cited: ContextItem[];
   /** Everything the co-pilot was given, for "what it saw". */
   context: ContextItem[];
+  /** On screen but not sent: Finnhub's terms bar sharing its data with the AI provider. */
+  finnhubLeftOut: boolean;
   provider: AiProvider;
   model: string;
   at: number;
@@ -160,32 +162,27 @@ async function worldFigures(): Promise<WorldData | null> {
 }
 
 /**
- * What each open Corporate events panel shows, fetched as the panel does: earnings from Finnhub on
- * the user's own key, SEC filings through the edge (whose cache answers).
+ * The SEC filings each open Corporate events panel shows for its US stock, through the edge (whose
+ * cache answers). The panel's earnings dates are Finnhub's and are never fetched for the co-pilot.
  */
 async function corporateFacts(
   panels: readonly PanelRef[],
 ): Promise<Record<string, CorporateFacts> | null> {
   const tickers = [
     ...new Set(
-      panels
-        .filter((panel) => panel.component === 'corporate')
-        .map((panel) => {
-          const symbol = typeof panel.params.symbol === 'string' ? panel.params.symbol : '';
-          return instrument(symbol)?.kind === 'equity' ? symbol : '';
-        }),
+      panels.flatMap((panel) => {
+        if (panel.component !== 'corporate') return [];
+        const symbol = typeof panel.params.symbol === 'string' ? panel.params.symbol : '';
+        return instrument(symbol)?.kind === 'equity' ? [symbol] : [];
+      }),
     ),
   ];
   if (tickers.length === 0) return null;
-  const token = useKeyVault.getState().keys.finnhub;
   const entries = await Promise.all(
-    tickers.map(async (ticker) => {
-      const [earnings, ownership] = await Promise.all([
-        token ? fetchEarnings(token, ticker === '' ? null : ticker).catch(() => null) : null,
-        ticker === '' ? null : fetchOwnership(ticker).catch(() => null),
-      ]);
-      return [ticker, { earnings, ownership }] as const;
-    }),
+    tickers.map(
+      async (ticker) =>
+        [ticker, { ownership: await fetchOwnership(ticker).catch(() => null) }] as const,
+    ),
   );
   return Object.fromEntries(entries);
 }
@@ -228,7 +225,7 @@ export async function askCopilot(
     corporateFacts(panels),
     open('worldmacro') ? worldFigures() : null,
   ]);
-  const context = buildContext({
+  const { items: context, leftOut } = buildContext({
     panels,
     ticks,
     barsOf: (item) => cachedHistory(item, '1h', priceHistorySpan(item))?.bars,
@@ -261,9 +258,21 @@ export async function askCopilot(
       const item = byId.get(id);
       return item ? [item] : [];
     });
+    // A Corporate events panel shows Finnhub earnings dates whenever there is a Finnhub key.
+    const finnhubLeftOut =
+      leftOut.finnhub || (open('corporate') && Boolean(useKeyVault.getState().keys.finnhub));
     return {
       status: 'answered',
-      answer: { question: trimmed, text, cited, context, provider, model, at: now },
+      answer: {
+        question: trimmed,
+        text,
+        cited,
+        context,
+        finnhubLeftOut,
+        provider,
+        model,
+        at: now,
+      },
     };
   } catch (error) {
     return { status: 'error', message: failureOf(error).message };

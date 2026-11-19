@@ -418,6 +418,12 @@ once the panel is ready) answers plain-word questions from what is on screen:
   top eight events' odds are added (`O1`…, labelled market odds, not forecasts); up to twelve
   headlines from the edge `/news` route (about the first catalogue asset the question names) are
   `N1`…. Panels without figures (Session ring, Settings) are left out.
+- **No Finnhub data.** Finnhub's terms bar sharing its data with any third party, the AI provider
+  included, so nothing from Finnhub is sent: a price whose latest tick came from Finnhub is left
+  out (movers and breadth are ranked again without them), and the Corporate events panel sends
+  only its SEC filings, never its Finnhub earnings dates. Headlines come from the edge's publisher
+  feeds, not Finnhub. When something on screen was left out, "What it saw" ends with "Finnhub data
+  isn't shared with your AI provider".
 - **Keys.** `store/copilot/keys.ts` is its own vault (`parallax:ai-keys` in local storage),
   separate from the data keys because data keys are handed to the feed hub and AI keys never are.
   `store/copilot/providers.ts` builds every URL from the provider's own origin
@@ -497,7 +503,7 @@ ones; a document whose `issuerCik` is another company (filed by this one, about 
 left out. Documents are fetched five at a time with the declared user agent, inside SEC's 10 a
 second. The panel (commands `earnings`, `insiders`, `holders`, `corporate`, `form4`; `aapl
 earnings`) shows trades in neutral colours with SEC's transaction codes in words (plainer in
-Simple), and the co-pilot gets the same rows.
+Simple), and the co-pilot gets the same SEC rows (not the earnings dates, which are Finnhub's).
 
 ## Global macro (M8)
 
