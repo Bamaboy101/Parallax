@@ -7,6 +7,13 @@ shadows, motion under 200 ms, visual passes by a separate model).
 Audience: self-directed traders and learners. Every source is free; those marked (confirm) must
 be checked against the provider's own docs before building.
 
+**Status: v0.2 complete (19 Nov 2026), released as v0.2.0.** Batches A to E are built, each with
+its visual pass, and live at parallax-terminal.pages.dev. Four sources stay out until their
+providers agree in writing (see "Waiting for written permission"): Kalshi odds in M1, DefiLlama's
+DeFi totals in M5, and GeckoTerminal and DEX Screener for M6 DEX pairs, which is not built for
+that reason. The co-pilot never sends Finnhub data to the AI provider (19 Nov), because Finnhub's
+terms bar sharing it with any third party.
+
 ## New markets
 
 - **M1 Prediction markets:** live odds on Fed decisions, inflation prints, elections and world
@@ -190,13 +197,13 @@ and the exact clauses are in data-sources.md.
 
 ## Batches
 
-| Batch | Contents                      | Note                     |
-| ----- | ----------------------------- | ------------------------ |
-| A     | M1, F4, F5, F1                | Build now, in that order |
-| B     | M2, M3, F2, F7, F9            |                          |
-| C     | F3, F8, M5, M6, F6, F12       |                          |
-| E     | E1, E2, E3, E4, E5, E6 (=F11) | Before Batch D           |
-| D     | M4, M7, M8, F10               |                          |
+| Batch | Contents                      | Note                     | Status                        |
+| ----- | ----------------------------- | ------------------------ | ----------------------------- |
+| A     | M1, M9, F4, F5, F1            | Build now, in that order | Done, visual pass done        |
+| B     | M2, M3, F2, F7, F9            |                          | Done, visual pass done        |
+| C     | F3, F8, M5, M6, F6, F12       |                          | Done (M6 waiting), see E      |
+| E     | E1, E2, E3, E4, E5, E6 (=F11) | Before Batch D           | Done, C and E visual pass     |
+| D     | M4, M7, M8, F10               |                          | Done, visual pass done 19 Nov |
 
 Each batch ends with one GPT visual pass. Batch C's is combined with Batch E's, at the end of
 Batch E; it also covers the Parallax logo and the social preview card.
