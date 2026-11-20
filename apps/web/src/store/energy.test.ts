@@ -83,7 +83,6 @@ describe('energyStat', () => {
       headlines: [],
       fred: null,
       releases: null,
-      options: {},
       rates: { curve: [], sofr: [], effr: [] },
       energy: { 'PET.WCESTUS1.W': weekly() },
       now: Date.now(),

@@ -1,45 +1,10 @@
 import { useEffect, useState } from 'react';
-import { create } from 'zustand';
 import type { Freshness } from '../../design/format';
 import { failureOf, RequestError, type Failure } from '../failure';
 import { useKeyVault } from '../keys';
 import { freshnessOfFailure, reportRestFreshness } from '../panels';
 import { dataRequest, OPTIONS_FEED } from './client';
-import {
-  atTheMoney,
-  chainRows,
-  expiriesOf,
-  parseChain,
-  parseSpot,
-  putCallRatio,
-  type OptionQuote,
-  type PutCall,
-} from './parse';
-
-/** What an open options panel last showed, per underlying: the co-pilot reads it. */
-export interface OptionsSummary {
-  expiry: string;
-  spot: number;
-  atmIv: number | null;
-  putCall: PutCall;
-  at: number;
-}
-
-export const useOptionsSummaries = create<Readonly<Record<string, OptionsSummary>>>()(() => ({}));
-
-function summarise(underlying: string, expiry: string, spot: number, quotes: OptionQuote[]): void {
-  const rows = chainRows(quotes);
-  const atm = rows.find((row) => row.strike === atTheMoney(rows, spot));
-  useOptionsSummaries.setState({
-    [underlying]: {
-      expiry,
-      spot,
-      atmIv: atm?.call?.iv ?? atm?.put?.iv ?? null,
-      putCall: putCallRatio(quotes),
-      at: Date.now(),
-    },
-  });
-}
+import { expiriesOf, parseChain, parseSpot, type OptionQuote } from './parse';
 
 export const OPTIONS_SOURCE = 'alpaca-options';
 /** The chain is re-read this often while a panel shows it. */
@@ -205,7 +170,6 @@ export function useOptions(underlying: string, chosen: string | null): OptionsSt
         });
         if (cancelled) return;
         reportRestFreshness(OPTIONS_SOURCE, { kind: 'polled', everyMs: CHAIN_POLL_MS });
-        summarise(underlying, expiry, spotPrice, quotes);
         setChain({ for: target, quotes, failure: undefined, updatedAt: Date.now() });
       } catch (error) {
         if (cancelled) return;

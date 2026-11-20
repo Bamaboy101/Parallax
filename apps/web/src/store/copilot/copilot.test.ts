@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FeedEvent } from '../../feeds/types';
 import { EDGE_URL } from '../edge';
 import { useKeyVault } from '../keys';
+import { usePaperStore } from '../paper/store';
 import { parseRefRates, parseTreasuryCsv } from '../rates/parse';
 import effrFixture from '../rates/fixtures/effr.json';
 import treasuryCsv from '../rates/fixtures/treasury-2026.csv?raw';
@@ -21,8 +22,8 @@ import {
 import { askCopilot } from './store';
 
 describe('buildContext', () => {
-  it('gives Macro, Calendar and Options the figures their panels show, and skips panels without any', () => {
-    const { items } = buildContext({
+  it('gives Macro and Calendar their figures, and leaves out Sessions and Alpaca options', () => {
+    const { items, leftOut } = buildContext({
       panels: [
         { component: 'macro', title: 'Macro', params: {} },
         { component: 'calendar', title: 'Calendar', params: {} },
@@ -44,30 +45,14 @@ describe('buildContext', () => {
         ],
       },
       releases: [{ date: '2026-11-20', id: 50, name: 'Employment Situation' }],
-      options: {
-        SPY: {
-          expiry: '2026-11-18',
-          spot: 730.76,
-          atmIv: 0.359,
-          putCall: { callVolume: 100, putVolume: 150, ratio: 1.5, day: '2026-11-17' },
-          at: now,
-        },
-      },
       rates: { curve: [], sofr: [], effr: [] },
       now,
     });
-    expect(items.map((item) => `${item.id}:${item.label}`)).toEqual([
-      'P1:Macro',
-      'P2:Calendar',
-      'P3:Options · SPY',
-    ]);
+    expect(items.map((item) => `${item.id}:${item.label}`)).toEqual(['P1:Macro', 'P2:Calendar']);
     expect(items[0]?.detail).toContain('10Y − 2Y spread +0.50 pp');
     expect(items[0]?.detail).toContain('Payrolls, monthly change +120k jobs (as of 2026-10-01)');
     expect(items[1]?.detail).toContain('2026-11-20 Employment Situation');
-    expect(items[2]?.detail).toContain('indicative feed');
-    expect(items[2]?.detail).toContain(
-      'at-the-money implied volatility 35.9%, put/call ratio 1.50',
-    );
+    expect(leftOut.marketData).toBe(true);
   });
 
   it('gives the rates desk its curve, spread and overnight rates', () => {
@@ -83,7 +68,6 @@ describe('buildContext', () => {
       headlines: [],
       fred: null,
       releases: null,
-      options: {},
       rates: { curve: parseTreasuryCsv(treasuryCsv), sofr: [], effr: parseRefRates(effrFixture) },
       now,
     });
@@ -317,7 +301,7 @@ describe('askCopilot', () => {
     }
     const sent = JSON.parse(calls[1]?.body ?? 'null') as { messages: { content: string }[] };
     expect(sent.messages[0]?.content).toMatch(/\[P1\] Panel “Watchlist”: BTC\/USD 64,000/);
-    expect(result.answer.finnhubLeftOut).toBe(false);
+    expect(result.answer.marketDataLeftOut).toBe(false);
   });
 
   it('never sends Finnhub prices or earnings to the AI provider, and says so', async () => {
@@ -341,7 +325,7 @@ describe('askCopilot', () => {
 
     expect(result.status).toBe('answered');
     if (result.status !== 'answered') return;
-    expect(result.answer.finnhubLeftOut).toBe(true);
+    expect(result.answer.marketDataLeftOut).toBe(true);
     const calls = fetchMock.mock.calls.map((call) => requestOf(call));
     expect(calls.some((call) => call.url.includes('finnhub'))).toBe(false);
     const sent = calls.find((call) => call.url.startsWith('https://api.anthropic.com/'));
@@ -349,6 +333,50 @@ describe('askCopilot', () => {
       .messages[0]?.content;
     expect(message).toContain('BTC/USD 64,000');
     expect(message).not.toMatch(/AAPL|Apple|351\.36|Finnhub/);
+  });
+
+  it('never sends Alpaca market data, but keeps the paper account', async () => {
+    ingest([{ ...trade('MSFT', 512.34), source: 'alpaca' }]);
+    usePaperStore.setState({
+      state: 'ready',
+      account: {
+        status: 'ACTIVE',
+        equity: 100_500,
+        lastEquity: 100_000,
+        buyingPower: 200_000,
+        cash: 100_500,
+        tradingBlocked: false,
+      },
+      positions: [],
+    });
+    const fetchMock = vi.fn((url: URL | string) =>
+      Promise.resolve(
+        String(url).startsWith(EDGE_URL)
+          ? json({ items: [], sources: [] })
+          : json(anthropicAnswer('The paper account is up today [P2].')),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await askCopilot('Brief me on today', [
+      { component: 'watchlist', title: 'Watchlist', params: { symbols: ['BTC-USD', 'MSFT'] } },
+      { component: 'options', title: 'Options · SPY', params: { symbol: 'SPY' } },
+      { component: 'paper', title: 'Paper', params: {} },
+    ]);
+    usePaperStore.setState({ state: 'loading', account: null, positions: [] });
+
+    expect(result.status).toBe('answered');
+    if (result.status !== 'answered') return;
+    expect(result.answer.marketDataLeftOut).toBe(true);
+    expect(result.answer.context.map((item) => item.label)).toEqual(['Watchlist', 'Paper']);
+    const sent = fetchMock.mock.calls
+      .map((call) => requestOf(call))
+      .find((call) => call.url.startsWith('https://api.anthropic.com/'));
+    const message = (JSON.parse(sent?.body ?? 'null') as { messages: { content: string }[] })
+      .messages[0]?.content;
+    expect(message).toContain('BTC/USD 64,000');
+    expect(message).toContain('paper account: equity 100,500.00 USD');
+    expect(message).not.toMatch(/MSFT|Microsoft|512\.34|Alpaca|options/i);
   });
 
   it('refuses advice without sending anything', async () => {

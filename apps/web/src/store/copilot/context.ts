@@ -7,7 +7,6 @@ import { lastPriceOf, priceChannel, priceLine } from '../hooks';
 import { energyStat, PRICE_ROWS, STOCK_ROWS, SUPPLY_ROWS, type EnergyMap } from '../energy';
 import { latest, monthlyChange, yearOnYear, type SeriesMap, type Stat } from '../macro';
 import type { PaperState } from '../paper/store';
-import type { OptionsSummary } from '../options/store';
 import { basisPoints, curveOn, daysBefore } from '../rates/parse';
 import type { RatesState } from '../rates/store';
 import { dayChangeOf, oddsOf, openOutcomes, type PredictionEvent } from '../predictions/classify';
@@ -49,8 +48,6 @@ export interface ContextInput {
   fred: SeriesMap | null;
   /** Upcoming releases the Calendar panel shows, when it is open. */
   releases: readonly Release[] | null;
-  /** What each open options panel last showed, by underlying. */
-  options: Readonly<Record<string, OptionsSummary>>;
   /** The rates desk's curve and overnight rates. */
   rates: Pick<RatesState, 'curve' | 'sofr' | 'effr'>;
   /** EIA series the Energy panel shows, when it is open. */
@@ -96,14 +93,16 @@ const pct = (value: number | undefined) =>
   value === undefined ? 'change unknown' : `${formatNumber(value, 2, true)}%`;
 
 /**
- * Finnhub's terms bar passing its data to any third party, the user's AI provider included: its
- * prices are left out of the context, and `out.finnhub` records that something was.
+ * Market data whose terms bar passing it to a third party, the user's AI provider included:
+ * Finnhub ("sharing … with anyone or any 3rd party") and Alpaca (no transmitting to another server
+ * without written consent). Prices from these feeds are left out of the context, and
+ * `out.marketData` records that something on screen was.
  */
-export const FINNHUB_SOURCE = 'finnhub';
+export const RESTRICTED_SOURCES: ReadonlySet<string> = new Set(['finnhub', 'alpaca']);
 
 /** What the context left out, for "what it saw". */
 export interface LeftOut {
-  finnhub: boolean;
+  marketData: boolean;
 }
 
 /** "BTC/USD 64,702.44 (−0.28% over 24 h, live from Coinbase)" or nothing without a price. */
@@ -111,8 +110,8 @@ function priceFact(input: ContextInput, item: Instrument, out: LeftOut): string 
   const tick = valueAt(input.ticks, priceChannel(item), item.id);
   if (!tick) return null;
   const last = lastPriceOf(tick);
-  if (last.source === FINNHUB_SOURCE) {
-    out.finnhub = true;
+  if (RESTRICTED_SOURCES.has(last.source)) {
+    out.marketData = true;
     return null;
   }
   const line = priceLine(item, last, input.barsOf(item) ?? []);
@@ -152,10 +151,10 @@ function panelDetail(input: ContextInput, panel: PanelRef, out: LeftOut): string
       return lines.length > 0 ? lines.join('; ') : null;
     }
     case 'movers': {
-      // Ranked again without Finnhub's prices, so no list or count is derived from them.
+      // Ranked again without restricted prices, so no list or count is derived from them.
       const all = computeMovers(input.ticks, input.barsOf, input.now).universe;
-      const universe = all.filter((mover) => mover.source !== FINNHUB_SOURCE);
-      if (universe.length < all.length) out.finnhub = true;
+      const universe = all.filter((mover) => !RESTRICTED_SOURCES.has(mover.source));
+      if (universe.length < all.length) out.marketData = true;
       const moved = universe.filter((mover) => mover.changePct !== undefined);
       if (moved.length === 0) return null;
       const byChange = [...moved].sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0));
@@ -194,13 +193,10 @@ function panelDetail(input: ContextInput, panel: PanelRef, out: LeftOut): string
         .join('; ');
       return `Simulated (fake money) paper account: equity ${formatNumber(account.equity, 2)} USD, today ${formatNumber(account.equity - account.lastEquity, 2, true)} USD. ${held === '' ? 'No positions.' : `Positions: ${held}.`}`;
     }
-    case 'options': {
-      const underlying = symbol ?? 'SPY';
-      const summary = input.options[underlying];
-      if (!summary) return null;
-      const pc = summary.putCall;
-      return `${underlying} options expiring ${summary.expiry} (Alpaca indicative feed: quotes adjusted, trades 15 min delayed): spot ${formatNumber(summary.spot, 2)}, at-the-money implied volatility ${summary.atmIv === null ? 'unknown' : `${formatNumber(summary.atmIv * 100, 1)}%`}, put/call ratio ${pc.ratio === null ? 'unknown' : formatNumber(pc.ratio, 2)} by contracts traded (${formatCompact(pc.callVolume)} calls, ${formatCompact(pc.putVolume)} puts)`;
-    }
+    case 'options':
+      // Alpaca's options feed: shown on screen, never sent.
+      out.marketData = true;
+      return null;
     case 'rates':
       return ratesDetail(input.rates);
     case 'macro':
@@ -376,11 +372,11 @@ export interface CopilotContext {
 
 /**
  * What is on the user's screen, as citable items: each panel with its latest figures, the
- * market-moving event odds when an Event odds panel is open, and recent headlines. Finnhub's
- * prices are left out (see `FINNHUB_SOURCE`).
+ * market-moving event odds when an Event odds panel is open, and recent headlines. Finnhub and
+ * Alpaca market data are left out (see `RESTRICTED_SOURCES`).
  */
 export function buildContext(input: ContextInput): CopilotContext {
-  const leftOut: LeftOut = { finnhub: false };
+  const leftOut: LeftOut = { marketData: false };
   const panels = input.panels.flatMap((panel) => {
     const detail = panelDetail(input, panel, leftOut);
     return detail ? [{ panel, detail }] : [];

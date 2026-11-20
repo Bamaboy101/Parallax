@@ -123,7 +123,6 @@ describe('ownership', () => {
       headlines: [],
       fred: null,
       releases: null,
-      options: {},
       rates: { curve: [], sofr: [], effr: [] },
       corporate: { AAPL: { ownership } },
       now: Date.now(),

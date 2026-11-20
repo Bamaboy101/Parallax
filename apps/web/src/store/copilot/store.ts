@@ -18,7 +18,6 @@ import {
 } from '../macro';
 import { newsTarget } from '../news';
 import { usePaperStore } from '../paper/store';
-import { useOptionsSummaries } from '../options/store';
 import { useRatesStore } from '../rates/store';
 import { usePredictionStore } from '../predictions/store';
 import { useKeyVault } from '../keys';
@@ -52,8 +51,8 @@ export interface CopilotAnswer {
   cited: ContextItem[];
   /** Everything the co-pilot was given, for "what it saw". */
   context: ContextItem[];
-  /** On screen but not sent: Finnhub's terms bar sharing its data with the AI provider. */
-  finnhubLeftOut: boolean;
+  /** On screen but not sent: Finnhub and Alpaca terms bar passing their data to the AI provider. */
+  marketDataLeftOut: boolean;
   provider: AiProvider;
   model: string;
   at: number;
@@ -228,14 +227,15 @@ export async function askCopilot(
   const { items: context, leftOut } = buildContext({
     panels,
     ticks,
-    barsOf: (item) => cachedHistory(item, '1h', priceHistorySpan(item))?.bars,
+    // Stock and ETF history is Alpaca's (the only feed that serves it), so none is passed on.
+    barsOf: (item) =>
+      item.kind === 'equity' ? undefined : cachedHistory(item, '1h', priceHistorySpan(item))?.bars,
     events: predictions.events,
     midpoints: predictions.midpoints,
     paper: open('paper') ? usePaperStore.getState() : null,
     headlines,
     fred,
     releases,
-    options: useOptionsSummaries.getState(),
     rates: useRatesStore.getState(),
     energy,
     corporate,
@@ -259,8 +259,8 @@ export async function askCopilot(
       return item ? [item] : [];
     });
     // A Corporate events panel shows Finnhub earnings dates whenever there is a Finnhub key.
-    const finnhubLeftOut =
-      leftOut.finnhub || (open('corporate') && Boolean(useKeyVault.getState().keys.finnhub));
+    const marketDataLeftOut =
+      leftOut.marketData || (open('corporate') && Boolean(useKeyVault.getState().keys.finnhub));
     return {
       status: 'answered',
       answer: {
@@ -268,7 +268,7 @@ export async function askCopilot(
         text,
         cited,
         context,
-        finnhubLeftOut,
+        marketDataLeftOut,
         provider,
         model,
         at: now,

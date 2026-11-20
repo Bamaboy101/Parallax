@@ -93,7 +93,6 @@ describe('global macro', () => {
       headlines: [],
       fred: null,
       releases: null,
-      options: {},
       rates: { curve: [], sofr: [], effr: [] },
       world: {
         year: '2026',
