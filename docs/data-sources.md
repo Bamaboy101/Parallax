@@ -74,6 +74,37 @@ Needs the user's free key: key ID and secret, stored joined as `KEY_ID:SECRET`.
 - Recorded 16 Nov 2026 with a free key, markets closed: the IEX handshake and subscription
   confirmation, the test stream's FAKEPACA quotes and trades, and one page of AAPL hourly bars.
   Real AAPL prints are confirmed after the 18:30 Dubai open (T20).
+- Terms (checked 19–20 Nov 2026; the T&C PDF has headed sections but no section numbers). Alpaca
+  Terms and Conditions (files.alpaca.markets/disclosures/library/TermsAndConditions.pdf), which
+  cover every user of the website and API, free plan included:
+  - **"Personal and Non-Commercial Usage"**, the 30-day notice clause, word for word: "Other than
+    as set forth herein, you agree to use the Services and Content solely for your own personal
+    and non-commercial purposes. Should you wish to use the Services and Content for any other
+    purposes, including without limitation commercial usage, or making the Services and Content
+    available to others through your own application (a "User Application"), you shall provide
+    Alpaca with 30 days advance written notice prior to making such User Application available
+    to others. Alpaca reserves the right to restrict your User Application's connectivity to the
+    Service and Content, and may disallow any connectivity entirely, if Alpaca determines the User
+    Application may interfere with Alpaca's Services or otherwise be detrimental to Alpaca, as may
+    be determined in Alpaca's sole discretion."
+  - **"Content"**: "Content is provided exclusively for personal and noncommercial access and
+    use. No part of the Service or Content may be copied, reproduced, republished, uploaded,
+    posted, publicly displayed, encoded, translated, transmitted or distributed in any way
+    (including "mirroring") to any other computer, server, web site or other medium for
+    publication or distribution or for any commercial enterprise, without Alpaca's express prior
+    written consent." The Customer Agreement (§15, brokerage accounts) adds "I agree not to
+    reproduce, distribute, sell or commercially exploit the market data in any manner without
+    written consent from Alpaca", and the NYSE display agreement (paid plan, §5) "Subscriber shall
+    not furnish Market Data to any other person or entity". The co-pilot therefore sends no Alpaca
+    market data to the user's AI provider (since 20 Nov 2026); the paper account is still sent.
+  - **Where to send the notice.** The T&C name no address for it. Alpaca's own documents give two:
+    `Compliance@alpaca.markets` (phone 650-489-2017), which the Customer Agreement gives for "any
+    questions about any of the provisions in this agreement", and `Support@alpaca.markets`, which
+    the Connect API docs (docs.alpaca.markets/us/docs/about-connect-api, "Terms of Access and
+    Use") give for questions from developers building apps for others; the contact page lists
+    only support. Alpaca Connect registration (dashboard, Connect tab, reviewed by Alpaca
+    Compliance) applies to OAuth apps; Parallax uses each user's own API key, not OAuth. Status:
+    not sent yet (the owner is writing it).
 
 ## Finnhub, free plan (`feeds/adapters/finnhub.ts`)
 

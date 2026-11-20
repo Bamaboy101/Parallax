@@ -418,12 +418,15 @@ once the panel is ready) answers plain-word questions from what is on screen:
   top eight events' odds are added (`O1`…, labelled market odds, not forecasts); up to twelve
   headlines from the edge `/news` route (about the first catalogue asset the question names) are
   `N1`…. Panels without figures (Session ring, Settings) are left out.
-- **No Finnhub data.** Finnhub's terms bar sharing its data with any third party, the AI provider
-  included, so nothing from Finnhub is sent: a price whose latest tick came from Finnhub is left
-  out (movers and breadth are ranked again without them), and the Corporate events panel sends
-  only its SEC filings, never its Finnhub earnings dates. Headlines come from the edge's publisher
-  feeds, not Finnhub. When something on screen was left out, "What it saw" ends with "Finnhub data
-  isn't shared with your AI provider".
+- **No Finnhub or Alpaca market data.** Both providers' terms bar passing their data to a third
+  party, the AI provider included (data-sources.md), so `RESTRICTED_SOURCES` keeps them out: a
+  price whose latest tick came from either is left out (movers and breadth are ranked again
+  without them), stock and ETF history (Alpaca's) is never read, the Options panel (Alpaca's feed)
+  sends nothing, and the Corporate events panel sends only its SEC filings, never its Finnhub
+  earnings dates. The paper account is still sent: it is the user's own simulated account, not
+  market data. Headlines come from the edge's publisher feeds. When something on screen was left
+  out, "What it saw" ends with "Finnhub and Alpaca market data aren't shared with your AI
+  provider".
 - **Keys.** `store/copilot/keys.ts` is its own vault (`parallax:ai-keys` in local storage),
   separate from the data keys because data keys are handed to the feed hub and AI keys never are.
   `store/copilot/providers.ts` builds every URL from the provider's own origin
